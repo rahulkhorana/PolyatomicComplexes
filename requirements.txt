@@ -6,3 +6,5 @@ dill
 rdkit
 pandas
 torch
+botorch
+gpytorch
