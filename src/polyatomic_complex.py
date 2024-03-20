@@ -7,7 +7,7 @@ from typing import List, Tuple
 from core_utils import GluingMap, ElectronField
 from building_blocks import Electron
 
-class PolyAtomComplex():
+class PolyAtomComplex:
 
     def __init__(self, atom_list, using_radial=False, using_force=False, update_forces=None, update_radial=None):
         assert isinstance(atom_list, list) and len(atom_list) > 0

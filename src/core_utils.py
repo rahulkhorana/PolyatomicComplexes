@@ -67,7 +67,7 @@ class MiscUtilFunctions:
         return defdict
 
 
-class ElectronField():
+class ElectronField:
     def __init__(self):
         self.efield = np.array([])
         self.waves = np.array([])
