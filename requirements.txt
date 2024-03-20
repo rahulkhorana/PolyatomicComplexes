@@ -2,3 +2,4 @@ numpy
 jax
 microstructpy
 scikit-learn
+dill
