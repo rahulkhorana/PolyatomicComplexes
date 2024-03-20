@@ -29,10 +29,6 @@ class Electron():
             self.w.append(wv)
         self.ee = np.unique(self.ee, axis=0)
         self.w = np.array(self.w)
-        #print(f'electron {self.ee}')
-        #print(f'waves {self.w}')
-        #print(f'len w {len(self.w)}')
-        #print(f'len ee {len(self.ee)}')
         assert len(self.ee) == len(self.w)
         return tuple([self.ee, self.w])
     
