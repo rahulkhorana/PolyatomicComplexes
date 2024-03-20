@@ -1,16 +1,16 @@
 import os
 import json
 import dill
+import numpy as np
 from collections import defaultdict
 from atomic_complex import AtomComplex
 
 class BuildAtoms():
-   
-   def __init__(self):
+    def __init__(self):
        self.cwd = os.getcwd()
        self.datapath = self.cwd + '/dataset/construct'
-   
-   def build_lookup_table(self) -> None:
+    
+    def build_lookup_table(self) -> None:
         assert 'lookup_map.json' in os.listdir(self.datapath)
         with open(self.datapath+'/lookup_map.json') as data:
             d = json.load(data)
@@ -28,8 +28,27 @@ class BuildAtoms():
             dill.dump(lookup_table, f)
         
         return None
-
+    
+    def sanity(self):
+        lookup = self.datapath+'/atom_lookup.pkl'
+        with open(lookup, 'rb') as f:
+            table = dill.load(f)
+        try:
+            assert len(table.keys()) == 118
+            print(table['He'])
+            print(table['Os'])
+            print(table['Bk'])
+            assert isinstance(table['He'], tuple)
+            assert isinstance(table['He'][0], np.ndarray)
+            assert isinstance(table['Os'], tuple)
+            assert isinstance(table['Os'][0], np.ndarray)
+            assert isinstance(table['Bk'], tuple)
+            assert isinstance(table['Bk'][0], np.ndarray)
+            print('Success ✅')
+        except:
+            print('Failed ❌')
 
 if __name__ == '__main__':
     build = BuildAtoms()
-    build.build_lookup_table()
+    #build.build_lookup_table()
+    build.sanity()
