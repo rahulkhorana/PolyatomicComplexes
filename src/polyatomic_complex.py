@@ -93,15 +93,15 @@ class PolyAtomComplex():
         
         while A:
             I = A.pop(0)
-            num_elec, k, ae, df, de = I
+            num_elec, k, _, df, de = I
             if len(C) == 0:
                 C = k
             phi = GluingMap(C, k, target=C).construct_map()
             map = np.asarray(list(phi.keys()), dtype=jnp.float32)
             map = np.unique(map)
             C = disjont_union(map, C, k)
-            res = self.gen_elec_info(num_elec)
-            electron_union(res, [])
+            ae = self.gen_elec_info(num_elec)
+            electron_union(ae, [])
             if self.using_force:
                 self.F = dir_sum(self.F, df)
                 self.update_forces(self.F)
