@@ -162,13 +162,6 @@ class AtomComplex():
 
         return tuple([K, self.AE, self.DF, self.DE])
 
-
-
-
-    def build_lookup_table(self) -> None:
-
-        return
-
 def sanity_test(kind, *args):
     p, n, e, c, pd, nd, ed = args
     ac = AtomComplex(p, n, e, c, pd, nd, ed)
@@ -196,4 +189,3 @@ if __name__ == '__main__':
     sanity_test('general',2,1,2,5,3,7,0)
     sanity_test('general',12,1,2,17,9,9,0)
     print('*'*10+'general done'+'*'*10)
-
