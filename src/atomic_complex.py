@@ -168,15 +168,15 @@ def sanity_test(kind, *args):
     if kind == 'general':
         try:
             ac.general_build_complex()
-            print(f'success')
+            print(f'success ✅')
         except:
-            print('failed')
+            print('failed ❌')
     else:
         try:
             ac.fast_build_complex()
-            print(f'success')
+            print(f'success ✅')
         except:
-            print('failed')
+            print('failed ❌')
 
 if __name__ == '__main__':
     sanity_test('',1,1,1,5,3,3,0)
