@@ -1,2 +1,4 @@
 numpy
 jax
+microstructpy
+scikit-learn
