@@ -1,13 +1,12 @@
 import os
 import time
 import torch
-from typing import Tuple, Optional
+from typing import Tuple
 
 # data specific
 import numpy as np
-import pandas as pd
 import jax.numpy as jnp
-from torch.utils.data import TensorDataset
+from load_process_data import LoadDatasetForTask
 
 #botorch specific
 from botorch import fit_gpytorch_model
@@ -27,64 +26,11 @@ from sklearn.model_selection import train_test_split
 # kernels
 from kernels import TanimotoKernel, MolecularKernel
 
-
 if torch.cuda.is_available():  
   dev = "cuda:0" 
 else:  
   dev = "cpu"  
 device = torch.device(dev)
-
-class LoadDatasetForTask():
-    def __init__(self, Xpath:str, ypath:Optional[str], representation='mcw') -> Tuple[TensorDataset, TensorDataset]:
-        self.X = []
-        assert len(Xpath) > 0 and type(Xpath) is str
-        self.xp = Xpath
-        self.rep = representation
-        if ypath != '':
-            self.y = torch.load(ypath)
-
-    def load(self):
-        if self.rep == 'mcw':
-            xdir = os.listdir(self.xp)
-            for x in xdir:
-                t = torch.load(f'{self.xp}/{x}')[0]
-                self.X.append(t)
-            return self.X, self.y
-        elif self.rep == 'smiles':
-            df = pd.read_csv(self.xp)
-            if not len(df.columns) == 2:
-                raise Exception("invalid experimental input")
-            target = df.columns[1]
-            self.X = df['smiles']
-            self.y = df[target]
-            return self.X, self.y
-        elif self.rep == 'selfies':
-            df = pd.read_csv(self.xp)
-            if not len(df.columns) == 2:
-                raise Exception("invalid experimental input")
-            target = df.columns[1]
-            self.X = df['selfies']
-            self.y = df[target]
-            return self.X, self.y
-        else:
-            print("INVALID REPRESENTATION / INPUT")
-            raise Exception("unsupported")
-
-
-class ProcessDataForGP():
-    def __init__(self, X, y, representation='mcw'):
-        self.X = X
-        self.y = y
-        self.rep = representation
-    
-    def handle_data(self):
-        if self.rep == 'mcw':
-            return
-        elif self.rep == 'smiles':
-            return
-        elif self.rep == 'selfies':
-            return
-
 
 class GP(SingleTaskGP):
 
