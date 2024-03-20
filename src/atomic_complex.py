@@ -123,7 +123,7 @@ class AtomComplex():
     def general_build_complex(self, using_distances=False, update_distances=None) -> Tuple:
         if isinstance(self.d_p, list) or isinstance(self.d_n, list):
             print('this will take too long - stopping early')
-            return AssertionError('invalid input')
+            raise AssertionError('invalid input')
         gcu = GeneralComplexUtils(self.cutoff)
         self.build_protons()
         self.build_neutrons()

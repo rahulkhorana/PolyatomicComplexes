@@ -3,3 +3,4 @@ jax
 microstructpy
 scikit-learn
 dill
+rdkit
