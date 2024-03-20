@@ -1,7 +1,6 @@
 import os
 import re
 import dill
-import torch 
 import pandas as pd
 from rdkit import Chem
 from collections import defaultdict
