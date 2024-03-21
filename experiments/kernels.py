@@ -1,13 +1,17 @@
+"""
+The Tanimoto Kernel implementation coes from the Gauche library for chemistry,
+this implementation of the Tanimoto Kernel comes from the GAUCHE library for Chemistry
+# Credit: https://github.com/leojklarner/gauche
+# Original Paper: https://arxiv.org/abs/2212.04450
+# We make use of this code per the MIT license from the original repo
+"""
+
 import gpytorch
 from gpytorch.kernels import Kernel
 import torch
 from torch import Tensor
 
 class TanimotoKernel(Kernel):
-    # this implementation of the Tanimoto Kernel comes from the GAUCHE library for Chemistry
-    # Credit: https://github.com/leojklarner/gauche
-    # Original Paper: https://arxiv.org/abs/2212.04450
-    # We make use of this code per the MIT license from the original repo
     is_stationary = False
     has_lengthscale = False
 
