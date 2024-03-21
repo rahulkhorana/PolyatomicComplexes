@@ -60,6 +60,7 @@ def initialize_model(train_x, train_obj, state_dict=None):
 
 
 if __name__ == '__main__':
+    EXPERIMENT_TYPE = 'Photoswitches_{}'
     MODE = "mcw"
     N_TRIALS = 5
     N_ITERS = 5
@@ -81,9 +82,9 @@ if __name__ == '__main__':
     best_observed_all_ei, best_random_all = [], []
     best_observed_all_ei, best_random_all = run_training_loop(initialize_model=initialize_model,n_trials=N_TRIALS, n_iters=N_ITERS, holdout_size=holdout_set_size, X=X, y=y)
 
-    if type(EXPERIMENT_SIZE) is str and EXPERIMENT_SIZE in set(["small_experiment", "large_experiment"]):
-        trial_num = len(os.listdir(f'results/{EXPERIMENT_SIZE}'))
-        results_path = f"results/{EXPERIMENT_SIZE}/result_trial_{trial_num}_{time.time()}.npy"
+    if type(EXPERIMENT_TYPE) is str:
+        trial_num = len(os.listdir(f'results/{EXPERIMENT_TYPE}'))
+        results_path = f"results/{EXPERIMENT_TYPE}/result_trial_{trial_num}_{time.time()}.npy"
 
         with open(results_path, 'wb') as f:
             np.save(f, np.asarray(best_observed_all_ei))
