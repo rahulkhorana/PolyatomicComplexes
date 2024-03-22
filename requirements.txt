@@ -9,3 +9,6 @@ torch
 botorch
 gpytorch
 matplotlib
+gauche
+graphein
+grakel

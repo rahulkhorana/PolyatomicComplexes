@@ -14,7 +14,6 @@ from typing import Tuple
 
 # data specific
 import numpy as np
-import jax.numpy as jnp
 import matplotlib.pyplot as plt
 
 #botorch specific
@@ -30,9 +29,9 @@ from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
 from gpytorch.likelihoods import GaussianLikelihood
 from gpytorch.mlls import ExactMarginalLogLikelihood
 
-# gauche libraries
-sys.path.append('.')
-from gauche_utils.data_utils import transform_data
+from gauche.dataloader.data_utils import transform_data
+from gauche import NonTensorialInputs
+from gauche.kernels.graph_kernels import WeisfeilerLehmanKernel
 
 if torch.cuda.is_available():  
   dev = "cuda:0" 
@@ -288,3 +287,116 @@ def evaluate_model(initialize_model, n_trials, n_iters, test_set_size, X, y, fig
 
 
 
+def evaluate_graph_model(initialize_model, X, y, test_set_size, n_trials, n_iters, figure_path='', kernel=WeisfeilerLehmanKernel, **kernel_kwargs) -> Tuple[np.ndarray, np.ndarray]:
+    # Initialise performance metric lists
+    r2_list = []
+    rmse_list = []
+    mae_list = []
+
+    warnings.filterwarnings("ignore")
+    warnings.filterwarnings('ignore', category=RuntimeWarning)
+
+    # We pre-allocate array for plotting confidence-error curves
+    n_test = int(len(y) * test_set_size) + 1
+    mae_confidence_list = np.zeros((n_trials, n_test))
+
+    for i in range(n_trials):
+
+        # Carry out the random split with the current random seed
+        # and standardise the outputs
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=test_set_size, random_state=i
+        )
+        _, y_train, _, y_test, y_scaler = transform_data(
+            np.zeros_like(y_train), y_train, np.zeros_like(y_test), y_test
+        )
+
+        # Convert graph-structured inputs to custom data class for
+        # non-tensorial inputs and convert labels to PyTorch tensors
+        X_train = NonTensorialInputs(X_train)
+        X_test = NonTensorialInputs(X_test)
+        y_train = torch.tensor(y_train).flatten().float()
+        y_test = torch.tensor(y_test).flatten().float()
+
+        # Initialise GP likelihood and model
+        likelihood = GaussianLikelihood()
+        model = initialize_model(X_train, y_train, likelihood, kernel, node_label="element")
+
+        # Define the marginal log likelihood used to optimise the model hyperparameters
+        mll = ExactMarginalLogLikelihood(likelihood, model)
+
+        # Use the BoTorch utility for fitting GPs in order
+        # to use the LBFGS-B optimiser (recommended)
+        fit_gpytorch_model(mll)
+
+        # Get into evaluation (predictive posterior) mode and compute predictions
+        model.eval()
+        likelihood.eval()
+        f_pred = model(X_test)
+        y_pred = f_pred.mean
+        y_var = f_pred.variance
+
+        # Transform the predictions back to the original scale and calucalte eval metrics
+        y_pred = y_scaler.inverse_transform(y_pred.detach().unsqueeze(dim=1))
+        y_test = y_scaler.inverse_transform(y_test.detach().unsqueeze(dim=1))
+
+        # Construct the MAE error for each level of confidence
+        ranked_confidence_list = np.argsort(y_var.detach(), axis=0).flatten()
+        for k in range(len(y_test)):
+            conf = ranked_confidence_list[0 : k + 1]
+            mae = mean_absolute_error(y_test[conf], y_pred[conf])
+            mae_confidence_list[i, k] = mae
+
+        # Compute R^2, RMSE and MAE on Test set
+        score = r2_score(y_test, y_pred)
+        rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+        mae = mean_absolute_error(y_test, y_pred)
+
+        r2_list.append(score)
+        rmse_list.append(rmse)
+        mae_list.append(mae)
+
+    r2_list = np.array(r2_list)
+    rmse_list = np.array(rmse_list)
+    mae_list = np.array(mae_list)
+
+    # Print mean and standard error of the mean for each metric
+
+    print(
+        "\nmean R^2: {:.4f} +- {:.4f}".format(
+            np.mean(r2_list), np.std(r2_list) / np.sqrt(len(r2_list))
+        )
+    )
+    print(
+        "mean RMSE: {:.4f} +- {:.4f}".format(
+            np.mean(rmse_list), np.std(rmse_list) / np.sqrt(len(rmse_list))
+        )
+    )
+    print(
+        "mean MAE: {:.4f} +- {:.4f}\n".format(
+            np.mean(mae_list), np.std(mae_list) / np.sqrt(len(mae_list))
+        )
+    )
+
+    # Plot the mean-absolute error/confidence-error curves
+    # with 1 sigma errorbars
+
+    confidence_percentiles = np.arange(1e-14, 100, 100 / len(y_test))
+
+    mae_mean = np.mean(mae_confidence_list, axis=0)
+    mae_mean = np.flip(mae_mean)
+    mae_std = np.std(mae_confidence_list, axis=0)
+    mae_std = np.flip(mae_std)
+    lower = mae_mean - mae_std
+    upper = mae_mean + mae_std
+
+    plt.plot(confidence_percentiles, mae_mean, label="mean")
+    plt.fill_between(confidence_percentiles, lower, upper, alpha=0.2)
+    plt.xlabel("Confidence Percentile")
+    plt.ylabel("MAE (nm)")
+    plt.ylim([0, np.max(upper) + 1])
+    plt.xlim([0, 100 * ((len(y_test) - 1) / len(y_test))])
+    plt.yticks(np.arange(0, np.max(upper) + 1, 5.0))
+    plt.show()
+
+    return r2_list, rmse_list, mae_list, confidence_percentiles, mae_mean, mae_std
