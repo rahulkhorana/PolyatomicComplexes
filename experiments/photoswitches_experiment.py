@@ -101,6 +101,10 @@ if __name__ == '__main__':
         mean_mae = "mean MAE: {:.4f} +- {:.4f}\n".format(np.mean(mae_list), np.std(mae_list)/np.sqrt(len(mae_list)))
 
         with open(results_path, 'w') as f:
+            f.write(EXPERIMENT_TYPE + ':')
+            f.write('\n')
+            f.write(ENCODING + ':')
+            f.write('\n')
             f.write(mean_r2)
             f.write('\n')
             f.write(mean_rmse)
