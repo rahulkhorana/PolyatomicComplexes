@@ -31,7 +31,7 @@ from gpytorch.likelihoods import GaussianLikelihood
 from gpytorch.mlls import ExactMarginalLogLikelihood
 
 # gauche libraries
-sys.path.insert(1, 'gauche_utils')
+sys.path.append('.')
 from gauche_utils.data_utils import transform_data
 
 if torch.cuda.is_available():  
@@ -167,11 +167,14 @@ def run_training_loop(initialize_model, n_trials, n_iters, holdout_size, X, y, v
     best_random_all.append(best_random)
     return best_observed_all_ei, best_random_all
 
-def evaluate_model(initialize_model, n_trials, n_iters, test_set_size, X, y, verbose=False):
+def evaluate_model(initialize_model, n_trials, n_iters, test_set_size, X, y, figure_path):
     # initialise performance metric lists
     r2_list = []
     rmse_list = []
     mae_list = []
+
+    warnings.filterwarnings("ignore")
+    warnings.filterwarnings('ignore', category=RuntimeWarning)
     
     # We pre-allocate array for plotting confidence-error curves
 
@@ -190,13 +193,14 @@ def evaluate_model(initialize_model, n_trials, n_iters, test_set_size, X, y, ver
         #  We standardise the outputs
         _, y_train, _, y_test, y_scaler = transform_data(X_train, y_train, X_test, y_test)
         # Convert numpy arrays to PyTorch tensors and flatten the label vectors
-        X_train = X_train.type(torch.float64)
-        X_test = X_test.type(torch.float64)
-        y_train = y_train.type(torch.float64)
-        y_test = y_test.type(torch.float64)
+        #print(f'types {type(X_train)}')
+        y_train = torch.tensor(y_train.astype(np.float64)).flatten()
+        y_test = torch.tensor(y_test.astype(np.float64)).flatten()
+        assert isinstance(X_train, torch.Tensor) and isinstance(y_train, torch.Tensor) and isinstance(X_test, torch.Tensor) and isinstance(y_test, torch.Tensor)
 
+        likelihood = GaussianLikelihood()
         # initialise GP likelihood and model
-        model = initialize_model(X_train, y_train)
+        model = initialize_model(X_train, y_train, likelihood)
 
         # Find optimal model hyperparameters
         # "Loss" for GPs - the marginal log likelihood
@@ -282,9 +286,9 @@ def evaluate_model(initialize_model, n_trials, n_iters, test_set_size, X, y, ver
     plt.ylim([0, np.max(upper) + 1])
     plt.xlim([0, 100 * ((len(y_test) - 1) / len(y_test))])
     plt.yticks(np.arange(0, np.max(upper) + 1, 5.0))
-    plt.show()
+    plt.savefig(figure_path)
     
-    return rmse_list, mae_list
+    return r2_list,rmse_list, mae_list, confidence_percentiles, mae_mean, mae_std
 
 
 
