@@ -12,7 +12,7 @@ class LoadDatasetForTask():
         self.y = y
         self.repn = repn
     
-    def load(self) -> Tuple[TensorDataset, TensorDataset]:
+    def load(self) -> Tuple[torch.Tensor, torch.Tensor]:
         if self.repn == 'complexes':
             with open(self.X, 'rb') as f:
                 x_data = dill.load(f)
@@ -24,12 +24,12 @@ class LoadDatasetForTask():
             max_len = max([x.squeeze().numel() for x in X])
             data = [torch.nn.functional.pad(x, pad=(0, max_len - x.numel()), mode='constant', value=0) for x in X]
             X = torch.stack(data)
-            X = TensorDataset(X)
             ydata = pd.read_csv(self.y)
             y = ydata['E isomer n-pi* wavelength in nm']
-            y = torch.tensor(y.values)
-            y = TensorDataset(y)
-            assert len(X) == len(y) and isinstance(X, TensorDataset) and isinstance(y, TensorDataset)
+            mean_value = y.mean()
+            y.fillna(value=mean_value, inplace=True)
+            y = torch.tensor(y.values).view(len(y), 1)
+            assert len(X) == len(y) and isinstance(X, torch.Tensor) and isinstance(y, torch.Tensor)
             return tuple([X, y])
 
 
