@@ -18,6 +18,7 @@ import jax.numpy as jnp
 #botorch specific
 from botorch import fit_gpytorch_model
 from botorch.acquisition import ExpectedImprovement
+import warnings
 
 #sklearn specific
 from sklearn.model_selection import train_test_split
@@ -76,21 +77,23 @@ def transform_batched_tensor(tensors:list, max_len=None) -> Tuple[torch.Tensor, 
     
 def run_training_loop(initialize_model, n_trials, n_iters, holdout_size, X, y, verbose=False):
     best_observed_all_ei, best_random_all = [], []
+
+    warnings.filterwarnings("ignore")
+    warnings.filterwarnings('ignore', category=RuntimeWarning)
+
     for trial in range(1, n_trials + 1):
         print(f"\nTrial {trial:>2} of {n_trials} ", end="")
         best_observed_ei, best_random = [], []
 
         # Generate initial training data and initialize model
         train_x_ei, heldout_x_ei, train_y_ei, heldout_y_ei = train_test_split(X, y, test_size=holdout_size, random_state=trial)
-        best_observed_value_ei = torch.tensor(np.max(train_y_ei))
+        best_observed_value_ei = torch.max(train_y_ei)
 
         # Convert numpy arrays to PyTorch tensors and flatten the label vectors
-        train_x_ei = transform_batched_tensor(train_x_ei).type(torch.float64).to(device)
-        heldout_x_ei = transform_batched_tensor(heldout_x_ei).type(torch.float64).to(device)
-        train_y_ei = torch.tensor(train_y_ei).type(torch.float64).to(device)
-        heldout_y_ei = torch.tensor(heldout_y_ei).type(torch.float64).to(device)
-
-        print("completed tensors")
+        train_x_ei = train_x_ei.type(torch.float64)
+        heldout_x_ei = heldout_x_ei.type(torch.float64)
+        train_y_ei = train_y_ei.type(torch.float64)
+        heldout_y_ei = heldout_y_ei.type(torch.float64)
 
         # The initial heldout set is the same for random search
         heldout_x_random = heldout_x_ei
@@ -98,31 +101,34 @@ def run_training_loop(initialize_model, n_trials, n_iters, holdout_size, X, y, v
 
         mll_ei, model_ei = initialize_model(train_x_ei, train_y_ei)
 
-        print("completed init")
-
         best_observed_ei.append(best_observed_value_ei)
         best_random.append(best_observed_value_ei)
 
-        print("completed append")
-
         # run N_ITERS rounds of BayesOpt after the initial random batch
         for iteration in range(1, n_iters + 1):
+
             t0 = time.time()
 
             # fit the model
             fit_gpytorch_model(mll_ei)
+
             # Use analytic acquisition function for batch size of 1.
             EI = ExpectedImprovement(model=model_ei, best_f=(train_y_ei.to(train_y_ei)).max())
 
-            new_x_ei, new_obj_ei, heldout_x_ei, heldout_y_ei = optimize_acqf_and_get_observation(EI,heldout_x_ei,heldout_y_ei)
+            new_x_ei, new_obj_ei, heldout_x_ei, heldout_y_ei = optimize_acqf_and_get_observation(EI,
+                                                                                                heldout_x_ei,
+                                                                                                heldout_y_ei)
+
             # update training points
             train_x_ei = torch.cat([train_x_ei, new_x_ei])
             train_y_ei = torch.cat([train_y_ei, new_obj_ei])
 
             # update random search progress
-            best_random, heldout_x_random, heldout_y_random = update_random_observations(best_random,heldout_inputs=heldout_x_random,heldout_outputs=heldout_y_random)
+            best_random, heldout_x_random, heldout_y_random = update_random_observations(best_random,
+                                                                                        heldout_inputs=heldout_x_random,
+                                                                                        heldout_outputs=heldout_y_random)
             best_value_ei = torch.max(new_obj_ei, best_observed_ei[-1])
-            best_observed_ei.append(best_value_ei)
+            best_observed_ei.append(best_value_ei.squeeze())
 
             # reinitialise the model so it is ready for fitting on the next iteration
             # use the current state dict to speed up fitting
@@ -131,7 +137,7 @@ def run_training_loop(initialize_model, n_trials, n_iters, holdout_size, X, y, v
                 train_y_ei,
                 model_ei.state_dict(),
             )
-
+            
             t1 = time.time()
 
             if verbose:
@@ -142,6 +148,9 @@ def run_training_loop(initialize_model, n_trials, n_iters, holdout_size, X, y, v
                 )
             else:
                 print(".", end="")
+
+    best_observed_all_ei.append(torch.hstack(best_observed_ei))
+    best_random_all.append(torch.hstack(best_random))
 
     best_observed_all_ei.append(best_observed_ei)
     best_random_all.append(best_random)

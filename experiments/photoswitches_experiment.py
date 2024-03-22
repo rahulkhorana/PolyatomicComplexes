@@ -9,7 +9,7 @@ from botorch.models.gp_regression import SingleTaskGP
 
 #gpytorch specific
 from gpytorch.means import ConstantMean
-from gpytorch.kernels import ScaleKernel
+from gpytorch.kernels import ScaleKernel, RBFKernel
 from gpytorch.distributions import MultivariateNormal
 from gpytorch.likelihoods import GaussianLikelihood
 from gpytorch.mlls import ExactMarginalLogLikelihood
@@ -17,6 +17,8 @@ from gpytorch.mlls import ExactMarginalLogLikelihood
 # kernels + gp
 from kernels import TanimotoKernel, WalkKernel, GraphKernel
 from gaussian_process import run_training_loop
+
+from matplotlib import pyplot as plt
 
 if torch.cuda.is_available():
     dev = "cuda:0"
@@ -28,13 +30,13 @@ device = torch.device(dev)
 
 class GP(SingleTaskGP):
     def __init__(self, train_X, train_Y):
-        super().__init__(train_X, train_Y, None)
+        super().__init__(train_X, train_Y, likelihood=GaussianLikelihood())
         assert type(ENCODING) is str and len(ENCODING) > 0
 
         if ENCODING == 'complexes':
             self.mean_module = ConstantMean()
-            self.covar_module = ScaleKernel(base_kernel=WalkKernel())
-            self.to(device)
+            self.covar_module = RBFKernel()
+            self.to(train_X)
         elif ENCODING != 'graphs':
             self.mean_module = ConstantMean()
             self.covar_module = ScaleKernel(base_kernel=TanimotoKernel())
@@ -51,12 +53,9 @@ class GP(SingleTaskGP):
 
 
 def initialize_model(train_x, train_obj, state_dict=None):
-    print("start init")
-    model = GP(train_x, train_obj).to(device)
-    print("gp complete")
+    model = GP(train_x, train_obj).to(train_x)
     mll = ExactMarginalLogLikelihood(model.likelihood, model)
     emll.append(mll)
-    print("mll complete")
     if state_dict is not None:
         model.load_state_dict(state_dict)
     return mll, model
@@ -73,13 +72,14 @@ if __name__ == '__main__':
     # dataset loading
     if ENCODING == "complexes":
         ds = LoadDatasetForTask(X='dataset/photoswitches/fast_complex_lookup_repn.pkl', y='dataset/photoswitches/photoswitches.csv', repn=ENCODING)
-        X, y = ds.load()
+        X,y = ds.load()
     elif ENCODING == "SELFIES" or ENCODING == 'fingerprints' or ENCODING == 'GRAPHS':
         X,y = LoadDatasetForTask(Xpath='', yPath='', repn=ENCODING).load()
     else:
         raise Exception("unsupported")
     
-    """    
+    print(f'tpes {type(X)}')
+    print(f'tpes {type(y)}')
     # training
     best_observed_all_ei, best_random_all, emll = [], [], []
     best_observed_all_ei, best_random_all = run_training_loop(initialize_model=initialize_model,n_trials=N_TRIALS, n_iters=N_ITERS, holdout_size=holdout_set_size, X=X, y=y)
@@ -88,10 +88,40 @@ if __name__ == '__main__':
         trial_num = len(os.listdir(f'results/{EXPERIMENT_TYPE}'))
         results_path = f"results/{EXPERIMENT_TYPE}/result_trial_{trial_num}_{time.time()}.npy"
 
+
+        def ci(y):
+            return 1.96 * y.std(axis=0) / np.sqrt(N_TRIALS)
+
+        iters = np.arange(N_ITERS + 1)
+        y_ei = np.asarray(best_observed_all_ei)
+        y_rnd = np.asarray(best_random_all)
+
+        y_rnd_mean = y_rnd.mean(axis=0)
+        y_ei_mean = y_ei.mean(axis=0)
+        y_rnd_std = y_rnd.std(axis=0)
+        y_ei_std = y_ei.std(axis=0)
+
+        lower_rnd = y_rnd_mean - y_rnd_std
+        upper_rnd = y_rnd_mean + y_rnd_std
+        lower_ei = y_ei_mean - y_ei_std
+        upper_ei = y_ei_mean + y_ei_std
+
+        plt.plot(iters, y_rnd_mean, label='Random')
+        plt.fill_between(iters, lower_rnd, upper_rnd, alpha=0.2)
+        plt.plot(iters, y_ei_mean, label='EI')
+        plt.fill_between(iters, lower_ei, upper_ei, alpha=0.2)
+        plt.xlabel('Number of Iterations')
+        plt.ylabel('Best Objective Value')
+        plt.legend(loc="lower right")
+        plt.xticks(list(np.arange(1, 21)))
+        plt.show()
+
         with open(results_path, 'wb') as f:
+            print(f'stats best obs all ei : {best_observed_all_ei}')
+            print(f'stats best rand all : {best_random_all}')
+            print(f'stats emll {emll[0].likelihood}')
             np.save(f, np.asarray(best_observed_all_ei))
             np.save(f, np.asarray(best_random_all))
             np.save(f, np.asarray(emll))
         
         print("CONCLUDED")
-    """
