@@ -95,8 +95,18 @@ if __name__ == '__main__':
     if type(EXPERIMENT_TYPE) is str:
         trial_num = len(os.listdir(f'results/{EXPERIMENT_TYPE}'))
         results_path = f"results/{EXPERIMENT_TYPE}/result_trial_{trial_num}_{time.time()}.txt"
+        
+        mean_r2 = "\nmean R^2: {:.4f} +- {:.4f}".format(np.mean(r2_list), np.std(r2_list)/np.sqrt(len(r2_list)))
+        mean_rmse = "mean RMSE: {:.4f} +- {:.4f}".format(np.mean(rmse_list), np.std(rmse_list)/np.sqrt(len(rmse_list)))
+        mean_mae = "mean MAE: {:.4f} +- {:.4f}\n".format(np.mean(mae_list), np.std(mae_list)/np.sqrt(len(mae_list)))
 
         with open(results_path, 'w') as f:
+            f.write(mean_r2)
+            f.write('\n')
+            f.write(mean_rmse)
+            f.write('\n')
+            f.write(mean_mae)
+            f.write('\n')
             f.write('r^2 list: \n')
             np.savetxt(f, r2_list, delimiter=',')
             f.write('\n')
