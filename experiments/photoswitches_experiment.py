@@ -73,6 +73,8 @@ def one_experiment(target, encoding, n_trials, n_iters):
     X,y = [], []
     if encoding == 'complexes':
         X,y = LoadDatasetForTask(X='dataset/photoswitches/fast_complex_lookup_repn.pkl', y='dataset/photoswitches/photoswitches.csv', repn=encoding, y_column=target).load_photoswitches()
+    elif encoding == 'deep_complexes':
+        X,y = LoadDatasetForTask(X='dataset/photoswitches/deep_complex_lookup_repn.pkl',y='dataset/photoswitches/photoswitches.csv',repn=encoding, y_column=target).load_photoswitches()
     elif ENCODING == 'fingerprints':
             X,y = LoadDatasetForTask(X='gauche_ecfp', y='dataset/photoswitches/photoswitches.csv', repn=encoding, y_column=target).load_photoswitches()
     elif ENCODING == 'SELFIES':
@@ -93,7 +95,7 @@ def one_experiment(target, encoding, n_trials, n_iters):
 
 if __name__ == '__main__':
     EXPERIMENT_TYPE = 'Photoswitches'
-    ENCODING = 'GRAPHS'
+    ENCODING = 'deep_complexes'
     N_TRIALS = 20
     N_ITERS = 5
     holdout_set_size = 0.33
