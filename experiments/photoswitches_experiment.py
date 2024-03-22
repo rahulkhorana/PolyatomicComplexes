@@ -1,11 +1,12 @@
 import os
+import sys
 import torch
 import time
 import numpy as np
 from load_process_data import LoadDatasetForTask
 
 #botorch specific
-from botorch.models.gp_regression import SingleTaskGP
+from botorch.models.gp_regression import ExactGP
 
 #gpytorch specific
 from gpytorch.means import ConstantMean
@@ -16,7 +17,11 @@ from gpytorch.mlls import ExactMarginalLogLikelihood
 
 # kernels + gp
 from kernels import TanimotoKernel, WalkKernel, GraphKernel
-from gaussian_process import run_training_loop
+from gaussian_process import run_training_loop, evaluate_model
+
+# gauche libraries
+sys.path.insert(1, 'gauche_utils')
+from gauche_utils.data_utils import transform_data
 
 from matplotlib import pyplot as plt
 
@@ -28,15 +33,14 @@ else:
 device = torch.device(dev)
 
 
-class GP(SingleTaskGP):
+class GP(ExactGP):
     def __init__(self, train_X, train_Y):
-        super().__init__(train_X, train_Y, likelihood=GaussianLikelihood())
+        super(ExactGP, self).__init__(train_X, train_Y, likelihood=GaussianLikelihood())
         assert type(ENCODING) is str and len(ENCODING) > 0
-
         if ENCODING == 'complexes':
             self.mean_module = ConstantMean()
-            self.covar_module = RBFKernel()
-            self.to(train_X)
+            self.covar_module = ScaleKernel(TanimotoKernel())
+
         elif ENCODING != 'graphs':
             self.mean_module = ConstantMean()
             self.covar_module = ScaleKernel(base_kernel=TanimotoKernel())
@@ -82,7 +86,7 @@ if __name__ == '__main__':
     print(f'tpes {type(y)}')
     # training
     best_observed_all_ei, best_random_all, emll = [], [], []
-    best_observed_all_ei, best_random_all = run_training_loop(initialize_model=initialize_model,n_trials=N_TRIALS, n_iters=N_ITERS, holdout_size=holdout_set_size, X=X, y=y)
+    best_observed_all_ei, best_random_all = evaluate_model(initialize_model=initialize_model,n_trials=N_TRIALS, n_iters=N_ITERS, test_set_size=holdout_set_size, X=X, y=y)
 
     if type(EXPERIMENT_TYPE) is str:
         trial_num = len(os.listdir(f'results/{EXPERIMENT_TYPE}'))
