@@ -25,6 +25,18 @@ class ProcessPhotoswitches:
         with open(self.src+'fast_complex_lookup_repn.pkl', 'wb') as f:
             dill.dump(representations, f)
         return None
+    
+    def process_deep_complexes(self) -> None:
+        representations = defaultdict(tuple)
+        for i, row in enumerate(self.data['SMILES']):
+            print(f'row {row}')
+            print(f'tpe {type(row)}')
+            atoms = self.smiles_to_atoms(row)
+            representations[i] = PolyAtomComplex(atom_list=atoms).general_build_complex()
+        
+        with open(self.src+'deep_complex_lookup_repn.pkl', 'wb') as f:
+            dill.dump(representations, f)
+        return None
 
     def smiles_to_atoms(self, smile:str) -> list:
         assert isinstance(smile, str)
@@ -52,4 +64,5 @@ class ProcessPhotoswitches:
 
 if __name__ == '__main__':
     prc = ProcessPhotoswitches()
-    prc.process()
+    #prc.process()
+    prc.process_deep_complexes()
