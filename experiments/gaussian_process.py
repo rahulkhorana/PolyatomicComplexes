@@ -256,11 +256,6 @@ def evaluate_model(initialize_model, n_trials, n_iters, test_set_size, X, y, fig
     r2_list = np.array(r2_list)
     rmse_list = np.array(rmse_list)
     mae_list = np.array(mae_list)
-        
-    print("\nmean R^2: {:.4f} +- {:.4f}".format(np.mean(r2_list), np.std(r2_list)/np.sqrt(len(r2_list))))
-    print("mean RMSE: {:.4f} +- {:.4f}".format(np.mean(rmse_list), np.std(rmse_list)/np.sqrt(len(rmse_list))))
-    print("mean MAE: {:.4f} +- {:.4f}\n".format(np.mean(mae_list), np.std(mae_list)/np.sqrt(len(mae_list)))) 
-    
     # Plot confidence-error curves
 
     # 1e-14 instead of 0 to for numerical reasons!
