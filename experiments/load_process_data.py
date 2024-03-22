@@ -1,56 +1,38 @@
 import os
 import torch
+import dill
+import numpy as np
 import pandas as pd
 from typing import Tuple, Optional
 from torch.utils.data import TensorDataset
 
 class LoadDatasetForTask():
-    def __init__(self, Xpath:str, ypath:Optional[str], representation='mcw') -> Tuple[TensorDataset, TensorDataset]:
-        self.X = []
-        assert len(Xpath) > 0 and type(Xpath) is str
-        self.xp = Xpath
-        self.rep = representation
-        if ypath != '':
-            self.y = torch.load(ypath)
-
-    def load(self):
-        if self.rep == 'mcw':
-            xdir = os.listdir(self.xp)
-            for x in xdir:
-                t = torch.load(f'{self.xp}/{x}')[0]
-                self.X.append(t)
-            return self.X, self.y
-        elif self.rep == 'smiles':
-            df = pd.read_csv(self.xp)
-            if not len(df.columns) == 2:
-                raise Exception("invalid experimental input")
-            target = df.columns[1]
-            self.X = df['smiles']
-            self.y = df[target]
-            return self.X, self.y
-        elif self.rep == 'selfies':
-            df = pd.read_csv(self.xp)
-            if not len(df.columns) == 2:
-                raise Exception("invalid experimental input")
-            target = df.columns[1]
-            self.X = df['selfies']
-            self.y = df[target]
-            return self.X, self.y
-        else:
-            print("INVALID REPRESENTATION / INPUT")
-            raise Exception("unsupported")
-
-
-class ProcessDataForGP():
-    def __init__(self, X, y, representation='mcw'):
+    def __init__(self, X, y, repn):
         self.X = X
         self.y = y
-        self.rep = representation
+        self.repn = repn
     
-    def handle_data(self):
-        if self.rep == 'mcw':
-            return
-        elif self.rep == 'smiles':
-            return
-        elif self.rep == 'selfies':
-            return
+    def load(self) -> Tuple[TensorDataset, TensorDataset]:
+        if self.repn == 'complexes':
+            with open(self.X, 'rb') as f:
+                x_data = dill.load(f)
+            X = []
+            for x in x_data:
+                rep = x_data[x][0]
+                t = torch.tensor(rep)
+                X.append(t)
+            max_len = max([x.squeeze().numel() for x in X])
+            data = [torch.nn.functional.pad(x, pad=(0, max_len - x.numel()), mode='constant', value=0) for x in X]
+            X = torch.stack(data)
+            X = TensorDataset(X)
+            ydata = pd.read_csv(self.y)
+            y = ydata['E isomer n-pi* wavelength in nm']
+            y = torch.tensor(y.values)
+            y = TensorDataset(y)
+            assert len(X) == len(y) and isinstance(X, TensorDataset) and isinstance(y, TensorDataset)
+            return tuple([X, y])
+
+
+if __name__ == '__main__':
+    ds = LoadDatasetForTask(X='dataset/photoswitches/fast_complex_lookup_repn.pkl', y='dataset/photoswitches/photoswitches.csv', repn='complexes')
+    res = ds.load()
