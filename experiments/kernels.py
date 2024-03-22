@@ -6,10 +6,8 @@ this implementation of the Tanimoto Kernel comes from the GAUCHE library for Che
 # We make use of this code per the MIT license from the original repo
 """
 
-import gpytorch
 from gpytorch.kernels import Kernel
 import torch
-from torch import Tensor
 
 class TanimotoKernel(Kernel):
     is_stationary = False
@@ -45,32 +43,19 @@ class TanimotoKernel(Kernel):
             x2 = x2.transpose(-1, -2).unsqueeze(-1)
         return self.batch_tanimoto_sim(x1, x2)
 
-
-
-
-
-class MolecularKernel(Kernel):
-    # the exp quadatatric kernel k(x, y) = amplitude**2 * exp(-||x - y||**2 / (2 * length_scale**2))
-    # the gibbs kernel with l = c becomes the squared exponential kernel k(x,y) = exp(-||x - y||**2/2) (this should look similar to the one above)
+class WalkKernel(Kernel):
     def __init__(self, **kwargs):
-        super(MolecularKernel, self).__init__(**kwargs)
+        super(WalkKernel, self).__init__(**kwargs)
     
-    def batch_molecular_sim(self, x1:torch.Tensor, x2: torch.Tensor, eps=1e-6) -> torch.Tensor:
-        amplitude = torch.rand(size=(1)) * 1e-10
-        ls = torch.linalg.norm(x1)
-        t1 = amplitude * torch.pow(torch.linalg.norm(x1-x2),2) / (2 * torch.pow(ls, 2))
-        t3 = torch.pow(torch.linalg.norm(x1-x2),2) / (2)
-        return (t1 * t3).clamp_min_(0)
-    
-    def forward(self, x1, x2, diag=False):
-        return self.covar_dist(x1,x2)
-    
-    def covar_dist(self, x1: torch.Tensor, x2: torch.Tensor,  diag=False, last_dim_is_batch=False) -> Tensor:
-        if last_dim_is_batch:
-            x1 = x1.transpose(-1, -2).unsqueeze(-1)
-            x2 = x2.transpose(-1, -2).unsqueeze(-1)
-        return self.batch_molecular_sim(x1,x2)
+    def batch_walk_sim(self, x1: torch.Tensor, x2: torch.Tensor, eps: float = 1e-6) -> torch.Tensor:
 
-    
+        return
 
 
+class GraphKernel(Kernel):
+    def __init__(self, **kwargs):
+        super(GraphKernel, self).__init__(**kwargs)
+    
+    def batch_graph_sim(self, x1: torch.Tensor, x2: torch.Tensor, eps: float = 1e-6) -> torch.Tensor:
+
+        return
