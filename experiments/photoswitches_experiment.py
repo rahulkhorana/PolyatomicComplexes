@@ -20,7 +20,7 @@ from kernels import TanimotoKernel, WalkKernel, GraphKernel
 from gaussian_process import run_training_loop, evaluate_model
 
 # gauche libraries
-sys.path.insert(1, 'gauche_utils')
+sys.path.append('.')
 from gauche_utils.data_utils import transform_data
 
 from matplotlib import pyplot as plt
@@ -33,14 +33,23 @@ else:
 device = torch.device(dev)
 
 
-class GP(ExactGP):
-    def __init__(self, train_X, train_Y):
-        super(ExactGP, self).__init__(train_X, train_Y, likelihood=GaussianLikelihood())
-        assert type(ENCODING) is str and len(ENCODING) > 0
-        if ENCODING == 'complexes':
-            self.mean_module = ConstantMean()
-            self.covar_module = ScaleKernel(TanimotoKernel())
+class ExactGPModel(ExactGP):
+    def __init__(self, train_x, train_y, likelihood):
+        super(ExactGPModel, self).__init__(train_x, train_y, likelihood)
+        self.mean_module = ConstantMean()
+        self.covar_module = ScaleKernel(TanimotoKernel())
 
+    def forward(self, x):
+        mean_x = self.mean_module(x)
+        covar_x = self.covar_module(x)
+        return MultivariateNormal(mean_x, covar_x)
+
+class GP(ExactGP):
+    def __init__(self, train_X, train_Y, likelihood):
+        assert type(ENCODING) is str and len(ENCODING) > 0
+        super(ExactGP).__init__(train_X, train_Y, likelihood)
+        if ENCODING == 'complexes':
+            return
         elif ENCODING != 'graphs':
             self.mean_module = ConstantMean()
             self.covar_module = ScaleKernel(base_kernel=TanimotoKernel())
@@ -56,13 +65,9 @@ class GP(ExactGP):
         return MultivariateNormal(mean_x, covar_x)
 
 
-def initialize_model(train_x, train_obj, state_dict=None):
-    model = GP(train_x, train_obj).to(train_x)
-    mll = ExactMarginalLogLikelihood(model.likelihood, model)
-    emll.append(mll)
-    if state_dict is not None:
-        model.load_state_dict(state_dict)
-    return mll, model
+def initialize_model(train_x:torch.Tensor, train_obj:torch.Tensor, likelihood, state_dict=None):
+    model = ExactGPModel(train_x, train_obj, likelihood).to(train_x)
+    return model
 
 
 if __name__ == '__main__':
@@ -85,47 +90,30 @@ if __name__ == '__main__':
     print(f'tpes {type(X)}')
     print(f'tpes {type(y)}')
     # training
-    best_observed_all_ei, best_random_all, emll = [], [], []
-    best_observed_all_ei, best_random_all = evaluate_model(initialize_model=initialize_model,n_trials=N_TRIALS, n_iters=N_ITERS, test_set_size=holdout_set_size, X=X, y=y)
+    r2_list,rmse_list, mae_list, confidence_percentiles, mae_mean, mae_std = evaluate_model(initialize_model=initialize_model,n_trials=N_TRIALS, n_iters=N_ITERS, test_set_size=holdout_set_size, X=X, y=y, figure_path=f'results/{EXPERIMENT_TYPE}/{time.time()}_confidence_mae_model_{ENCODING}.png')
 
     if type(EXPERIMENT_TYPE) is str:
         trial_num = len(os.listdir(f'results/{EXPERIMENT_TYPE}'))
-        results_path = f"results/{EXPERIMENT_TYPE}/result_trial_{trial_num}_{time.time()}.npy"
+        results_path = f"results/{EXPERIMENT_TYPE}/result_trial_{trial_num}_{time.time()}.txt"
 
-
-        def ci(y):
-            return 1.96 * y.std(axis=0) / np.sqrt(N_TRIALS)
-
-        iters = np.arange(N_ITERS + 1)
-        y_ei = np.asarray(best_observed_all_ei)
-        y_rnd = np.asarray(best_random_all)
-
-        y_rnd_mean = y_rnd.mean(axis=0)
-        y_ei_mean = y_ei.mean(axis=0)
-        y_rnd_std = y_rnd.std(axis=0)
-        y_ei_std = y_ei.std(axis=0)
-
-        lower_rnd = y_rnd_mean - y_rnd_std
-        upper_rnd = y_rnd_mean + y_rnd_std
-        lower_ei = y_ei_mean - y_ei_std
-        upper_ei = y_ei_mean + y_ei_std
-
-        plt.plot(iters, y_rnd_mean, label='Random')
-        plt.fill_between(iters, lower_rnd, upper_rnd, alpha=0.2)
-        plt.plot(iters, y_ei_mean, label='EI')
-        plt.fill_between(iters, lower_ei, upper_ei, alpha=0.2)
-        plt.xlabel('Number of Iterations')
-        plt.ylabel('Best Objective Value')
-        plt.legend(loc="lower right")
-        plt.xticks(list(np.arange(1, 21)))
-        plt.show()
-
-        with open(results_path, 'wb') as f:
-            print(f'stats best obs all ei : {best_observed_all_ei}')
-            print(f'stats best rand all : {best_random_all}')
-            print(f'stats emll {emll[0].likelihood}')
-            np.save(f, np.asarray(best_observed_all_ei))
-            np.save(f, np.asarray(best_random_all))
-            np.save(f, np.asarray(emll))
+        with open(results_path, 'w') as f:
+            f.write('r^2 list: \n')
+            np.savetxt(f, r2_list, delimiter=',')
+            f.write('\n')
+            f.write('rmse list: \n')
+            np.savetxt(f, rmse_list, delimiter=',')
+            f.write('\n')
+            f.write('mae list: ')
+            np.savetxt(f, mae_list, delimiter=',')
+            f.write('\n')
+            f.write('confidence percentiles: \n')
+            np.savetxt(f, confidence_percentiles, delimiter=',')
+            f.write('\n')
+            f.write('mae mean: \n')
+            np.savetxt(f, mae_mean, delimiter=',')
+            f.write('\n')
+            f.write('mae std: \n')
+            np.savetxt(f, mae_std, delimiter=',')
+        f.close()
         
         print("CONCLUDED")
