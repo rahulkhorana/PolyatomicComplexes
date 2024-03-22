@@ -72,15 +72,15 @@ def initialize_graph_gp(train_x, train_obj, likelihood, kernel, **kernel_kwargs)
 def one_experiment(target, encoding, n_trials, n_iters):
     X,y = [], []
     if encoding == 'complexes':
-        X,y = LoadDatasetForTask(X='dataset/esol/fast_complex_lookup_repn.pkl', y='dataset/esol/.csv', repn=encoding, y_column=target).load_esol()
+        X,y = LoadDatasetForTask(X='dataset/esol/fast_complex_lookup_repn.pkl', y='dataset/esol/ESOL.csv', repn=encoding, y_column=target).load_esol()
     elif encoding == 'deep_complexes':
-        X,y = LoadDatasetForTask(X='dataset/esol/deep_complex_lookup_repn.pkl',y='dataset/esol/.csv',repn=encoding, y_column=target).load_esol()
+        X,y = LoadDatasetForTask(X='dataset/esol/deep_complex_lookup_repn.pkl',y='dataset/esol/ESOL.csv',repn=encoding, y_column=target).load_esol()
     elif ENCODING == 'fingerprints':
-            X,y = LoadDatasetForTask(X='gauche_ecfp', y='dataset/esol/.csv', repn=encoding, y_column=target).load_esol()
+            X,y = LoadDatasetForTask(X='gauche_ecfp', y='dataset/esol/ESOL.csv', repn=encoding, y_column=target).load_esol()
     elif ENCODING == 'SELFIES':
-        X,y = LoadDatasetForTask(X='gauche_selfies', y='dataset/esol/.csv', repn=encoding, y_column=target).load_esol()
+        X,y = LoadDatasetForTask(X='gauche_selfies', y='dataset/esol/ESOL.csv', repn=encoding, y_column=target).load_esol()
     elif ENCODING == 'GRAPHS':
-        X,y = LoadDatasetForTask(X='gauche_graphs', y='dataset/esol/.csv', repn=encoding, y_column=target).load_esol()
+        X,y = LoadDatasetForTask(X='gauche_graphs', y='dataset/esol/ESOL.csv', repn=encoding, y_column=target).load_esol()
     
     if ENCODING != 'GRAPHS':
         r2_list,rmse_list, mae_list, confidence_percentiles, mae_mean, mae_std = evaluate_model(initialize_model=initialize_model, n_trials=n_trials, n_iters=n_iters, test_set_size=holdout_set_size, X=X, y=y, figure_path=f'results/{EXPERIMENT_TYPE}/confidence_mae_model_{ENCODING}_{target}.png')
@@ -102,7 +102,7 @@ if __name__ == '__main__':
     # dataset processing
     X,y = [], []
     # dataset loading
-    possible_target_cols = []
+    possible_target_cols = ['ESOL predicted log solubility in mols per litre','Minimum Degree','Molecular Weight','Number of H-Bond Donors','Number of Rings','Number of Rotatable Bonds','Polar Surface Area','measured log solubility in mols per litre']
 
     results = []
     
