@@ -72,15 +72,15 @@ def initialize_graph_gp(train_x, train_obj, likelihood, kernel, **kernel_kwargs)
 def one_experiment(target, encoding, n_trials, n_iters):
     X,y = [], []
     if encoding == 'complexes':
-        X,y = LoadDatasetForTask(X='dataset/free_solv/fast_complex_lookup_repn.pkl', y='dataset/free_solv/photoswitches.csv', repn=encoding, y_column=target).load_freesolv()
+        X,y = LoadDatasetForTask(X='dataset/free_solv/fast_complex_lookup_repn.pkl', y='dataset/free_solv/FreeSolv.csv', repn=encoding, y_column=target).load_freesolv()
     elif encoding == 'deep_complexes':
-        X,y = LoadDatasetForTask(X='dataset/free_solv/deep_complex_lookup_repn.pkl',y='dataset/free_solv/photoswitches.csv',repn=encoding, y_column=target).load_freesolv()
+        X,y = LoadDatasetForTask(X='dataset/free_solv/deep_complex_lookup_repn.pkl',y='dataset/free_solv/FreeSolv.csv',repn=encoding, y_column=target).load_freesolv()
     elif ENCODING == 'fingerprints':
-            X,y = LoadDatasetForTask(X='gauche_ecfp', y='dataset/free_solv/photoswitches.csv', repn=encoding, y_column=target).load_freesolv()
+            X,y = LoadDatasetForTask(X='gauche_ecfp', y='dataset/free_solv/FreeSolv.csv', repn=encoding, y_column=target).load_freesolv()
     elif ENCODING == 'SELFIES':
-        X,y = LoadDatasetForTask(X='gauche_selfies', y='dataset/free_solv/photoswitches.csv', repn=encoding, y_column=target).load_freesolv()
+        X,y = LoadDatasetForTask(X='gauche_selfies', y='dataset/free_solv/FreeSolv.csv', repn=encoding, y_column=target).load_freesolv()
     elif ENCODING == 'GRAPHS':
-        X,y = LoadDatasetForTask(X='gauche_graphs', y='dataset/free_solv/photoswitches.csv', repn=encoding, y_column=target).load_freesolv()
+        X,y = LoadDatasetForTask(X='gauche_graphs', y='dataset/free_solv/FreeSolv.csv', repn=encoding, y_column=target).load_freesolv()
     
     if ENCODING != 'GRAPHS':
         r2_list,rmse_list, mae_list, confidence_percentiles, mae_mean, mae_std = evaluate_model(initialize_model=initialize_model, n_trials=n_trials, n_iters=n_iters, test_set_size=holdout_set_size, X=X, y=y, figure_path=f'results/{EXPERIMENT_TYPE}/confidence_mae_model_{ENCODING}_{target}.png')
@@ -95,14 +95,14 @@ def one_experiment(target, encoding, n_trials, n_iters):
 
 if __name__ == '__main__':
     EXPERIMENT_TYPE = 'FreeSolv'
-    ENCODING = 'deep_complexes'
+    ENCODING = 'GRAPHS'
     N_TRIALS = 20
     N_ITERS = 5
     holdout_set_size = 0.33
     # dataset processing
     X,y = [], []
     # dataset loading
-    possible_target_cols = []
+    possible_target_cols = ['expt','calc']
 
     results = []
     
