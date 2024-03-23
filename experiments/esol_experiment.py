@@ -95,7 +95,7 @@ def one_experiment(target, encoding, n_trials, n_iters):
 
 if __name__ == '__main__':
     EXPERIMENT_TYPE = 'ESOL'
-    ENCODING = 'deep_complexes'
+    ENCODING = 'GRAPHS'
     N_TRIALS = 20
     N_ITERS = 5
     holdout_set_size = 0.33
