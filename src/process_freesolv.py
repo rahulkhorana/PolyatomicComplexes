@@ -6,11 +6,11 @@ from rdkit import Chem
 from collections import defaultdict
 from polyatomic_complex import PolyAtomComplex
 
-class ProcessESOL:
+class ProcessFreeSolv:
     def __init__(self):
-        self.src = os.getcwd()+'/dataset/esol/'
-        assert 'ESOL.csv' in os.listdir(self.src)
-        self.datapath = self.src + 'ESOL.csv'
+        self.src = os.getcwd()+'/dataset/free_solv/'
+        assert 'FreeSolv.csv' in os.listdir(self.src)
+        self.datapath = self.src + 'FreeSOLV.csv'
         self.data = pd.read_csv(self.datapath)
         assert isinstance(self.data, pd.DataFrame)
     
@@ -63,6 +63,6 @@ class ProcessESOL:
 
 
 if __name__ == '__main__':
-    prc = ProcessESOL()
+    prc = ProcessFreeSolv()
     #prc.process()
     prc.process_deep_complexes()
