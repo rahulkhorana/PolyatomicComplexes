@@ -1,0 +1,4 @@
+Lipophilicity:
+complexes:column: exp, 
+mean R^2: -0.0006 +- 0.0002, mean RMSE: 1.2073 +- 0.0050, mean MAE: 0.9773 +- 0.0041
+
