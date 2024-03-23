@@ -1,0 +1,25 @@
+ESOL:
+GRAPHS:column: ESOL predicted log solubility in mols per litre, 
+mean R^2: 0.9479 +- 0.0015, mean RMSE: 0.3803 +- 0.0044, mean MAE: 0.2611 +- 0.0019
+
+column: Minimum Degree, 
+mean R^2: 0.4062 +- 0.0186, mean RMSE: 0.1809 +- 0.0043, mean MAE: 0.0923 +- 0.0012
+
+column: Molecular Weight, 
+mean R^2: 0.9654 +- 0.0157, mean RMSE: 14.5122 +- 2.6634, mean MAE: 7.5078 +- 1.9389
+
+column: Number of H-Bond Donors, 
+mean R^2: 0.8862 +- 0.0040, mean RMSE: 0.3720 +- 0.0045, mean MAE: 0.2476 +- 0.0032
+
+column: Number of Rings, 
+mean R^2: 0.9700 +- 0.0013, mean RMSE: 0.2264 +- 0.0044, mean MAE: 0.1339 +- 0.0020
+
+column: Number of Rotatable Bonds, 
+mean R^2: 0.9171 +- 0.0029, mean RMSE: 0.7590 +- 0.0134, mean MAE: 0.4876 +- 0.0046
+
+column: Polar Surface Area, 
+mean R^2: 0.9906 +- 0.0033, mean RMSE: 3.0865 +- 0.3344, mean MAE: 1.8457 +- 0.2117
+
+column: measured log solubility in mols per litre, 
+mean R^2: 0.8603 +- 0.0039, mean RMSE: 0.7757 +- 0.0101, mean MAE: 0.5699 +- 0.0051
+
