@@ -5,10 +5,10 @@ import time
 import numpy as np
 from load_process_data import LoadDatasetForTask
 
-#botorch specific
+# botorch specific
 from botorch.models.gp_regression import ExactGP
 
-#gpytorch specific
+# gpytorch specific
 from gpytorch.means import ConstantMean
 from gpytorch.kernels import ScaleKernel, RBFKernel
 from gpytorch.distributions import MultivariateNormal
@@ -25,8 +25,8 @@ from matplotlib import pyplot as plt
 if torch.cuda.is_available():
     dev = "cuda:0"
     torch.cuda.empty_cache()
-else: 
-    dev = "cpu" 
+else:
+    dev = "cpu"
 device = torch.device(dev)
 
 
@@ -40,6 +40,7 @@ class ExactGPModel(ExactGP):
         mean_x = self.mean_module(x)
         covar_x = self.covar_module(x)
         return MultivariateNormal(mean_x, covar_x)
+
 
 class GraphGP(SIGP):
     def __init__(self, train_x, train_y, likelihood, kernel, **kernel_kwargs):
@@ -61,67 +62,119 @@ class GraphGP(SIGP):
         return MultivariateNormal(mean, covariance)
 
 
-def initialize_model(train_x:torch.Tensor, train_obj:torch.Tensor, likelihood):
+def initialize_model(train_x: torch.Tensor, train_obj: torch.Tensor, likelihood):
     model = ExactGPModel(train_x, train_obj, likelihood).to(train_x)
     return model
 
+
 def initialize_graph_gp(train_x, train_obj, likelihood, kernel, **kernel_kwargs):
-    model  = GraphGP(train_x, train_obj, likelihood, kernel, **kernel_kwargs)
+    model = GraphGP(train_x, train_obj, likelihood, kernel, **kernel_kwargs)
     return model
 
+
 def one_experiment(target, encoding, n_trials, n_iters):
-    X,y = [], []
-    if encoding == 'complexes': 
-        X,y = LoadDatasetForTask(X='dataset/lipophilicity/fast_complex_lookup_repn.pkl', y='dataset/lipophilicity/Lipophilicity.csv', repn=encoding, y_column=target).load_lipophilicity()
-    elif encoding == 'deep_complexes':
-        X,y = LoadDatasetForTask(X='dataset/lipophilicity/deep_complex_lookup_repn.pkl',y='dataset/lipophilicity/Lipophilicity.csv',repn=encoding, y_column=target).load_lipophilicity()
-    elif ENCODING == 'fingerprints':
-            X,y = LoadDatasetForTask(X='gauche_ecfp', y='dataset/lipophilicity/Lipophilicity.csv', repn=encoding, y_column=target).load_lipophilicity()
-    elif ENCODING == 'SELFIES':
-        X,y = LoadDatasetForTask(X='gauche_selfies', y='dataset/lipophilicity/Lipophilicity.csv', repn=encoding, y_column=target).load_lipophilicity()
-    elif ENCODING == 'GRAPHS':
-        X,y = LoadDatasetForTask(X='gauche_graphs', y='dataset/lipophilicity/Lipophilicity.csv', repn=encoding, y_column=target).load_lipophilicity()
-    
-    if ENCODING != 'GRAPHS':
-        r2_list,rmse_list, mae_list, confidence_percentiles, mae_mean, mae_std = evaluate_model(initialize_model=initialize_model, n_trials=n_trials, n_iters=n_iters, test_set_size=holdout_set_size, X=X, y=y, figure_path=f'results/{EXPERIMENT_TYPE}/confidence_mae_model_{ENCODING}_{target}.png')
+    X, y = [], []
+    if encoding == "complexes":
+        X, y = LoadDatasetForTask(
+            X="dataset/lipophilicity/fast_complex_lookup_repn.pkl",
+            y="dataset/lipophilicity/Lipophilicity.csv",
+            repn=encoding,
+            y_column=target,
+        ).load_lipophilicity()
+    elif encoding == "deep_complexes":
+        X, y = LoadDatasetForTask(
+            X="dataset/lipophilicity/deep_complex_lookup_repn.pkl",
+            y="dataset/lipophilicity/Lipophilicity.csv",
+            repn=encoding,
+            y_column=target,
+        ).load_lipophilicity()
+    elif ENCODING == "fingerprints":
+        X, y = LoadDatasetForTask(
+            X="gauche_ecfp",
+            y="dataset/lipophilicity/Lipophilicity.csv",
+            repn=encoding,
+            y_column=target,
+        ).load_lipophilicity()
+    elif ENCODING == "SELFIES":
+        X, y = LoadDatasetForTask(
+            X="gauche_selfies",
+            y="dataset/lipophilicity/Lipophilicity.csv",
+            repn=encoding,
+            y_column=target,
+        ).load_lipophilicity()
+    elif ENCODING == "GRAPHS":
+        X, y = LoadDatasetForTask(
+            X="gauche_graphs",
+            y="dataset/lipophilicity/Lipophilicity.csv",
+            repn=encoding,
+            y_column=target,
+        ).load_lipophilicity()
+
+    if ENCODING != "GRAPHS":
+        r2_list, rmse_list, mae_list, confidence_percentiles, mae_mean, mae_std = (
+            evaluate_model(
+                initialize_model=initialize_model,
+                n_trials=n_trials,
+                n_iters=n_iters,
+                test_set_size=holdout_set_size,
+                X=X,
+                y=y,
+                figure_path=f"results/{EXPERIMENT_TYPE}/confidence_mae_model_{ENCODING}_{target}.png",
+            )
+        )
     else:
-        r2_list,rmse_list, mae_list, confidence_percentiles, mae_mean, mae_std = evaluate_graph_model(initialize_graph_gp, n_trials=n_trials, n_iters=n_iters, test_set_size=holdout_set_size, X=X, y=y, figure_path=f'results/{EXPERIMENT_TYPE}/confidence_mae_model_{ENCODING}_{target}.png')
-    
-    mean_r2 = "\nmean R^2: {:.4f} +- {:.4f}".format(np.mean(r2_list), np.std(r2_list)/np.sqrt(len(r2_list)))
-    mean_rmse = "mean RMSE: {:.4f} +- {:.4f}".format(np.mean(rmse_list), np.std(rmse_list)/np.sqrt(len(rmse_list)))
-    mean_mae = "mean MAE: {:.4f} +- {:.4f}\n".format(np.mean(mae_list), np.std(mae_list)/np.sqrt(len(mae_list)))
+        r2_list, rmse_list, mae_list, confidence_percentiles, mae_mean, mae_std = (
+            evaluate_graph_model(
+                initialize_graph_gp,
+                n_trials=n_trials,
+                n_iters=n_iters,
+                test_set_size=holdout_set_size,
+                X=X,
+                y=y,
+                figure_path=f"results/{EXPERIMENT_TYPE}/confidence_mae_model_{ENCODING}_{target}.png",
+            )
+        )
+
+    mean_r2 = "\nmean R^2: {:.4f} +- {:.4f}".format(
+        np.mean(r2_list), np.std(r2_list) / np.sqrt(len(r2_list))
+    )
+    mean_rmse = "mean RMSE: {:.4f} +- {:.4f}".format(
+        np.mean(rmse_list), np.std(rmse_list) / np.sqrt(len(rmse_list))
+    )
+    mean_mae = "mean MAE: {:.4f} +- {:.4f}\n".format(
+        np.mean(mae_list), np.std(mae_list) / np.sqrt(len(mae_list))
+    )
     return mean_r2, mean_rmse, mean_mae
 
 
-if __name__ == '__main__':
-    EXPERIMENT_TYPE = 'Lipophilicity'
-    ENCODING = 'GRAPHS'
+if __name__ == "__main__":
+    EXPERIMENT_TYPE = "Lipophilicity"
+    ENCODING = "GRAPHS"
     N_TRIALS = 20
     N_ITERS = 5
     holdout_set_size = 0.33
     # dataset processing
-    X,y = [], []
+    X, y = [], []
     # dataset loading
-    possible_target_cols = ['exp']
+    possible_target_cols = ["exp"]
 
     results = []
-    
+
     for col in possible_target_cols:
-        mean_r2, mean_rmse, mean_mae = one_experiment(col, ENCODING,N_TRIALS,N_ITERS)
+        mean_r2, mean_rmse, mean_mae = one_experiment(col, ENCODING, N_TRIALS, N_ITERS)
         results.append([col, mean_r2, mean_rmse, mean_mae])
 
-
     if type(EXPERIMENT_TYPE) is str:
-        trial_num = len(os.listdir(f'results/{EXPERIMENT_TYPE}'))
+        trial_num = len(os.listdir(f"results/{EXPERIMENT_TYPE}"))
         results_path = f"results/{EXPERIMENT_TYPE}/{ENCODING}_{time.time()}.txt"
 
-        with open(results_path, 'w') as f:
-            f.write(EXPERIMENT_TYPE + ':')
-            f.write('\n')
-            f.write(ENCODING + ':')
+        with open(results_path, "w") as f:
+            f.write(EXPERIMENT_TYPE + ":")
+            f.write("\n")
+            f.write(ENCODING + ":")
             for result in results:
                 col, mean_r2, mean_rmse, mean_mae = result
-                f.write(f'column: {col}, {mean_r2}, {mean_rmse}, {mean_mae}')
-                f.write('\n')
+                f.write(f"column: {col}, {mean_r2}, {mean_rmse}, {mean_mae}")
+                f.write("\n")
         f.close()
         print("CONCLUDED")
