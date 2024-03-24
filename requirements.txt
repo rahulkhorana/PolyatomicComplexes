@@ -1,5 +1,6 @@
-numpy
+numpy==1.23.5
 jax
+pandas==1.5.3
 microstructpy
 scikit-learn
 dill
@@ -10,6 +11,6 @@ botorch
 gpytorch
 matplotlib
 gauche
-graphein
 grakel
 git-lfs
+graphein
