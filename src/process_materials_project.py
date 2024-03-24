@@ -3,6 +3,7 @@ import dill
 import json
 import pandas as pd
 from typing import List
+from multiprocessing.pool import ThreadPool as Pool
 from collections import defaultdict
 from polyatomic_complex import PolyAtomComplex
 
@@ -35,10 +36,11 @@ class ProcessMP:
     
     def process_deep_complexes(self) -> None:
         representations = defaultdict(tuple)
-        for i, data in enumerate(zip(self.data['elements'], self.data['composition'])):
-            elem, comp = data
+
+        def helper(data):
+            i,row = data
+            elem,comp = row
             elem = eval(elem)
-            print(f'comp {comp}')
             try:
                 comp = json.loads(comp)
                 atoms = self.extract_atoms(elem, comp)
@@ -46,7 +48,15 @@ class ProcessMP:
                 # single edge case ['He']
                 comp = eval(comp)
                 atoms = comp
-            representations[i] = PolyAtomComplex(atom_list=atoms).general_build_complex()
+            pc = PolyAtomComplex(atom_list=atoms)
+            repn = pc.general_build_complex()
+            representations[i] = repn
+            print('done')
+            return repn
+        
+        with Pool() as p:
+            p.map(func=helper, iterable=list(enumerate(zip(self.data['elements'], self.data['composition']))))
+
         assert len(representations) == len(self.data)
         with open(self.src+'deep_complex_lookup_repn.pkl', 'wb') as f:
             dill.dump(representations, f)
