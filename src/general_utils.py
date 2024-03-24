@@ -48,7 +48,7 @@ class GeneralComplexUtils:
 
     def get_nsphere_and_sampled_boundary(
         self, radius: np.float32, center: np.ndarray, sample: int, eps: np.float32
-    ) -> [list, np.ndarray]:
+    ) -> List[list, np.ndarray]:
         representation = NSphere(r=radius, center=center)
         nsphere = representation.approximate()
         dim = center.shape[0]
