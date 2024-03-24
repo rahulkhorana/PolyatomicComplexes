@@ -1,7 +1,7 @@
 numpy==1.26.4
 jax
 jaxlib
-pandas==1.5.3
+pandas==2.2.1
 microstructpy
 scikit-learn
 dill
