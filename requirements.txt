@@ -1,5 +1,6 @@
 numpy==1.23.5
 jax
+jaxlib
 pandas==1.5.3
 microstructpy
 scikit-learn
