@@ -5,7 +5,7 @@ import jax.numpy as jnp
 from typing import List, Tuple
 from collections import defaultdict
 from microstructpy.geometry.n_sphere import NSphere
-from complexes.core_utils import GluingMap
+from src.complexes.core_utils import GluingMap
 
 
 class GeneralComplexUtils:

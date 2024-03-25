@@ -3,7 +3,7 @@ import json
 import dill
 import numpy as np
 from collections import defaultdict
-from complexes.atomic_complex import AtomComplex
+from src.complexes.atomic_complex import AtomComplex
 
 
 class BuildAtoms:
