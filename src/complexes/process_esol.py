@@ -4,7 +4,7 @@ import dill
 import pandas as pd
 from rdkit import Chem
 from collections import defaultdict
-from complexes.polyatomic_complex import PolyAtomComplex
+from src.complexes.polyatomic_complex import PolyAtomComplex
 
 
 class ProcessESOL:
