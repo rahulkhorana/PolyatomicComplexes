@@ -122,7 +122,7 @@ pillow==10.2.0
 platformdirs==4.2.0
 plotly==5.20.0
 pluggy==1.4.0
-prometheus_client==0.20.0
+prometheus_client>=0.18.0
 prompt-toolkit==3.0.43
 psutil==5.9.8
 ptyprocess==0.7.0
