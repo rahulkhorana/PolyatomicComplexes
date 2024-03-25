@@ -1,9 +1,12 @@
 import os
 import re
+import sys
 import dill
 import pandas as pd
 from rdkit import Chem
 from collections import defaultdict
+
+sys.path.append(".")
 from src.complexes.polyatomic_complex import PolyAtomComplex
 
 

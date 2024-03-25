@@ -1,9 +1,12 @@
 import os
+import sys
 import dill
 import json
 import numpy as np
 import jax.numpy as jnp
 from typing import List, Tuple
+
+sys.path.append(".")
 from src.complexes.core_utils import GluingMap, ElectronField
 from src.complexes.building_blocks import Electron
 
