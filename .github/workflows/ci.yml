@@ -26,11 +26,14 @@ jobs:
           pip install -r requirements.txt
       
       - name: run tests
+        working-directory: ./PolyatomicComplexes
         run: |
           python -B -m pytest
       
       - name: mypy
+        working-directory: ./PolyatomicComplexes
         run: mypy
       
       - name: flake8
+        working-directory: ./PolyatomicComplexes
         run: flake8
