@@ -19,16 +19,11 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{matrix.python-version}}
-      
-      - name: install deps
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          cache: pip
       
       - name: run tests
-        working-directory: ./PolyatomicComplexes
-        run: |
-          python -B -m pytest
+        working-directory: .
+        run: python -B -m pytest
       
       - name: mypy
         working-directory: ./PolyatomicComplexes
