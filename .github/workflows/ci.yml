@@ -26,12 +26,12 @@ jobs:
       
       - name: run tests
         working-directory: .
-        run: python -B -m pytest
+        run: python -B -m pytest -v
       
       - name: mypy
-        working-directory: ./PolyatomicComplexes
+        working-directory: .
         run: mypy
       
       - name: flake8
-        working-directory: ./PolyatomicComplexes
+        working-directory: .
         run: flake8
