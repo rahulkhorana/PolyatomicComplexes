@@ -187,4 +187,3 @@ virtualenv==20.25.1
 wcwidth==0.2.13
 webcolors==1.13
 webencodings==0.5.1
-websocket-client==1.7.0
