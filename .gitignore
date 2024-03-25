@@ -159,3 +159,8 @@ cython_debug/
 .DS_Store
 dataset/.DS_Store
 experiments/tempCodeRunnerFile.py
+
+.cfg
+.egg-info
+.egg
+.eggs
