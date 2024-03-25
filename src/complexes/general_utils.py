@@ -1,11 +1,13 @@
 import jax
+import sys
 import random
 import numpy as np
 import jax.numpy as jnp
 from typing import List, Tuple
 from collections import defaultdict
-from microstructpy.geometry.n_sphere import NSphere
-from src.complexes.core_utils import GluingMap
+
+sys.path.append(".")
+from src.complexes.core_utils import GluingMap, NSphere
 
 
 class GeneralComplexUtils:
