@@ -25,7 +25,9 @@ jobs:
           pip install -r requirements.txt
       
       - name: run tests
-        run: pytest --import-mode=importlib
+        run: |
+        cd PolyatomicComplexes
+        pytest
       
       - name: mypy
         run: mypy

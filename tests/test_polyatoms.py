@@ -1,4 +1,4 @@
-from complexes.polyatomic_complex import PolyAtomComplex
+from src.complexes.polyatomic_complex import PolyAtomComplex
 from typing import List
 import pytest
 import json

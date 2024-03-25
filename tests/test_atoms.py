@@ -1,4 +1,4 @@
-from complexes.atomic_complex import AtomComplex
+from src.complexes.atomic_complex import AtomComplex
 from typing import List
 import pytest
 import json
