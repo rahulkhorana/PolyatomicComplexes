@@ -3,7 +3,7 @@ import json
 import dill
 import numpy as np
 from collections import defaultdict
-from atomic_complex import AtomComplex
+from complexes.atomic_complex import AtomComplex
 
 
 class BuildAtoms:
@@ -46,7 +46,7 @@ class BuildAtoms:
             assert isinstance(table["Bk"], tuple)
             assert isinstance(table["Bk"][0], np.ndarray)
             print("Success ✅")
-        except:
+        except Exception:
             print("Failed ❌")
 
 

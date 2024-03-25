@@ -5,7 +5,7 @@ import pandas as pd
 from typing import List
 from multiprocessing.pool import ThreadPool as Pool
 from collections import defaultdict
-from polyatomic_complex import PolyAtomComplex
+from complexes.polyatomic_complex import PolyAtomComplex
 
 
 class ProcessMP:
@@ -25,7 +25,7 @@ class ProcessMP:
             try:
                 comp = json.loads(comp)
                 atoms = self.extract_atoms(elem, comp)
-            except:
+            except Exception:
                 # single edge case ['He']
                 comp = eval(comp)
                 atoms = comp
@@ -45,7 +45,7 @@ class ProcessMP:
             try:
                 comp = json.loads(comp)
                 atoms = self.extract_atoms(elem, comp)
-            except:
+            except Exception:
                 # single edge case ['He']
                 comp = eval(comp)
                 atoms = comp
