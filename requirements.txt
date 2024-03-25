@@ -44,6 +44,18 @@ fonttools==4.50.0
 fqdn==1.5.1
 fsspec==2024.3.1
 gauche==0.1.6
+gevent==24.2.1
+gmsh==4.12.2
+gmsh_interop==2021.1.1
+gpytorch==1.11
+graphein==1.7.6
+greenlet==3.0.3
+grequests==0.7.0
+h11==0.14.0
+httpcore==1.0.4
+httpx==0.27.0
+idna==3.6
+iniconfig==2.0.0
 ipykernel==6.29.3
 ipython==8.22.2
 isoduration==20.11.0
@@ -160,8 +172,9 @@ tenacity==8.2.3
 terminado==0.18.1
 threadpoolctl==3.4.0
 tinycss2==1.2.1
-torch>=2.0.0
+torch==2.2.1
 tornado==6.4
+tox==4.14.2
 tqdm==4.66.2
 traitlets==5.14.2
 typeguard==2.13.3
@@ -180,3 +193,5 @@ wget==3.2
 wrapt==1.16.0
 xarray==2024.2.0
 xmltodict==0.13.0
+zope.event==5.0
+zope.interface==6.2
