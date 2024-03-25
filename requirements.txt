@@ -26,7 +26,6 @@ click==8.1.7
 colorama==0.4.6
 colorlog==6.8.2
 comm==0.2.2
--e git+https://github.com/rahulkhorana/PolyatomicComplexes.git@546cef2594350cb0bd0cf04c1aefddc065070635#egg=complexes
 contourpy==1.2.0
 coverage==7.4.4
 cycler==0.12.1
