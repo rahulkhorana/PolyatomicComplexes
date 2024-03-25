@@ -1,8 +1,9 @@
 name: CI
 
 on:
-  - push
-  - pull_request
+  push:
+    branches:
+      - main
 
 jobs:
   test:
@@ -26,7 +27,7 @@ jobs:
       
       - name: run tests
         run: |
-          python -m pytest
+          python -B -m pytest
       
       - name: mypy
         run: mypy
