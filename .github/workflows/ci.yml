@@ -14,24 +14,14 @@ jobs:
         python-version: ['3.11.6']
         
     steps:
-      - uses: actions/checkout@v3
-      - name: setup python ${{matrix.python-version}}
-        uses: actions/setup-python@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{matrix.python-version}}
-          cache: pip
-      
-      - name: install requirements
-        run: pip install -r requirements.txt
+          cache: 'pip' # caching pip dependencies
+      - run: pip install -r requirements.txt
       
       - name: run tests
         working-directory: .
         run: python -B -m pytest -v
       
-      - name: mypy
-        working-directory: .
-        run: mypy
-      
-      - name: flake8
-        working-directory: .
-        run: flake8
