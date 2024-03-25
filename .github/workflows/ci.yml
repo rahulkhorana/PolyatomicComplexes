@@ -21,6 +21,9 @@ jobs:
           python-version: ${{matrix.python-version}}
           cache: pip
       
+      - name: install requirements
+        run: pip install -r requirements.txt
+      
       - name: run tests
         working-directory: .
         run: python -B -m pytest
