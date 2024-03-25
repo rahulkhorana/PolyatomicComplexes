@@ -7,3 +7,6 @@ pandas
 gpytorch
 botorch
 gauche
+pytest
+flake8
+mypy
