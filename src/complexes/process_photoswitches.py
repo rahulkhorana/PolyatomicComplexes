@@ -4,20 +4,20 @@ import dill
 import pandas as pd
 from rdkit import Chem
 from collections import defaultdict
-from polyatomic_complex import PolyAtomComplex
+from complexes.polyatomic_complex import PolyAtomComplex
 
 
-class ProcessESOL:
+class ProcessPhotoswitches:
     def __init__(self):
-        self.src = os.getcwd() + "/dataset/esol/"
-        assert "ESOL.csv" in os.listdir(self.src)
-        self.datapath = self.src + "ESOL.csv"
+        self.src = os.getcwd() + "/dataset/photoswitches/"
+        assert "photoswitches.csv" in os.listdir(self.src)
+        self.datapath = self.src + "photoswitches.csv"
         self.data = pd.read_csv(self.datapath)
         assert isinstance(self.data, pd.DataFrame)
 
     def process(self) -> None:
         representations = defaultdict(tuple)
-        for i, row in enumerate(self.data["smiles"]):
+        for i, row in enumerate(self.data["SMILES"]):
             print(f"row {row}")
             print(f"tpe {type(row)}")
             atoms = self.smiles_to_atoms(row)
@@ -29,7 +29,7 @@ class ProcessESOL:
 
     def process_deep_complexes(self) -> None:
         representations = defaultdict(tuple)
-        for i, row in enumerate(self.data["smiles"]):
+        for i, row in enumerate(self.data["SMILES"]):
             print(f"row {row}")
             print(f"tpe {type(row)}")
             atoms = self.smiles_to_atoms(row)
@@ -65,8 +65,8 @@ class ProcessESOL:
         for k in atom_counts:
             cleaned = regex.sub(" ", k).split(" ")
             res = []
-            for l in cleaned:
-                r = l.strip()
+            for ch in cleaned:
+                r = ch.strip()
                 if r != "" and " " not in r:
                     res.append(r)
             atoms_list += res
@@ -74,6 +74,6 @@ class ProcessESOL:
 
 
 if __name__ == "__main__":
-    prc = ProcessESOL()
+    prc = ProcessPhotoswitches()
     # prc.process()
     prc.process_deep_complexes()

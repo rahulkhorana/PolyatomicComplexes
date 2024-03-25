@@ -4,8 +4,8 @@ import json
 import numpy as np
 import jax.numpy as jnp
 from typing import List, Tuple
-from core_utils import GluingMap, ElectronField
-from building_blocks import Electron
+from complexes.core_utils import GluingMap, ElectronField
+from complexes.building_blocks import Electron
 
 
 class PolyAtomComplex:
@@ -102,8 +102,8 @@ class PolyAtomComplex:
             return dsum
 
         while A:
-            I = A.pop(0)
-            num_elec, k, _, df, de = I
+            data = A.pop(0)
+            num_elec, k, _, df, de = data
             if len(C) == 0:
                 C = k
             phi = GluingMap(C, k, target=C).construct_map()
@@ -127,14 +127,14 @@ def sanity_test(atom_list, kind):
     if kind == "general":
         try:
             pac.general_build_complex()
-            print(f"success ✅")
-        except:
+            print("success ✅")
+        except Exception:
             print("failed ❌")
     else:
         try:
             pac.fast_build_complex()
-            print(f"success ✅")
-        except:
+            print("success ✅")
+        except Exception:
             print("failed ❌")
 
 

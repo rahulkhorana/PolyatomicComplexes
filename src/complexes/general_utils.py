@@ -5,7 +5,7 @@ import jax.numpy as jnp
 from typing import List, Tuple
 from collections import defaultdict
 from microstructpy.geometry.n_sphere import NSphere
-from core_utils import GluingMap
+from complexes.core_utils import GluingMap
 
 
 class GeneralComplexUtils:
@@ -48,7 +48,7 @@ class GeneralComplexUtils:
 
     def get_nsphere_and_sampled_boundary(
         self, radius: np.float32, center: np.ndarray, sample: int, eps: np.float32
-    ) -> List[list, np.ndarray]:
+    ) -> Tuple[list, np.ndarray]:
         representation = NSphere(r=radius, center=center)
         nsphere = representation.approximate()
         dim = center.shape[0]
@@ -80,8 +80,8 @@ class GeneralComplexUtils:
                 remain = dim - len(boundary)
                 if remain == dim:
                     limits = representation.limits
-                    for l in limits[0]:
-                        boundary.append(l)
+                    for lim in limits[0]:
+                        boundary.append(lim)
                     rem = dim - len(boundary)
                     for _ in range(rem):
                         eps = np.random.randint(0, 10 * 2) * 1e-19

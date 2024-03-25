@@ -1,8 +1,8 @@
 import jax
 import numpy as np
 from typing import List, Tuple
-from building_blocks import Electron, Proton, Neutron
-from general_utils import GeneralComplexUtils
+from complexes.building_blocks import Electron, Proton, Neutron
+from complexes.general_utils import GeneralComplexUtils
 
 
 seed = np.random.randint(0, 10 * 3)
@@ -143,7 +143,7 @@ class AtomComplex:
         self.build_electrons()
         assert isinstance(using_distances, bool)
         K = np.asarray([])
-        while self.AP:
+        while self.AP and self.P > 0:
             p = self.AP.pop()
             p = np.asarray(p, dtype=np.float32)
             res = gcu.get_nsphere_and_sampled_boundary(
@@ -154,7 +154,7 @@ class AtomComplex:
             gluing_map = gcu.nuclear_force_map(boundary, boundary, K)
             K = gcu.topological_disjoint_union(gluing_map, K, n_sphere)
 
-        while self.AN:
+        while self.AN and self.N > 0:
             n = self.AN.pop()
             n = np.asarray(n, dtype=np.float32)
             res = gcu.get_nsphere_and_sampled_boundary(
@@ -165,11 +165,14 @@ class AtomComplex:
             gluing_map = gcu.nuclear_force_map(boundary, boundary, K)
             K = gcu.topological_disjoint_union(gluing_map, K, n_sphere)
 
-        while self.AE:
+        while self.AE and self.E > 0:
             e, we = self.AE.pop()
             if using_distances and hasattr(update_distances, "__call__"):
                 update_distances(self.DE, we, e)
-            ec = np.array([e[0] for _ in range(len(n[0]))])
+            try:
+                ec = np.array([e[0] for _ in range(len(n[0]))])
+            except Exception:
+                ec = np.array([e[0] for _ in range(self.P + self.E)])
             res = gcu.get_nsphere_and_sampled_boundary(
                 radius=2.8 * fm, center=ec, sample=10000, eps=1e-19
             )
@@ -190,14 +193,14 @@ def sanity_test(kind, *args):
     if kind == "general":
         try:
             ac.general_build_complex()
-            print(f"success ✅")
-        except:
+            print("success ✅")
+        except Exception:
             print("failed ❌")
     else:
         try:
             ac.fast_build_complex()
-            print(f"success ✅")
-        except:
+            print("success ✅")
+        except Exception:
             print("failed ❌")
 
 
