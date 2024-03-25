@@ -27,7 +27,7 @@ jobs:
       - name: run tests
         run: |
         cd PolyatomicComplexes
-        pytest
+        python -m pytest
       
       - name: mypy
         run: mypy
