@@ -1,6 +1,6 @@
 jax
 jaxlib
-torch==2.0.0
+torch
 botorch
 gpytorch
 gauche
