@@ -1,8 +1,11 @@
 import os
+import sys
 import json
 import dill
 import numpy as np
 from collections import defaultdict
+
+sys.path.append(".")
 from src.complexes.atomic_complex import AtomComplex
 
 

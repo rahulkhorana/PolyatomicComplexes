@@ -1,10 +1,13 @@
 import os
+import sys
 import dill
 import json
 import pandas as pd
 from typing import List
 from multiprocessing.pool import ThreadPool as Pool
 from collections import defaultdict
+
+sys.path.append(".")
 from src.complexes.polyatomic_complex import PolyAtomComplex
 
 
