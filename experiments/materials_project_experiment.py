@@ -10,14 +10,14 @@ from botorch.models.gp_regression import ExactGP
 
 # gpytorch specific
 from gpytorch.means import ConstantMean
-from gpytorch.kernels import ScaleKernel, RBFKernel, PolynomialKernelGrad
+from gpytorch.kernels import ScaleKernel
 from gpytorch.distributions import MultivariateNormal
 from gpytorch.likelihoods import GaussianLikelihood
 from gpytorch.mlls import ExactMarginalLogLikelihood
 
 # kernels + gp
 from kernels import TanimotoKernel
-from gaussian_process import evaluate_model, evaluate_graph_model
+from gaussian_process import evaluate_model
 from gauche import SIGP
 
 from matplotlib import pyplot as plt
@@ -76,56 +76,16 @@ def one_experiment(target, encoding, n_trials, n_iters):
     X, y = [], []
     if encoding == "complexes":
         X, y = LoadDatasetForTask(
-            X="dataset/photoswitches/fast_complex_lookup_repn.pkl",
-            y="dataset/photoswitches/photoswitches.csv",
+            X="dataset/materials_project/fast_complex_lookup_repn.pkl",
+            y="dataset/materials_project/materials_data.csv",
             repn=encoding,
             y_column=target,
-        ).load_photoswitches()
-    elif encoding == "deep_complexes":
-        X, y = LoadDatasetForTask(
-            X="dataset/photoswitches/deep_complex_lookup_repn.pkl",
-            y="dataset/photoswitches/photoswitches.csv",
-            repn=encoding,
-            y_column=target,
-        ).load_photoswitches()
-    elif ENCODING == "fingerprints":
-        X, y = LoadDatasetForTask(
-            X="gauche_ecfp",
-            y="dataset/photoswitches/photoswitches.csv",
-            repn=encoding,
-            y_column=target,
-        ).load_photoswitches()
-    elif ENCODING == "SELFIES":
-        X, y = LoadDatasetForTask(
-            X="gauche_selfies",
-            y="dataset/photoswitches/photoswitches.csv",
-            repn=encoding,
-            y_column=target,
-        ).load_photoswitches()
-    elif ENCODING == "GRAPHS":
-        X, y = LoadDatasetForTask(
-            X="gauche_graphs",
-            y="dataset/photoswitches/photoswitches.csv",
-            repn=encoding,
-            y_column=target,
-        ).load_photoswitches()
+        ).load_mp()
 
     if ENCODING != "GRAPHS":
         r2_list, rmse_list, mae_list, confidence_percentiles, mae_mean, mae_std = (
             evaluate_model(
                 initialize_model=initialize_model,
-                n_trials=n_trials,
-                n_iters=n_iters,
-                test_set_size=holdout_set_size,
-                X=X,
-                y=y,
-                figure_path=f"results/{EXPERIMENT_TYPE}/confidence_mae_model_{ENCODING}_{target}.png",
-            )
-        )
-    else:
-        r2_list, rmse_list, mae_list, confidence_percentiles, mae_mean, mae_std = (
-            evaluate_graph_model(
-                initialize_graph_gp,
                 n_trials=n_trials,
                 n_iters=n_iters,
                 test_set_size=holdout_set_size,
@@ -148,7 +108,7 @@ def one_experiment(target, encoding, n_trials, n_iters):
 
 
 if __name__ == "__main__":
-    EXPERIMENT_TYPE = "Photoswitches"
+    EXPERIMENT_TYPE = "Materials Project"
     ENCODING = "complexes"
     N_TRIALS = 20
     N_ITERS = 5
@@ -157,22 +117,13 @@ if __name__ == "__main__":
     X, y = [], []
     # dataset loading
     possible_target_cols = [
-        "rate of thermal isomerisation from Z-E in s-1",
-        "Z PhotoStationaryState",
-        "E PhotoStationaryState",
-        "E isomer pi-pi* wavelength in nm",
-        "Extinction",
-        "E isomer n-pi* wavelength in nm",
-        "Extinction coefficient in M-1 cm-1",
-        "Z isomer pi-pi* wavelength in nm",
-        "Extinction.1",
-        "Z isomer n-pi* wavelength in nm",
-        "Extinction coefficient in M-1 cm-1.1",
-        "Wiberg index",
-        "PBE0 DFT E isomer pi-pi* wavelength in nm",
-        "PBE0 DFT E isomer n-pi* wavelength in nm",
-        "PBE0 DFT Z isomer pi-pi* wavelength in nm",
-        "PBE0 DFT Z isomer n-pi* wavelength in nm",
+        "uncorrected_energy_per_atom",
+        "energy_per_atom",
+        "formation_energy_per_atom",
+        "equilibrium_reaction_energy_per_atom",
+        "efermi",
+        "total_magnetization",
+        "total_magnetization_normalized_vol",
     ]
 
     results = []
