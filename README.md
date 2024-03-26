@@ -14,11 +14,7 @@
 ```sh
 via pip
 
-pip install --upgrade ngboost
 
-via conda-forge
-
-conda install -c conda-forge ngboost
 ```
 
 ## Usage
