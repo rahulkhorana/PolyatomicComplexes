@@ -251,12 +251,17 @@ def evaluate_model(
         likelihood = GaussianLikelihood()
         mll = ExactMarginalLogLikelihood(likelihood, model)
 
+        print("init done")
         # Use the BoTorch utility for fitting GPs in order to use the LBFGS-B optimiser (recommended)
         fit_gpytorch_model(mll)
+
+        print("fitting done")
 
         # Get into evaluation (predictive posterior) mode
         model.eval()
         likelihood.eval()
+
+        print("eval:")
 
         # mean and variance GP prediction
         f_pred = model(X_test)

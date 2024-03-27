@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from typing import Tuple
 from gauche.dataloader import MolPropLoader
+from sklearn.utils.extmath import randomized_svd
 
 
 class LoadDatasetForTask:
@@ -431,10 +432,10 @@ class LoadDatasetForTask:
             with open(self.X, "rb") as f:
                 x_data = dill.load(f)
             X = []
-            for x in x_data:
+            for i, x in enumerate(x_data):
                 rep = x_data[x][0]
-                t = torch.tensor(rep)
-                X.append(t)
+                t = torch.tensor(rep).view((len(rep), 1))
+                X.append(t.flatten(0))
             max_len = max([x.squeeze().numel() for x in X])
             data = [
                 torch.nn.functional.pad(
@@ -442,10 +443,13 @@ class LoadDatasetForTask:
                 )
                 for x in X
             ]
+            print("here")
             X = torch.stack(data)
-            ydata = pd.read_csv(self.y)
+            X = torch.linalg.vector_norm(X, ord=2, dim=(-1))
+            X = X.view(len(X), 1)
+            ydata = pd.read_csv(self.y, low_memory=False)
             y = ydata[self.y_column]
-            y = torch.tensor(y.values).view(len(y), 1)
+            y = torch.tensor(y.values, dtype=torch.float32).view(len(y), 1)
             assert (
                 len(X) == len(y)
                 and isinstance(X, torch.Tensor)
