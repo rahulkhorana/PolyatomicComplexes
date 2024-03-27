@@ -19,11 +19,11 @@ from gpytorch.mlls import ExactMarginalLogLikelihood
 # kernels + gp
 from kernels import TanimotoKernel
 from gaussian_process import evaluate_model
-from gauche import SIGP
 
 from matplotlib import pyplot as plt
 
 plt.switch_backend("Agg")
+
 
 if torch.cuda.is_available():
     dev = "cuda:0"
@@ -45,33 +45,8 @@ class ExactGPModel(ExactGP):
         return MultivariateNormal(mean_x, covar_x)
 
 
-class GraphGP(SIGP):
-    def __init__(self, train_x, train_y, likelihood, kernel, **kernel_kwargs):
-        super().__init__(train_x, train_y, likelihood)
-        self.mean = ConstantMean()
-        self.covariance = kernel(**kernel_kwargs)
-
-    def forward(self, x):
-        """
-        A forward pass through the model.
-        """
-        mean = self.mean(torch.zeros(len(x), 1)).float()
-        covariance = self.covariance(x)
-
-        # because graph kernels operate over discrete inputs it is beneficial
-        # to add some jitter for numerical stability
-        jitter = max(covariance.diag().mean().detach().item() * 1e-4, 1e-4)
-        covariance += torch.eye(len(x)) * jitter
-        return MultivariateNormal(mean, covariance)
-
-
 def initialize_model(train_x: torch.Tensor, train_obj: torch.Tensor, likelihood):
     model = ExactGPModel(train_x, train_obj, likelihood).to(train_x)
-    return model
-
-
-def initialize_graph_gp(train_x, train_obj, likelihood, kernel, **kernel_kwargs):
-    model = GraphGP(train_x, train_obj, likelihood, kernel, **kernel_kwargs)
     return model
 
 
@@ -83,7 +58,7 @@ def one_experiment(target, encoding, n_trials, n_iters):
             y="dataset/materials_project/materials_data.csv",
             repn=encoding,
             y_column=target,
-        ).load_mp()
+        ).load_matbench()
 
     if ENCODING != "GRAPHS":
         r2_list, rmse_list, mae_list, confidence_percentiles, mae_mean, mae_std = (
@@ -111,21 +86,25 @@ def one_experiment(target, encoding, n_trials, n_iters):
 
 
 if __name__ == "__main__":
-    EXPERIMENT_TYPE = "Materials Project"
+    EXPERIMENT_TYPE = "MatBench"
     ENCODING = "complexes"
-    N_TRIALS = 7
+    N_TRIALS = 10
     N_ITERS = 5
     holdout_set_size = 0.9
     # dataset processing
     X, y = [], []
     # dataset loading
     possible_target_cols = [
-        "uncorrected_energy_per_atom",
-        "energy_per_atom",
-        "formation_energy_per_atom",
-        "equilibrium_reaction_energy_per_atom",
-        "total_magnetization",
-        "total_magnetization_normalized_vol",
+        "g_vrh",
+        "cbm",
+        "vbm",
+        "efermi",
+        "k_voigt",
+        "k_reuss",
+        "k_vrh",
+        "g_voigt",
+        "g_reuss",
+        "g_vrh",
     ]
 
     results = []

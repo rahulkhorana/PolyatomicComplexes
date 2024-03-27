@@ -33,6 +33,8 @@ from gauche.dataloader.data_utils import transform_data
 from gauche import NonTensorialInputs
 from gauche.kernels.graph_kernels import WeisfeilerLehmanKernel
 
+plt.switch_backend("Agg")
+
 if torch.cuda.is_available():
     dev = "cuda:0"
 else:
