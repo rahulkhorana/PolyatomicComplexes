@@ -4,6 +4,7 @@ import torch
 import time
 import numpy as np
 from load_process_data import LoadDatasetForTask
+from multiprocessing.pool import ThreadPool as Pool
 
 # botorch specific
 from botorch.models.gp_regression import ExactGP
@@ -112,7 +113,7 @@ if __name__ == "__main__":
     ENCODING = "complexes"
     N_TRIALS = 20
     N_ITERS = 5
-    holdout_set_size = 0.33
+    holdout_set_size = 0.9
     # dataset processing
     X, y = [], []
     # dataset loading
@@ -121,22 +122,25 @@ if __name__ == "__main__":
         "energy_per_atom",
         "formation_energy_per_atom",
         "equilibrium_reaction_energy_per_atom",
-        "efermi",
-        "total_magnetization",
-        "total_magnetization_normalized_vol",
     ]
 
     results = []
 
-    for col in possible_target_cols:
-        mean_r2, mean_rmse, mean_mae = one_experiment(col, ENCODING, N_TRIALS, N_ITERS)
+    def helper(column):
+        mean_r2, mean_rmse, mean_mae = one_experiment(
+            column, ENCODING, N_TRIALS, N_ITERS
+        )
         results.append([col, mean_r2, mean_rmse, mean_mae])
+
+    with Pool(2) as p:
+        p.map(
+            func=helper,
+            iterable=possible_target_cols,
+        )
 
     if type(EXPERIMENT_TYPE) is str:
         trial_num = len(os.listdir(f"results/{EXPERIMENT_TYPE}"))
-        results_path = (
-            f"results/{EXPERIMENT_TYPE}/{ENCODING}_RQKernel_{time.time()}.txt"
-        )
+        results_path = f"results/{EXPERIMENT_TYPE}/{ENCODING}_{time.time()}.txt"
 
         with open(results_path, "w") as f:
             f.write(EXPERIMENT_TYPE + ":")

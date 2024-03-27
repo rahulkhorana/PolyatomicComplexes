@@ -183,9 +183,7 @@ if __name__ == "__main__":
 
     if type(EXPERIMENT_TYPE) is str:
         trial_num = len(os.listdir(f"results/{EXPERIMENT_TYPE}"))
-        results_path = (
-            f"results/{EXPERIMENT_TYPE}/{ENCODING}_RQKernel_{time.time()}.txt"
-        )
+        results_path = f"results/{EXPERIMENT_TYPE}/{ENCODING}_{time.time()}.txt"
 
         with open(results_path, "w") as f:
             f.write(EXPERIMENT_TYPE + ":")
