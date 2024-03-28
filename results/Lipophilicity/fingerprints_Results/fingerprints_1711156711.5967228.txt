@@ -1,4 +1,0 @@
-Lipophilicity:
-fingerprints:column: exp, 
-mean R^2: 0.6236 +- 0.0033, mean RMSE: 0.7404 +- 0.0050, mean MAE: 0.5714 +- 0.0036
-
