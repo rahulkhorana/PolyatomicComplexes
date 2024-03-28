@@ -1,0 +1,49 @@
+Photoswitches:
+fingerprints:column: rate of thermal isomerisation from Z-E in s-1, 
+mean R^2: -0.9826 +- 0.7643, mean RMSE: 0.0132 +- 0.0022, mean MAE: 0.0031 +- 0.0002
+
+column: Z PhotoStationaryState, 
+mean R^2: 0.1525 +- 0.0157, mean RMSE: 4.6337 +- 0.1920, mean MAE: 2.0486 +- 0.0516
+
+column: E PhotoStationaryState, 
+mean R^2: 0.0522 +- 0.0361, mean RMSE: 5.8387 +- 0.2827, mean MAE: 2.4876 +- 0.0658
+
+column: E isomer pi-pi* wavelength in nm, 
+mean R^2: 0.7718 +- 0.0078, mean RMSE: 30.5086 +- 0.5915, mean MAE: 21.5822 +- 0.3324
+
+column: Extinction, 
+mean R^2: 0.4992 +- 0.0429, mean RMSE: 2044.6317 +- 130.9352, mean MAE: 854.0208 +- 17.9704
+
+column: E isomer n-pi* wavelength in nm, 
+mean R^2: 0.6759 +- 0.0099, mean RMSE: 7.7834 +- 0.2028, mean MAE: 4.3944 +- 0.0777
+
+column: Extinction coefficient in M-1 cm-1, 
+mean R^2: -0.0753 +- 0.0336, mean RMSE: 342.1774 +- 28.2966, mean MAE: 87.8881 +- 3.1456
+
+column: Z isomer pi-pi* wavelength in nm, 
+mean R^2: 0.2009 +- 0.0380, mean RMSE: 7.0479 +- 0.2452, mean MAE: 3.2779 +- 0.1035
+
+column: Extinction.1, 
+mean R^2: -0.1561 +- 0.1090, mean RMSE: 0.0493 +- 0.0064, mean MAE: 0.0113 +- 0.0007
+
+column: Z isomer n-pi* wavelength in nm, 
+mean R^2: 0.3053 +- 0.0269, mean RMSE: 6.7046 +- 0.2261, mean MAE: 2.9670 +- 0.0764
+
+column: Extinction coefficient in M-1 cm-1.1, 
+mean R^2: 0.5805 +- 0.0299, mean RMSE: 101.8577 +- 3.4425, mean MAE: 50.3949 +- 1.2187
+
+column: Wiberg index, 
+mean R^2: 0.1194 +- 0.0340, mean RMSE: 0.0068 +- 0.0005, mean MAE: 0.0016 +- 0.0001
+
+column: PBE0 DFT E isomer pi-pi* wavelength in nm, 
+mean R^2: 0.4812 +- 0.0125, mean RMSE: 22.9354 +- 0.5324, mean MAE: 13.7096 +- 0.2740
+
+column: PBE0 DFT E isomer n-pi* wavelength in nm, 
+mean R^2: 0.4003 +- 0.0149, mean RMSE: 6.1952 +- 0.2079, mean MAE: 3.0562 +- 0.0580
+
+column: PBE0 DFT Z isomer pi-pi* wavelength in nm, 
+mean R^2: -0.0021 +- 0.0271, mean RMSE: 4.2504 +- 0.2574, mean MAE: 1.0746 +- 0.0616
+
+column: PBE0 DFT Z isomer n-pi* wavelength in nm, 
+mean R^2: -0.1245 +- 0.1635, mean RMSE: 12.4335 +- 0.8680, mean MAE: 3.9936 +- 0.1119
+

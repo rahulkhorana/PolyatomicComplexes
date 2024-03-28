@@ -1,0 +1,4 @@
+Lipophilicity:
+GRAPHS:column: exp, 
+mean R^2: 0.6633 +- 0.0064, mean RMSE: 0.6997 +- 0.0072, mean MAE: 0.5046 +- 0.0040
+
