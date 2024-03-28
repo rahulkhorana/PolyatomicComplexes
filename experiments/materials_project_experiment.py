@@ -23,6 +23,7 @@ from gauche import SIGP
 
 from matplotlib import pyplot as plt
 
+
 plt.switch_backend("Agg")
 
 if torch.cuda.is_available():
@@ -66,7 +67,7 @@ class GraphGP(SIGP):
 
 
 def initialize_model(train_x: torch.Tensor, train_obj: torch.Tensor, likelihood):
-    model = ExactGPModel(train_x, train_obj, likelihood).to(train_x)
+    model = ExactGPModel(train_x, train_obj, likelihood)
     return model
 
 
@@ -138,7 +139,7 @@ if __name__ == "__main__":
         results.append([column, mean_r2, mean_rmse, mean_mae])
         print(f"current results {results}")
 
-    with Pool(2) as p:
+    with Pool(1) as p:
         p.map(
             func=helper,
             iterable=possible_target_cols,
