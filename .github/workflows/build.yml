@@ -1,4 +1,4 @@
-name: test requirements
+name: build
 
 on:
   push:
