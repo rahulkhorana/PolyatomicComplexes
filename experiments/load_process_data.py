@@ -456,3 +456,39 @@ class LoadDatasetForTask:
                 and isinstance(y, torch.Tensor)
             )
             return tuple([X, y])
+
+    def load_matbench(self):
+        if self.repn == "complexes":
+            with open(self.X, "rb") as f:
+                x_data = dill.load(f)
+            X = []
+            ydata = pd.read_csv(self.y, low_memory=False)
+            y = ydata[self.y_column]
+            y_data = []
+            for i, pair in enumerate(zip(x_data, ydata)):
+                x, y = pair
+                try:
+                    yc = np.float32(y)
+                    y_data.append(yc)
+                except Exception:
+                    continue
+                rep = x_data[x][0]
+                t = torch.tensor(rep).view((len(rep), 1))
+                X.append(t.flatten(0))
+            max_len = max([x.squeeze().numel() for x in X])
+            data = [
+                torch.nn.functional.pad(
+                    x, pad=(0, max_len - x.numel()), mode="constant", value=0
+                )
+                for x in X
+            ]
+            X = torch.stack(data)
+            X = torch.linalg.vector_norm(X, ord=2, dim=(-1))
+            X = X.view(len(X), 1)
+            y = torch.tensor(y_data, dtype=torch.float32).view(len(y), 1)
+            assert (
+                len(X) == len(y)
+                and isinstance(X, torch.Tensor)
+                and isinstance(y, torch.Tensor)
+            )
+            return tuple([X, y])
