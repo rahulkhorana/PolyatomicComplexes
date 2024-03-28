@@ -33,6 +33,14 @@ from gauche.dataloader.data_utils import transform_data
 from gauche import NonTensorialInputs
 from gauche.kernels.graph_kernels import WeisfeilerLehmanKernel
 
+plt.switch_backend("Agg")
+
+if torch.cuda.is_available():
+    dev = "cuda:0"
+else:
+    dev = "cpu"
+device = torch.device(dev)
+
 
 def optimize_acqf_and_get_observation(acq_func, heldout_inputs, heldout_outputs):
     # Loop over the discrete set of points to evaluate the acquisition function at.
