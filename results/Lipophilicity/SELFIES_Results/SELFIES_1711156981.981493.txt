@@ -1,4 +1,0 @@
-Lipophilicity:
-SELFIES:column: exp, 
-mean R^2: 0.4117 +- 0.0029, mean RMSE: 0.9256 +- 0.0032, mean MAE: 0.7259 +- 0.0024
-

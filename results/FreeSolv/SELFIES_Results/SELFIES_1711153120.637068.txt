@@ -1,7 +1,0 @@
-FreeSolv:
-SELFIES:column: expt, 
-mean R^2: 0.8171 +- 0.0094, mean RMSE: 1.6483 +- 0.0508, mean MAE: 1.1720 +- 0.0230
-
-column: calc, 
-mean R^2: 0.8620 +- 0.0060, mean RMSE: 1.5526 +- 0.0344, mean MAE: 1.0849 +- 0.0205
-
