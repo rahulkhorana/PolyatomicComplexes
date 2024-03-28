@@ -233,10 +233,12 @@ def evaluate_model(
         _, y_train, _, y_test, y_scaler = transform_data(
             X_train, y_train, X_test, y_test
         )
+        assert isinstance(X_train, torch.Tensor) and isinstance(X_test, torch.Tensor)
+        X_train, X_test = X_train.float(), X_test.float()
         # Convert numpy arrays to PyTorch tensors and flatten the label vectors
         # print(f'types {type(X_train)}')
-        y_train = torch.tensor(y_train.astype(np.float64)).flatten()
-        y_test = torch.tensor(y_test.astype(np.float64)).flatten()
+        y_train = torch.tensor(y_train.astype(np.float64)).flatten().float()
+        y_test = torch.tensor(y_test.astype(np.float64)).flatten().float()
         assert (
             isinstance(X_train, torch.Tensor)
             and isinstance(y_train, torch.Tensor)
@@ -264,7 +266,6 @@ def evaluate_model(
         likelihood.eval()
 
         print("eval:")
-
         # mean and variance GP prediction
         f_pred = model(X_test)
 
