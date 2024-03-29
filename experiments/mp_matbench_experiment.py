@@ -11,7 +11,7 @@ from botorch.models.gp_regression import ExactGP
 
 # gpytorch specific
 from gpytorch.means import ConstantMean
-from gpytorch.kernels import ScaleKernel
+from gpytorch.kernels import ScaleKernel, MaternKernel
 from gpytorch.distributions import MultivariateNormal
 from gpytorch.likelihoods import GaussianLikelihood
 from gpytorch.mlls import ExactMarginalLogLikelihood
@@ -37,7 +37,7 @@ class ExactGPModel(ExactGP):
     def __init__(self, train_x, train_y, likelihood):
         super(ExactGPModel, self).__init__(train_x, train_y, likelihood)
         self.mean_module = ConstantMean()
-        self.covar_module = ScaleKernel(TanimotoKernel())
+        self.covar_module = ScaleKernel(MaternKernel())
 
     def forward(self, x):
         mean_x = self.mean_module(x)
@@ -88,28 +88,20 @@ def one_experiment(target, encoding, n_trials, n_iters):
 if __name__ == "__main__":
     EXPERIMENT_TYPE = "MatBench"
     ENCODING = "complexes"
-    N_TRIALS = 10
+    N_TRIALS = 20
     N_ITERS = 5
-    holdout_set_size = 0.9
+    holdout_set_size = 0.33
     # dataset processing
     X, y = [], []
     # dataset loading
-    possible_target_cols = [
-        "g_vrh",
-        "cbm",
-        "vbm",
-        "efermi",
-        "k_voigt",
-        "k_reuss",
-        "k_vrh",
-        "g_voigt",
-        "g_reuss",
-        "g_vrh",
-    ]
+    possible_target_cols = ["g_vrh", "k_voigt", "k_reuss", "k_vrh", "g_voigt", "efermi"]
 
     results = []
 
     def helper(column):
+        if column == "efermi":
+            global holdout_set_size
+            holdout_set_size = 0.9
         print(f"column processed {column}")
         mean_r2, mean_rmse, mean_mae = one_experiment(
             column, ENCODING, N_TRIALS, N_ITERS
