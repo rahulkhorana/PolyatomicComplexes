@@ -51,12 +51,12 @@ cases = [
 ]
 
 
-def fuzz_test(n=20):
+def fuzz_test(n=20, k=15):
     with open("dataset/construct/lookup_map.json") as data:
         lookup = json.load(data)
     assert isinstance(lookup, dict)
     for _ in range(n):
-        atom_list = random.sample(list(lookup.keys()), 15)
+        atom_list = random.sample(list(lookup.keys()), k)
         p = PolyAtomComplex(atom_list)
         case = (p, "general")
         cases.append(case)
@@ -64,7 +64,13 @@ def fuzz_test(n=20):
         cases.append(case)
 
 
-fuzz_test()
+fuzz_test(50, 1)
+fuzz_test(40, 3)
+fuzz_test(30, 10)
+fuzz_test(20, 15)
+fuzz_test(10, 19)
+fuzz_test(8, 22)
+fuzz_test(5, 27)
 
 
 @pytest.mark.parametrize(
