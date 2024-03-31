@@ -3,8 +3,9 @@ import sys
 import dill
 import json
 import pandas as pd
-from typing import List
+from typing import List, Tuple
 from multiprocessing.pool import ThreadPool as Pool
+from pymatgen.core import Structure
 from collections import defaultdict
 
 sys.path.append(".")
@@ -25,17 +26,10 @@ class ProcessJDFT:
 
     def process(self) -> None:
         representations = defaultdict(tuple)
-        for i, data in enumerate(zip(self.data["elements"], self.data["composition"])):
-            elem, comp = data
-            elem = eval(elem)
-            print(f"comp {comp}")
-            try:
-                comp = json.loads(comp)
-                atoms = self.extract_atoms(elem, comp)
-            except Exception:
-                # single edge case ['He']
-                comp = eval(comp)
-                atoms = comp
+        for i, struct in enumerate(self.data["structure"]):
+            structure = Structure.from_dict(struct)
+            elem, comp = self.extract_structure(structure)
+            atoms = self.extract_atoms(elem, comp)
             representations[i] = PolyAtomComplex(atom_list=atoms).fast_build_complex()
         assert len(representations) == len(self.data)
         with open(self.src + "fast_complex_lookup_repn.pkl", "wb") as f:
@@ -46,16 +40,10 @@ class ProcessJDFT:
         representations = defaultdict(tuple)
 
         def helper(data):
-            i, row = data
-            elem, comp = row
-            elem = eval(elem)
-            try:
-                comp = json.loads(comp)
-                atoms = self.extract_atoms(elem, comp)
-            except Exception:
-                # single edge case ['He']
-                comp = eval(comp)
-                atoms = comp
+            i, struct = data
+            structure = Structure.from_dict(struct)
+            elem, comp = self.extract_structure(structure)
+            atoms = self.extract_atoms(elem, comp)
             pc = PolyAtomComplex(atom_list=atoms)
             repn = pc.general_build_complex()
             representations[i] = repn
@@ -65,15 +53,23 @@ class ProcessJDFT:
         with Pool() as p:
             p.map(
                 func=helper,
-                iterable=list(
-                    enumerate(zip(self.data["elements"], self.data["composition"]))
-                ),
+                iterable=list(enumerate(self.data["structure"])),
             )
 
         assert len(representations) == len(self.data)
         with open(self.src + "deep_complex_lookup_repn.pkl", "wb") as f:
             dill.dump(representations, f)
         return None
+
+    def extract_structure(self, struct: Structure) -> Tuple[List, dict]:
+        structure_info = defaultdict(list)
+        cmp = struct.composition
+        for k in cmp:
+            if k != "@module" and k != "@class" and k != "@version":
+                strk = f"{k}"
+                key = strk.replace("Element ", "")
+                structure_info[key] = cmp[k]
+        return tuple([list(structure_info.keys()), structure_info])
 
     def extract_atoms(self, element, composition) -> List:
         atom_list = []
@@ -85,5 +81,5 @@ class ProcessJDFT:
 
 if __name__ == "__main__":
     prc = ProcessJDFT()
-    # prc.process()
-    # prc.process_deep_complexes()
+    prc.process()
+    prc.process_deep_complexes()
