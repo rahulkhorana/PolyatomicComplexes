@@ -11,19 +11,30 @@
 
 ## Installation
 
+1. Clone the repo.
+
+2. Ensure you have python >= 3.11.6 and set up a virtual environment.
 ```sh
-via pip
-
-
+pip install virtualenv
+virtualenv .env
+source .env/bin/activate
 ```
 
-## Usage
+3. Install the relevant packages.
 
-Experiment:
+For standard/minimal usage:
+```sh
+pip install -Ur requirements.txt
+```
 
-```python
+For graph based experiments:
+```sh
+pip install -Ur requirements_graph.txt
+```
 
-print('Test')
+For materials based experiments:
+```sh
+pip install -Ur requirements_mat.txt
 ```
 
 Details on available [] are available in our [user guide](), which also includes numerous usage examples and information on [].
