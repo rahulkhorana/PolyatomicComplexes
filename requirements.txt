@@ -13,4 +13,3 @@ flake8==7.0.0
 mypy==1.9.0
 pyglview
 gmsh
-pymatgen
