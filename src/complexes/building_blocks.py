@@ -23,7 +23,8 @@ class Electron:
             v = self.points[:, i]
             length = jnp.linalg.norm(v)
             if length >= self.cutoff:
-                r = np.random.rand() ** self.d
+                tmpr = np.random.rand() ** self.d
+                r = tmpr if tmpr != 0 else np.random.randint(0.3, 1) ** self.d
                 v = jnp.multiply(v, r * self.cutoff)
             self.ee.append(v)
             wv = self.wave_fn()
