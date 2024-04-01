@@ -22,6 +22,7 @@ class ProcessJDFT:
         cols = list(self.data["columns"])
         self.data = pd.DataFrame.from_dict(self.data["data"])
         self.data.columns = cols
+        self.data.to_csv(self.src + "jdft2d.csv")
         assert isinstance(self.data, pd.DataFrame)
 
     def process(self) -> None:
@@ -81,5 +82,5 @@ class ProcessJDFT:
 
 if __name__ == "__main__":
     prc = ProcessJDFT()
-    prc.process()
-    prc.process_deep_complexes()
+    # prc.process()
+    # prc.process_deep_complexes()

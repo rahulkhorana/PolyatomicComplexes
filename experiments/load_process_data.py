@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from typing import Tuple
 from gauche.dataloader import MolPropLoader
+from sklearn.preprocessing import StandardScaler
 from sklearn.utils.extmath import randomized_svd
 
 
@@ -488,6 +489,69 @@ class LoadDatasetForTask:
             X = torch.linalg.vector_norm(X, ord=2, dim=(-1))
             X = X.view(len(X), 1)
             y = torch.tensor(y_data, dtype=torch.float32).view(len(y_data), 1)
+            assert (
+                len(X) == len(y)
+                and isinstance(X, torch.Tensor)
+                and isinstance(y, torch.Tensor)
+            )
+            return tuple([X, y])
+
+    def load_jdft2d(self) -> Tuple[torch.Tensor, torch.Tensor]:
+        if self.repn == "complexes":
+            with open(self.X, "rb") as f:
+                x_data = dill.load(f)
+            X = []
+            for x in x_data:
+                rep = x_data[x][0]
+                t = torch.tensor(rep)
+                X.append(t)
+            max_len = max([x.squeeze().numel() for x in X])
+            data = [
+                torch.nn.functional.pad(
+                    x, pad=(0, max_len - x.numel()), mode="constant", value=0
+                )
+                for x in X
+            ]
+            X = torch.stack(data)
+            X = X.numpy()
+            X = StandardScaler().fit_transform(X)
+            X = torch.from_numpy(X)
+            ydata = pd.read_csv(self.y)
+            y = ydata[self.y_column]
+            y = torch.tensor(y.values).view(len(y), 1)
+            assert (
+                len(X) == len(y)
+                and isinstance(X, torch.Tensor)
+                and isinstance(y, torch.Tensor)
+            )
+            return tuple([X, y])
+        elif self.repn == "deep_complexes":
+            with open(self.X, "rb") as f:
+                x_data = dill.load(f)
+            X = []
+            for x in x_data:
+                rep0 = x_data[x][0]
+                rep1 = x_data[x][1]
+                rep1 = np.asarray(rep1)
+                rep0.flatten()
+                rep1.flatten()
+                r = np.concatenate([rep0, rep1], axis=0)
+                t = torch.tensor(r)
+                X.append(t)
+            max_len = max([x.squeeze().numel() for x in X])
+            data = [
+                torch.nn.functional.pad(
+                    x, pad=(0, max_len - x.numel()), mode="constant", value=0
+                )
+                for x in X
+            ]
+            X = torch.stack(data)
+            X = X.numpy()
+            X = StandardScaler().fit_transform(X)
+            X = torch.from_numpy(X)
+            ydata = pd.read_csv(self.y)
+            y = ydata[self.y_column]
+            y = torch.tensor(y.values).view(len(y), 1)
             assert (
                 len(X) == len(y)
                 and isinstance(X, torch.Tensor)
