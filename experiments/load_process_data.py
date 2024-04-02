@@ -102,7 +102,6 @@ class LoadDatasetForTask:
                 "Photoswitch", path="dataset/photoswitches/photoswitches.csv"
             )
             loader.featurize("bag_of_selfies")
-            X = loader.features
             X = torch.from_numpy(X).type(torch.float64)
             ydata = pd.read_csv(self.y)
             y = ydata[self.y_column]
@@ -123,6 +122,22 @@ class LoadDatasetForTask:
             )
             loader.featurize("molecular_graphs")
             X = loader.features
+            ydata = pd.read_csv(self.y)
+            y = ydata[self.y_column]
+            mean_value = y.mean()
+            y.fillna(value=mean_value, inplace=True)
+            y = torch.tensor(y.values).view(len(y), 1)
+            assert len(X) == len(y) and isinstance(y, torch.Tensor)
+            return tuple([X, y])
+        elif self.repn == "SMILES":
+            loader = MolPropLoader()
+            loader.validate = lambda: False
+            loader.load_benchmark(
+                "Photoswitch", path="dataset/photoswitches/photoswitches.csv"
+            )
+            loader.featurize("bag_of_smiles")
+            X = loader.features
+            X = torch.from_numpy(X).type(torch.float64)
             ydata = pd.read_csv(self.y)
             y = ydata[self.y_column]
             mean_value = y.mean()
@@ -227,6 +242,21 @@ class LoadDatasetForTask:
             y = torch.tensor(y.values).view(len(y), 1)
             assert len(X) == len(y) and isinstance(y, torch.Tensor)
             return tuple([X, y])
+        elif self.repn == "SMILES":
+            loader = MolPropLoader()
+            loader.load_benchmark("ESOL", path="dataset/esol/ESOL.csv")
+            loader.featurize("bag_of_smiles")
+            X = loader.features
+            X = torch.from_numpy(X).type(torch.float64)
+            ydata = pd.read_csv(self.y)
+            y = ydata[self.y_column]
+            y = torch.tensor(y.values).view(len(y), 1)
+            assert (
+                len(X) == len(y)
+                and isinstance(X, torch.Tensor)
+                and isinstance(y, torch.Tensor)
+            )
+            return tuple([X, y])
 
     def load_freesolv(self) -> Tuple[torch.Tensor, torch.Tensor]:
         if self.repn == "complexes":
@@ -323,6 +353,21 @@ class LoadDatasetForTask:
             y = ydata[self.y_column]
             y = torch.tensor(y.values).view(len(y), 1)
             assert len(X) == len(y) and isinstance(y, torch.Tensor)
+            return tuple([X, y])
+        elif self.repn == "SMILES":
+            loader = MolPropLoader()
+            loader.load_benchmark("FreeSolv", path="dataset/free_solv/FreeSolv.csv")
+            loader.featurize("bag_of_smiles")
+            X = loader.features
+            X = torch.from_numpy(X).type(torch.float64)
+            ydata = pd.read_csv(self.y)
+            y = ydata[self.y_column]
+            y = torch.tensor(y.values).view(len(y), 1)
+            assert (
+                len(X) == len(y)
+                and isinstance(X, torch.Tensor)
+                and isinstance(y, torch.Tensor)
+            )
             return tuple([X, y])
 
     def load_lipophilicity(self) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -426,6 +471,23 @@ class LoadDatasetForTask:
             y = ydata[self.y_column]
             y = torch.tensor(y.values).view(len(y), 1)
             assert len(X) == len(y) and isinstance(y, torch.Tensor)
+            return tuple([X, y])
+        elif self.repn == "SMILES":
+            loader = MolPropLoader()
+            loader.load_benchmark(
+                "Lipophilicity", path="dataset/lipophilicity/Lipophilicity.csv"
+            )
+            loader.featurize("bag_of_smiles")
+            X = loader.features
+            X = torch.from_numpy(X).type(torch.float64)
+            ydata = pd.read_csv(self.y)
+            y = ydata[self.y_column]
+            y = torch.tensor(y.values).view(len(y), 1)
+            assert (
+                len(X) == len(y)
+                and isinstance(X, torch.Tensor)
+                and isinstance(y, torch.Tensor)
+            )
             return tuple([X, y])
 
     def load_mp(self):

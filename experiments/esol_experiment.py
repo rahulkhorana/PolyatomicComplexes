@@ -103,6 +103,13 @@ def one_experiment(target, encoding, n_trials, n_iters):
         X, y = LoadDatasetForTask(
             X="gauche_graphs", y="dataset/esol/ESOL.csv", repn=encoding, y_column=target
         ).load_esol()
+    elif ENCODING == "SMILES":
+        X, y = LoadDatasetForTask(
+            X="gauche_smiles",
+            y="dataset/esol/ESOL.csv",
+            repn=encoding,
+            y_column=target,
+        ).load_esol()
 
     if ENCODING != "GRAPHS":
         r2_list, rmse_list, mae_list, confidence_percentiles, mae_mean, mae_std = (
@@ -143,7 +150,7 @@ def one_experiment(target, encoding, n_trials, n_iters):
 
 if __name__ == "__main__":
     EXPERIMENT_TYPE = "ESOL"
-    ENCODING = "GRAPHS"
+    ENCODING = "SMILES"
     N_TRIALS = 20
     N_ITERS = 5
     holdout_set_size = 0.33

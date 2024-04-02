@@ -109,6 +109,13 @@ def one_experiment(target, encoding, n_trials, n_iters):
             repn=encoding,
             y_column=target,
         ).load_freesolv()
+    elif ENCODING == "SMILES":
+        X, y = LoadDatasetForTask(
+            X="gauche_smiles",
+            y="dataset/free_solv/FreeSolv.csv",
+            repn=encoding,
+            y_column=target,
+        ).load_freesolv()
 
     if ENCODING != "GRAPHS":
         r2_list, rmse_list, mae_list, confidence_percentiles, mae_mean, mae_std = (
@@ -149,7 +156,7 @@ def one_experiment(target, encoding, n_trials, n_iters):
 
 if __name__ == "__main__":
     EXPERIMENT_TYPE = "FreeSolv"
-    ENCODING = "GRAPHS"
+    ENCODING = "SMILES"
     N_TRIALS = 20
     N_ITERS = 5
     holdout_set_size = 0.33
