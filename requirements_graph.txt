@@ -55,7 +55,7 @@ ordered-set==4.1.0
 packaging==24.0
 pandas==1.5.3
 pexpect==4.9.0
-pillow==10.2.0
+pillow==10.3.0
 platformdirs==4.2.0
 plotly==5.20.0
 ptyprocess==0.7.0
