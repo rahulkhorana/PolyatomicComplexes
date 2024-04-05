@@ -1,0 +1,5 @@
+Lipophilicity:
+fingerprints:column: exp, 
+mean R^2: 0.6226 +- 0.0036, mean RMSE: 0.7413 +- 0.0052, mean MAE: 0.5723 +- 0.0038
+, mean CRPS: 0.7069 +- 0.0040
+

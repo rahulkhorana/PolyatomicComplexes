@@ -1,0 +1,65 @@
+Photoswitches:
+SMILES:column: rate of thermal isomerisation from Z-E in s-1, 
+mean R^2: -0.1762 +- 0.0760, mean RMSE: 0.0125 +- 0.0023, mean MAE: 0.0030 +- 0.0002
+, mean CRPS: 0.0028 +- 0.0002
+
+column: Z PhotoStationaryState, 
+mean R^2: 0.0988 +- 0.0120, mean RMSE: 4.7805 +- 0.1930, mean MAE: 2.1583 +- 0.0600
+, mean CRPS: 1.7717 +- 0.0654
+
+column: E PhotoStationaryState, 
+mean R^2: -0.0298 +- 0.0432, mean RMSE: 6.0706 +- 0.2700, mean MAE: 2.5914 +- 0.0623
+, mean CRPS: 1.9393 +- 0.0832
+
+column: E isomer pi-pi* wavelength in nm, 
+mean R^2: 0.7658 +- 0.0102, mean RMSE: 30.8208 +- 0.6008, mean MAE: 22.1481 +- 0.3329
+, mean CRPS: 35.9470 +- 0.9724
+
+column: Extinction, 
+mean R^2: 0.4254 +- 0.0450, mean RMSE: 2174.0199 +- 120.7404, mean MAE: 880.8762 +- 14.2119
+, mean CRPS: 836.2395 +- 31.4619
+
+column: E isomer n-pi* wavelength in nm, 
+mean R^2: 0.6022 +- 0.0118, mean RMSE: 8.6117 +- 0.1932, mean MAE: 5.1145 +- 0.0876
+, mean CRPS: 6.3808 +- 0.1772
+
+column: Extinction coefficient in M-1 cm-1, 
+mean R^2: -0.0463 +- 0.0139, mean RMSE: 340.7725 +- 28.8378, mean MAE: 69.7425 +- 5.6082
+, mean CRPS: 61.9598 +- 3.9306
+
+column: Z isomer pi-pi* wavelength in nm, 
+mean R^2: 0.2402 +- 0.0362, mean RMSE: 6.8833 +- 0.2516, mean MAE: 3.3979 +- 0.1033
+, mean CRPS: 2.7691 +- 0.1280
+
+column: Extinction.1, 
+mean R^2: -0.1131 +- 0.0665, mean RMSE: 0.0497 +- 0.0064, mean MAE: 0.0086 +- 0.0010
+, mean CRPS: 0.0077 +- 0.0010
+
+column: Z isomer n-pi* wavelength in nm, 
+mean R^2: 0.1610 +- 0.0221, mean RMSE: 7.3790 +- 0.2180, mean MAE: 3.3628 +- 0.0851
+, mean CRPS: 3.2774 +- 0.1170
+
+column: Extinction coefficient in M-1 cm-1.1, 
+mean R^2: 0.6576 +- 0.0230, mean RMSE: 92.3104 +- 3.7291, mean MAE: 47.2420 +- 1.2931
+, mean CRPS: 42.0353 +- 2.5851
+
+column: Wiberg index, 
+mean R^2: 0.4344 +- 0.0471, mean RMSE: 0.0054 +- 0.0005, mean MAE: 0.0017 +- 0.0001
+, mean CRPS: 0.0013 +- 0.0001
+
+column: PBE0 DFT E isomer pi-pi* wavelength in nm, 
+mean R^2: 0.4796 +- 0.0163, mean RMSE: 22.9176 +- 0.5170, mean MAE: 14.6371 +- 0.2899
+, mean CRPS: 14.6234 +- 0.3481
+
+column: PBE0 DFT E isomer n-pi* wavelength in nm, 
+mean R^2: 0.3450 +- 0.0134, mean RMSE: 6.4681 +- 0.1969, mean MAE: 3.2380 +- 0.0443
+, mean CRPS: 2.5489 +- 0.0970
+
+column: PBE0 DFT Z isomer pi-pi* wavelength in nm, 
+mean R^2: -0.0299 +- 0.0458, mean RMSE: 4.2338 +- 0.2324, mean MAE: 1.0151 +- 0.0598
+, mean CRPS: 0.8471 +- 0.0694
+
+column: PBE0 DFT Z isomer n-pi* wavelength in nm, 
+mean R^2: -0.0331 +- 0.0272, mean RMSE: 12.8182 +- 0.9840, mean MAE: 3.1771 +- 0.1804
+, mean CRPS: 2.7217 +- 0.2418
+

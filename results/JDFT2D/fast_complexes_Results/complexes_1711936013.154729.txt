@@ -1,4 +1,0 @@
-JDFT2D:
-complexes:column: exfoliation_en, 
-mean R^2: 0.0347 +- 0.0110, mean RMSE: 117.6862 +- 6.0549, mean MAE: 60.3582 +- 1.2912
-

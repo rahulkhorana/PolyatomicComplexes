@@ -1,4 +1,0 @@
-Lipophilicity:
-SMILES:column: exp, 
-mean R^2: 0.6355 +- 0.0070, mean RMSE: 0.7281 +- 0.0077, mean MAE: 0.5596 +- 0.0069
-

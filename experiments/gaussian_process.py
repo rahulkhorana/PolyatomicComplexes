@@ -24,6 +24,7 @@ import warnings
 # sklearn specific
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
+from metrics import CRPS
 
 # gp specific
 from gpytorch.likelihoods import GaussianLikelihood
@@ -207,6 +208,7 @@ def evaluate_model(
     r2_list = []
     rmse_list = []
     mae_list = []
+    crps_list = []
 
     warnings.filterwarnings("ignore")
     warnings.filterwarnings("ignore", category=RuntimeWarning)
@@ -304,14 +306,17 @@ def evaluate_model(
         score = r2_score(y_test, y_pred)
         rmse = np.sqrt(mean_squared_error(y_test, y_pred))
         mae = mean_absolute_error(y_test, y_pred)
+        crps = CRPS(y_pred, y_test).crps()
 
         r2_list.append(score)
         rmse_list.append(rmse)
         mae_list.append(mae)
+        crps_list.append(crps)
 
     r2_list = np.array(r2_list)
     rmse_list = np.array(rmse_list)
     mae_list = np.array(mae_list)
+    crps_list = np.array(crps_list)
     # Plot confidence-error curves
 
     # 1e-14 instead of 0 to for numerical reasons!
@@ -339,7 +344,15 @@ def evaluate_model(
     plt.yticks(np.arange(0, np.max(upper) + 1, 5.0))
     plt.savefig(figure_path)
 
-    return r2_list, rmse_list, mae_list, confidence_percentiles, mae_mean, mae_std
+    return (
+        r2_list,
+        rmse_list,
+        mae_list,
+        crps_list,
+        confidence_percentiles,
+        mae_mean,
+        mae_std,
+    )
 
 
 def evaluate_graph_model(
@@ -357,6 +370,7 @@ def evaluate_graph_model(
     r2_list = []
     rmse_list = []
     mae_list = []
+    crps_list = []
 
     warnings.filterwarnings("ignore")
     warnings.filterwarnings("ignore", category=RuntimeWarning)
@@ -418,14 +432,17 @@ def evaluate_graph_model(
         score = r2_score(y_test, y_pred)
         rmse = np.sqrt(mean_squared_error(y_test, y_pred))
         mae = mean_absolute_error(y_test, y_pred)
+        crps = CRPS(y_pred, y_test).crps()
 
         r2_list.append(score)
         rmse_list.append(rmse)
         mae_list.append(mae)
+        crps_list.append(crps)
 
     r2_list = np.array(r2_list)
     rmse_list = np.array(rmse_list)
     mae_list = np.array(mae_list)
+    crps_list = np.array(crps_list)
 
     # Print mean and standard error of the mean for each metric
 
@@ -442,6 +459,11 @@ def evaluate_graph_model(
     print(
         "mean MAE: {:.4f} +- {:.4f}\n".format(
             np.mean(mae_list), np.std(mae_list) / np.sqrt(len(mae_list))
+        )
+    )
+    print(
+        "mean CRPS: {:.4f} +- {:.4f}\n".format(
+            np.mean(crps_list), np.std(crps_list) / np.sqrt(len(crps_list))
         )
     )
 
@@ -466,4 +488,12 @@ def evaluate_graph_model(
     plt.yticks(np.arange(0, np.max(upper) + 1, 5.0))
     plt.show()
 
-    return r2_list, rmse_list, mae_list, confidence_percentiles, mae_mean, mae_std
+    return (
+        r2_list,
+        rmse_list,
+        mae_list,
+        crps_list,
+        confidence_percentiles,
+        mae_mean,
+        mae_std,
+    )
