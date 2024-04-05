@@ -1,0 +1,9 @@
+FreeSolv:
+fingerprints:column: expt, 
+mean R^2: 0.7204 +- 0.0112, mean RMSE: 2.0442 +- 0.0559, mean MAE: 1.4029 +- 0.0236
+, mean CRPS: 2.1120 +- 0.0303
+
+column: calc, 
+mean R^2: 0.7268 +- 0.0066, mean RMSE: 2.1941 +- 0.0390, mean MAE: 1.5095 +- 0.0205
+, mean CRPS: 2.3323 +- 0.0291
+

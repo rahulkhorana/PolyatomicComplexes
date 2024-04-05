@@ -1,0 +1,5 @@
+JDFT2D:
+deep_complexes:column: exfoliation_en, 
+mean R^2: 0.0328 +- 0.0118, mean RMSE: 117.7818 +- 6.0534, mean MAE: 60.8381 +- 1.2334
+, mean CRPS: 54.8581 +- 1.4457
+

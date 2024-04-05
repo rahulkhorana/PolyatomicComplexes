@@ -1,0 +1,25 @@
+MP_MatBench:
+complexes:column: g_vrh, 
+mean R^2: -0.0005 +- 0.0001, mean RMSE: 72.5567 +- 5.3189, mean MAE: 32.5437 +- 0.3059
+ mean CRPS: 32.5436 +- 0.3059
+
+column: k_voigt, 
+mean R^2: -0.0005 +- 0.0002, mean RMSE: 71.0221 +- 0.2849, mean MAE: 58.1780 +- 0.1389
+ mean CRPS: 58.1779 +- 0.1389
+
+column: k_vrh, 
+mean R^2: -0.0005 +- 0.0002, mean RMSE: 71.2068 +- 0.2896, mean MAE: 58.4550 +- 0.1383
+ mean CRPS: 58.4549 +- 0.1383
+
+column: k_reuss, 
+mean R^2: -0.0005 +- 0.0001, mean RMSE: 71.8219 +- 0.2922, mean MAE: 58.9746 +- 0.1420
+ mean CRPS: 58.9745 +- 0.1420
+
+column: g_voigt, 
+mean R^2: -0.0005 +- 0.0001, mean RMSE: 40.1198 +- 0.1935, mean MAE: 31.2625 +- 0.0878
+ mean CRPS: 31.2624 +- 0.0878
+
+column: efermi, 
+mean R^2: -0.0002 +- 0.0001, mean RMSE: 2.9121 +- 0.0007, mean MAE: 2.3573 +- 0.0006
+ mean CRPS: 2.3573 +- 0.0006
+

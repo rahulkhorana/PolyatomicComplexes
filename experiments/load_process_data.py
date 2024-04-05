@@ -102,6 +102,7 @@ class LoadDatasetForTask:
                 "Photoswitch", path="dataset/photoswitches/photoswitches.csv"
             )
             loader.featurize("bag_of_selfies")
+            X = loader.features
             X = torch.from_numpy(X).type(torch.float64)
             ydata = pd.read_csv(self.y)
             y = ydata[self.y_column]

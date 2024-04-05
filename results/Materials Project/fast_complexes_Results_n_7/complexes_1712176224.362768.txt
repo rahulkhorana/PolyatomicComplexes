@@ -1,0 +1,25 @@
+Materials Project:
+complexes:column: uncorrected_energy_per_atom, 
+mean R^2: -0.0003 +- 0.0002, mean RMSE: 1.6432 +- 0.0003, mean MAE: 1.3296 +- 0.0002
+, mean CRPS: 1.3296 +- 0.0002
+
+column: energy_per_atom, 
+mean R^2: -0.0003 +- 0.0002, mean RMSE: 1.7155 +- 0.0003, mean MAE: 1.4042 +- 0.0002
+, mean CRPS: 1.4042 +- 0.0002
+
+column: formation_energy_per_atom, 
+mean R^2: -0.0001 +- 0.0000, mean RMSE: 1.0860 +- 0.0003, mean MAE: 0.9434 +- 0.0003
+, mean CRPS: 0.9434 +- 0.0003
+
+column: equilibrium_reaction_energy_per_atom, 
+mean R^2: -0.0001 +- 0.0000, mean RMSE: 0.3296 +- 0.0005, mean MAE: 0.1017 +- 0.0005
+, mean CRPS: 0.1017 +- 0.0005
+
+column: total_magnetization, 
+mean R^2: -0.0001 +- 0.0000, mean RMSE: 8.3618 +- 0.0152, mean MAE: 3.7513 +- 0.0136
+, mean CRPS: 3.7513 +- 0.0136
+
+column: total_magnetization_normalized_vol, 
+mean R^2: -0.0001 +- 0.0000, mean RMSE: 0.0196 +- 0.0000, mean MAE: 0.0101 +- 0.0000
+, mean CRPS: 0.0101 +- 0.0000
+

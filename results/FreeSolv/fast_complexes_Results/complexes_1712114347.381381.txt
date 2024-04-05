@@ -1,0 +1,9 @@
+FreeSolv:
+complexes:column: expt, 
+mean R^2: -0.0066 +- 0.0019, mean RMSE: 3.8852 +- 0.0550, mean MAE: 2.8449 +- 0.0363
+, mean CRPS: 2.8449 +- 0.0363
+
+column: calc, 
+mean R^2: -0.0049 +- 0.0011, mean RMSE: 4.2123 +- 0.0476, mean MAE: 3.1281 +- 0.0369
+, mean CRPS: 3.1281 +- 0.0369
+

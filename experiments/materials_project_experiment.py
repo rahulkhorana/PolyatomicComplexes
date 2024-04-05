@@ -87,16 +87,22 @@ def one_experiment(target, encoding, n_trials, n_iters):
         ).load_mp()
 
     if ENCODING != "GRAPHS":
-        r2_list, rmse_list, mae_list, confidence_percentiles, mae_mean, mae_std = (
-            evaluate_model(
-                initialize_model=initialize_model,
-                n_trials=n_trials,
-                n_iters=n_iters,
-                test_set_size=holdout_set_size,
-                X=X,
-                y=y,
-                figure_path=f"results/{EXPERIMENT_TYPE}/confidence_mae_model_{ENCODING}_{target}.png",
-            )
+        (
+            r2_list,
+            rmse_list,
+            mae_list,
+            crps_list,
+            confidence_percentiles,
+            mae_mean,
+            mae_std,
+        ) = evaluate_model(
+            initialize_model=initialize_model,
+            n_trials=n_trials,
+            n_iters=n_iters,
+            test_set_size=holdout_set_size,
+            X=X,
+            y=y,
+            figure_path=f"results/{EXPERIMENT_TYPE}/confidence_mae_model_{ENCODING}_{target}.png",
         )
 
     mean_r2 = "\nmean R^2: {:.4f} +- {:.4f}".format(
@@ -108,7 +114,10 @@ def one_experiment(target, encoding, n_trials, n_iters):
     mean_mae = "mean MAE: {:.4f} +- {:.4f}\n".format(
         np.mean(mae_list), np.std(mae_list) / np.sqrt(len(mae_list))
     )
-    return mean_r2, mean_rmse, mean_mae
+    mean_crps = "mean CRPS: {:.4f} +- {:.4f}\n".format(
+        np.mean(crps_list), np.std(crps_list) / np.sqrt(len(crps_list))
+    )
+    return mean_r2, mean_rmse, mean_mae, mean_crps
 
 
 if __name__ == "__main__":
@@ -133,10 +142,10 @@ if __name__ == "__main__":
 
     def helper(column):
         print(f"column processed {column}")
-        mean_r2, mean_rmse, mean_mae = one_experiment(
+        mean_r2, mean_rmse, mean_mae, mean_crps = one_experiment(
             column, ENCODING, N_TRIALS, N_ITERS
         )
-        results.append([column, mean_r2, mean_rmse, mean_mae])
+        results.append([column, mean_r2, mean_rmse, mean_mae, mean_crps])
         print(f"current results {results}")
 
     with Pool(1) as p:
@@ -154,8 +163,10 @@ if __name__ == "__main__":
             f.write("\n")
             f.write(ENCODING + ":")
             for result in results:
-                col, mean_r2, mean_rmse, mean_mae = result
-                f.write(f"column: {col}, {mean_r2}, {mean_rmse}, {mean_mae}")
+                col, mean_r2, mean_rmse, mean_mae, mean_crps = result
+                f.write(
+                    f"column: {col}, {mean_r2}, {mean_rmse}, {mean_mae}, {mean_crps}"
+                )
                 f.write("\n")
         f.close()
         print("CONCLUDED")
