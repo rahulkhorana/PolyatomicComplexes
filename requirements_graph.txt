@@ -84,7 +84,7 @@ threadpoolctl==3.4.0
 torch==2.1.2
 tqdm==4.66.2
 typeguard==2.13.3
-typing_extensions==4.5.0
+typing_extensions==4.11.0
 url-normalize==1.4.3
 urllib3==2.2.1
 wget==3.2
