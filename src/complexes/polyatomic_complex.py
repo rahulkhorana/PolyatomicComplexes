@@ -3,6 +3,7 @@ import sys
 import dill
 import json
 import numpy as np
+import networkx as nx
 import jax.numpy as jnp
 from typing import List, Tuple
 
@@ -124,12 +125,62 @@ class PolyAtomComplex:
 
         return tuple([C, self.E.get_efield(), self.F, self.DE])
 
+    def custom_reshape(self, ac):
+        assert isinstance(ac, np.ndarray) and len(ac.shape) == 1
+        length = ac.shape[0]
+        nearest = pow(round(np.sqrt(length)) + 1, 2)
+        diff = abs(nearest - length)
+        out = np.asarray([i for i in ac] + [0 for _ in range(diff)])
+        r = round(np.sqrt(len(out)))
+        out = out.reshape(r, r)
+        return out
+
+    def take_nbrs(self, stack):
+        return stack.nodes, stack.edges
+
+    def fast_stacked_complex(self) -> Tuple:
+        lookup = self.datapath + "/atom_lookup.pkl"
+        with open(lookup, "rb") as f:
+            lookup = dill.load(f)
+        C = []
+        for a in self.atoms:
+            acomplex = lookup[a]
+            data = acomplex[0].ravel()
+            assert isinstance(data, np.ndarray)
+            if np.sqrt(len(data)) % 1 == 0:
+                r = round(np.sqrt(len(data)))
+                data = data.reshape(r, r)
+                C.append(nx.Graph(data))
+            else:
+                res = self.custom_reshape(data)
+                C.append(nx.Graph(res))
+        assert len(C) > 0
+        combine = C.pop(0)
+        while C:
+            next = C.pop(0)
+            combine = nx.disjoint_union(combine, next)
+        nde, edge = self.take_nbrs(combine)
+        assert (
+            isinstance(combine, nx.Graph)
+            and len(combine) > 0
+            and len(nde) > 0
+            and len(edge) > 0
+        )
+        C = [combine]
+        return tuple([C, [], [], []])
+
 
 def sanity_test(atom_list, kind):
     pac = PolyAtomComplex(atom_list)
     if kind == "general":
         try:
             pac.general_build_complex()
+            print("success ✅")
+        except Exception:
+            print("failed ❌")
+    elif kind == "fast_stacked":
+        try:
+            pac.fast_stacked_complex()
             print("success ✅")
         except Exception:
             print("failed ❌")
@@ -143,7 +194,41 @@ def sanity_test(atom_list, kind):
 
 if __name__ == "__main__":
     sanity_test(["H", "H", "O"], "")
+    sanity_test(["H", "H", "O"], "fast_stacked")
     sanity_test(["C", "H", "H", "H"], "")
+    sanity_test(
+        [
+            "Np",
+            "U",
+            "P",
+            "P",
+            "P",
+            "P",
+            "H",
+            "H",
+            "H",
+            "H",
+            "C",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+            "C",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+        ],
+        "",
+    )
     sanity_test(
         [
             "Np",
@@ -210,5 +295,73 @@ if __name__ == "__main__":
             "O",
             "O",
         ],
+        "fast_stacked",
+    )
+    sanity_test(["H", "H", "O"], "general")
+    sanity_test(["C", "H", "H", "H"], "general")
+    sanity_test(
+        [
+            "Np",
+            "U",
+            "P",
+            "P",
+            "P",
+            "P",
+            "H",
+            "H",
+            "H",
+            "H",
+            "C",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+            "C",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+        ],
         "general",
+    )
+    sanity_test(
+        [
+            "Np",
+            "U",
+            "P",
+            "P",
+            "P",
+            "P",
+            "H",
+            "H",
+            "H",
+            "H",
+            "C",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+            "C",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+        ],
+        "fast_stacked",
     )

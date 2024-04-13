@@ -48,6 +48,9 @@ cases = [
     (PolyAtomComplex(atom_list=atom_lists[0]), "fast"),
     (PolyAtomComplex(atom_list=atom_lists[1]), "fast"),
     (PolyAtomComplex(atom_list=atom_lists[2]), "fast"),
+    (PolyAtomComplex(atom_list=atom_lists[0]), "fast_stacked"),
+    (PolyAtomComplex(atom_list=atom_lists[1]), "fast_stacked"),
+    (PolyAtomComplex(atom_list=atom_lists[2]), "fast_stacked"),
 ]
 
 
@@ -61,6 +64,8 @@ def fuzz_test(n=20, k=15):
         case = (p, "general")
         cases.append(case)
         case = (p, "fast")
+        cases.append(case)
+        case = (p, "fast_stacked")
         cases.append(case)
 
 
@@ -80,5 +85,7 @@ fuzz_test(5, 27)
 def test_build(polyatom: PolyAtomComplex, build_type: str):
     if build_type == "general":
         assert polyatom.general_build_complex()
+    elif build_type == "fast_stacked":
+        assert polyatom.fast_stacked_complex()
     else:
         assert polyatom.fast_build_complex()
