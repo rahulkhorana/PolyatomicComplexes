@@ -38,6 +38,25 @@ class ProcessMP:
             dill.dump(representations, f)
         return None
 
+    def process_stacked(self) -> None:
+        representations = defaultdict(tuple)
+        for i, data in enumerate(zip(self.data["elements"], self.data["composition"])):
+            elem, comp = data
+            elem = eval(elem)
+            print(f"comp {comp}")
+            try:
+                comp = json.loads(comp)
+                atoms = self.extract_atoms(elem, comp)
+            except Exception:
+                # single edge case ['He']
+                comp = eval(comp)
+                atoms = comp
+            representations[i] = PolyAtomComplex(atom_list=atoms).fast_stacked_complex()
+        assert len(representations) == len(self.data)
+        with open(self.src + "stacked_complex_lookup_repn.pkl", "wb") as f:
+            dill.dump(representations, f)
+        return None
+
     def process_deep_complexes(self) -> None:
         representations = defaultdict(tuple)
 
@@ -82,4 +101,5 @@ class ProcessMP:
 if __name__ == "__main__":
     prc = ProcessMP()
     # prc.process()
-    prc.process_deep_complexes()
+    # prc.process_deep_complexes()
+    prc.process_stacked()

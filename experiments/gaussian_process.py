@@ -380,7 +380,7 @@ def evaluate_graph_model(
     mae_confidence_list = np.zeros((n_trials, n_test))
 
     for i in range(n_trials):
-
+        print(f"Starting trial {i}")
         # Carry out the random split with the current random seed
         # and standardise the outputs
         X_train, X_test, y_train, y_test = train_test_split(
@@ -402,21 +402,21 @@ def evaluate_graph_model(
         model = initialize_model(
             X_train, y_train, likelihood, kernel, node_label="element"
         )
-
+        print("model initialization done")
         # Define the marginal log likelihood used to optimise the model hyperparameters
         mll = ExactMarginalLogLikelihood(likelihood, model)
 
         # Use the BoTorch utility for fitting GPs in order
         # to use the LBFGS-B optimiser (recommended)
         fit_gpytorch_model(mll)
-
+        print("fitting done")
         # Get into evaluation (predictive posterior) mode and compute predictions
         model.eval()
         likelihood.eval()
         f_pred = model(X_test)
         y_pred = f_pred.mean
         y_var = f_pred.variance
-
+        print("eval done")
         # Transform the predictions back to the original scale and calucalte eval metrics
         y_pred = y_scaler.inverse_transform(y_pred.detach().unsqueeze(dim=1))
         y_test = y_scaler.inverse_transform(y_test.detach().unsqueeze(dim=1))

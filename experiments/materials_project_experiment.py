@@ -11,15 +11,21 @@ from botorch.models.gp_regression import ExactGP
 
 # gpytorch specific
 from gpytorch.means import ConstantMean
-from gpytorch.kernels import ScaleKernel
+from gpytorch.kernels import ScaleKernel, MaternKernel, RBFKernel, RFFKernel, Kernel
 from gpytorch.distributions import MultivariateNormal
-from gpytorch.likelihoods import GaussianLikelihood
+from gpytorch.likelihoods import GaussianLikelihood, Likelihood
 from gpytorch.mlls import ExactMarginalLogLikelihood
+from gpytorch.priors import GammaPrior
 
 # kernels + gp
 from kernels import TanimotoKernel
-from gaussian_process import evaluate_model
-from gauche import SIGP
+from gaussian_process import evaluate_model, evaluate_graph_model
+from gauche import SIGP, NonTensorialInputs
+from gauche.kernels.graph_kernels import (
+    ShortestPathKernel,
+    VertexHistogramKernel,
+    GraphletSamplingKernel,
+)
 
 from matplotlib import pyplot as plt
 
@@ -66,6 +72,32 @@ class GraphGP(SIGP):
         return MultivariateNormal(mean, covariance)
 
 
+class StackedGP(SIGP):
+    def __init__(
+        self,
+        train_x: NonTensorialInputs,
+        train_y: torch.Tensor,
+        likelihood: Likelihood,
+        kernel: Kernel,
+    ):
+        super().__init__(train_x, train_y, likelihood)
+        self.mean = ConstantMean()
+        self.covariance = kernel()
+
+    def forward(self, x):
+        """
+        A forward pass through the model.
+        """
+        mean = self.mean(torch.zeros(len(x), 1)).float()
+        covariance = self.covariance(x)
+
+        # because graph kernels operate over discrete inputs it is beneficial
+        # to add some jitter for numerical stability
+        jitter = max(covariance.diag().mean().detach().item() * 1e-4, 1e-4)
+        covariance += torch.eye(len(x)) * jitter
+        return MultivariateNormal(mean, covariance)
+
+
 def initialize_model(train_x: torch.Tensor, train_obj: torch.Tensor, likelihood):
     model = ExactGPModel(train_x, train_obj, likelihood)
     return model
@@ -73,6 +105,11 @@ def initialize_model(train_x: torch.Tensor, train_obj: torch.Tensor, likelihood)
 
 def initialize_graph_gp(train_x, train_obj, likelihood, kernel, **kernel_kwargs):
     model = GraphGP(train_x, train_obj, likelihood, kernel, **kernel_kwargs)
+    return model
+
+
+def initialize_stacked_gp(train_x, train_obj, likelihood, kernel, **kwargs):
+    model = StackedGP(train_x, train_obj, likelihood, kernel)
     return model
 
 
@@ -85,8 +122,15 @@ def one_experiment(target, encoding, n_trials, n_iters):
             repn=encoding,
             y_column=target,
         ).load_mp()
+    elif encoding == "stacked_complexes":
+        X, y = LoadDatasetForTask(
+            X="dataset/materials_project/stacked_complex_lookup_repn.pkl",
+            y="dataset/materials_project/materials_data.csv",
+            repn=encoding,
+            y_column=target,
+        ).load_mp()
 
-    if ENCODING != "GRAPHS":
+    if ENCODING != "GRAPHS" and ENCODING != "stacked_complexes":
         (
             r2_list,
             rmse_list,
@@ -103,6 +147,25 @@ def one_experiment(target, encoding, n_trials, n_iters):
             X=X,
             y=y,
             figure_path=f"results/{EXPERIMENT_TYPE}/confidence_mae_model_{ENCODING}_{target}.png",
+        )
+    elif encoding == "stacked_complexes":
+        (
+            r2_list,
+            rmse_list,
+            mae_list,
+            crps_list,
+            confidence_percentiles,
+            mae_mean,
+            mae_std,
+        ) = evaluate_graph_model(
+            initialize_stacked_gp,
+            n_trials=n_trials,
+            n_iters=n_iters,
+            test_set_size=holdout_set_size,
+            X=X,
+            y=y,
+            figure_path=f"results/{EXPERIMENT_TYPE}/confidence_mae_model_{ENCODING}_{target}.png",
+            kernel=GraphletSamplingKernel,
         )
 
     mean_r2 = "\nmean R^2: {:.4f} +- {:.4f}".format(

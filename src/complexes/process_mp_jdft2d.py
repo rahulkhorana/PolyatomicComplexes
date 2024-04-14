@@ -37,6 +37,18 @@ class ProcessJDFT:
             dill.dump(representations, f)
         return None
 
+    def process_stacked(self) -> None:
+        representations = defaultdict(tuple)
+        for i, struct in enumerate(self.data["structure"]):
+            structure = Structure.from_dict(struct)
+            elem, comp = self.extract_structure(structure)
+            atoms = self.extract_atoms(elem, comp)
+            representations[i] = PolyAtomComplex(atom_list=atoms).fast_stacked_complex()
+        assert len(representations) == len(self.data)
+        with open(self.src + "stacked_complex_lookup_repn.pkl", "wb") as f:
+            dill.dump(representations, f)
+        return None
+
     def process_deep_complexes(self) -> None:
         representations = defaultdict(tuple)
 
@@ -84,3 +96,4 @@ if __name__ == "__main__":
     prc = ProcessJDFT()
     # prc.process()
     # prc.process_deep_complexes()
+    prc.process_stacked()
