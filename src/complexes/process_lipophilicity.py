@@ -44,6 +44,18 @@ class ProcessLipophilicity:
             dill.dump(representations, f)
         return None
 
+    def process_stacked(self) -> None:
+        representations = defaultdict(tuple)
+        for i, row in enumerate(self.data["smiles"]):
+            print(f"row {row}")
+            print(f"tpe {type(row)}")
+            atoms = self.smiles_to_atoms(row)
+            representations[i] = PolyAtomComplex(atom_list=atoms).fast_stacked_complex()
+
+        with open(self.src + "stacked_complex_lookup_repn.pkl", "wb") as f:
+            dill.dump(representations, f)
+        return None
+
     def smiles_to_atoms(self, smile: str) -> list:
         assert isinstance(smile, str)
         mol = Chem.MolFromSmiles(smile)
@@ -79,4 +91,5 @@ class ProcessLipophilicity:
 if __name__ == "__main__":
     prc = ProcessLipophilicity()
     # prc.process()
-    prc.process_deep_complexes()
+    # prc.process_deep_complexes()
+    prc.process_stacked()

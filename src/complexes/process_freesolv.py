@@ -30,6 +30,18 @@ class ProcessFreeSolv:
             dill.dump(representations, f)
         return None
 
+    def process_stacked(self) -> None:
+        representations = defaultdict(tuple)
+        for i, row in enumerate(self.data["smiles"]):
+            print(f"row {row}")
+            print(f"tpe {type(row)}")
+            atoms = self.smiles_to_atoms(row)
+            representations[i] = PolyAtomComplex(atom_list=atoms).fast_stacked_complex()
+
+        with open(self.src + "stacked_complex_lookup_repn.pkl", "wb") as f:
+            dill.dump(representations, f)
+        return None
+
     def process_deep_complexes(self) -> None:
         representations = defaultdict(tuple)
         for i, row in enumerate(self.data["smiles"]):
@@ -79,4 +91,5 @@ class ProcessFreeSolv:
 if __name__ == "__main__":
     prc = ProcessFreeSolv()
     # prc.process()
-    prc.process_deep_complexes()
+    # prc.process_deep_complexes()
+    prc.process_stacked()

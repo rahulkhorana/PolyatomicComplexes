@@ -75,6 +75,19 @@ class LoadDatasetForTask:
                 and isinstance(y, torch.Tensor)
             )
             return tuple([X, y])
+        elif self.repn == "stacked_complexes":
+            with open(self.X, "rb") as f:
+                x_data = dill.load(f)
+            X = []
+            for x in x_data:
+                X.append(x_data[x][0][0])
+            ydata = pd.read_csv(self.y)
+            y = ydata[self.y_column]
+            mean_value = y.mean()
+            y.fillna(value=mean_value, inplace=True)
+            y = torch.tensor(y.values).view(len(y), 1)
+            assert len(X) == len(y) and isinstance(y, torch.Tensor)
+            return tuple([X, y])
         elif self.repn == "fingerprints":
             loader = MolPropLoader()
             loader.validate = lambda: False
@@ -203,6 +216,17 @@ class LoadDatasetForTask:
                 and isinstance(y, torch.Tensor)
             )
             return tuple([X, y])
+        elif self.repn == "stacked_complexes":
+            with open(self.X, "rb") as f:
+                x_data = dill.load(f)
+            X = []
+            for x in x_data:
+                X.append(x_data[x][0][0])
+            ydata = pd.read_csv(self.y)
+            y = ydata[self.y_column]
+            y = torch.tensor(y.values).view(len(y), 1)
+            assert len(X) == len(y) and isinstance(y, torch.Tensor)
+            return tuple([X, y])
         elif self.repn == "fingerprints":
             loader = MolPropLoader()
             loader.load_benchmark("ESOL", path="dataset/esol/ESOL.csv")
@@ -314,6 +338,17 @@ class LoadDatasetForTask:
                 and isinstance(X, torch.Tensor)
                 and isinstance(y, torch.Tensor)
             )
+            return tuple([X, y])
+        elif self.repn == "stacked_complexes":
+            with open(self.X, "rb") as f:
+                x_data = dill.load(f)
+            X = []
+            for x in x_data:
+                X.append(x_data[x][0][0])
+            ydata = pd.read_csv(self.y)
+            y = ydata[self.y_column]
+            y = torch.tensor(y.values).view(len(y), 1)
+            assert len(X) == len(y) and isinstance(y, torch.Tensor)
             return tuple([X, y])
         elif self.repn == "fingerprints":
             loader = MolPropLoader()
@@ -427,6 +462,17 @@ class LoadDatasetForTask:
                 and isinstance(y, torch.Tensor)
             )
             return tuple([X, y])
+        elif self.repn == "stacked_complexes":
+            with open(self.X, "rb") as f:
+                x_data = dill.load(f)
+            X = []
+            for x in x_data:
+                X.append(x_data[x][0][0])
+            ydata = pd.read_csv(self.y)
+            y = ydata[self.y_column]
+            y = torch.tensor(y.values).view(len(y), 1)
+            assert len(X) == len(y) and isinstance(y, torch.Tensor)
+            return tuple([X, y])
         elif self.repn == "fingerprints":
             loader = MolPropLoader()
             loader.load_benchmark(
@@ -520,6 +566,17 @@ class LoadDatasetForTask:
                 and isinstance(y, torch.Tensor)
             )
             return tuple([X, y])
+        elif self.repn == "stacked_complexes":
+            with open(self.X, "rb") as f:
+                x_data = dill.load(f)
+            X = []
+            for x in x_data:
+                X.append(x_data[x][0][0])
+            ydata = pd.read_csv(self.y, low_memory=False)
+            y = ydata[self.y_column]
+            y = torch.tensor(y.values, dtype=torch.float32).view(len(y), 1)
+            assert len(X) == len(y) and isinstance(y, torch.Tensor)
+            return tuple([X, y])
 
     def load_matbench(self):
         if self.repn == "complexes":
@@ -557,6 +614,17 @@ class LoadDatasetForTask:
                 and isinstance(X, torch.Tensor)
                 and isinstance(y, torch.Tensor)
             )
+            return tuple([X, y])
+        elif self.repn == "stacked_complexes":
+            with open(self.X, "rb") as f:
+                x_data = dill.load(f)
+            X = []
+            for x in x_data:
+                X.append(x_data[x][0][0])
+            ydata = pd.read_csv(self.y, low_memory=False)
+            y = ydata[self.y_column]
+            y = torch.tensor(y.values, dtype=torch.float32).view(len(y), 1)
+            assert len(X) == len(y) and isinstance(y, torch.Tensor)
             return tuple([X, y])
 
     def load_jdft2d(self) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -620,4 +688,15 @@ class LoadDatasetForTask:
                 and isinstance(X, torch.Tensor)
                 and isinstance(y, torch.Tensor)
             )
+            return tuple([X, y])
+        elif self.repn == "stacked_complexes":
+            with open(self.X, "rb") as f:
+                x_data = dill.load(f)
+            X = []
+            for x in x_data:
+                X.append(x_data[x][0][0])
+            ydata = pd.read_csv(self.y, low_memory=False)
+            y = ydata[self.y_column]
+            y = torch.tensor(y.values, dtype=torch.float32).view(len(y), 1)
+            assert len(X) == len(y) and isinstance(y, torch.Tensor)
             return tuple([X, y])
