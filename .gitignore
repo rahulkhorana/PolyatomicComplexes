@@ -165,3 +165,6 @@ experiments/tempCodeRunnerFile.py
 .egg
 .eggs
 .conda
+
+# large dataset files > 5GB
+dataset/materials_project/stacked_complex_lookup_repn.pkl
