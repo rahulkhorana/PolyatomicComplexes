@@ -19,8 +19,7 @@ jobs:
         with:
           python-version: ${{matrix.python-version}}
           cache: 'pip' # caching pip dependencies
-          lfs: true
-      - run: git lfs pull
+      - run: git lfs pull --include=dataset/construct/*
       - run: pip install -r requirements.txt
       
       - name: run tests

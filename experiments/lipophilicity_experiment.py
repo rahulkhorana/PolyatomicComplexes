@@ -89,7 +89,7 @@ class StackedGP(SIGP):
 
         # because graph kernels operate over discrete inputs it is beneficial
         # to add some jitter for numerical stability
-        jitter = max(covariance.diag().mean().detach().item() * 1e-4, 1e-4)
+        jitter = max(covariance.diag().mean().detach().item() * 1, 0.8)
         covariance += torch.eye(len(x)) * jitter
         return MultivariateNormal(mean, covariance)
 
