@@ -20,7 +20,7 @@ jobs:
           python-version: ${{matrix.python-version}}
           cache: 'pip' # caching pip dependencies
           lfs: true
-      - run: git lfs checkout
+      - run: git lfs pull
       - run: pip install -r requirements.txt
       
       - name: run tests
