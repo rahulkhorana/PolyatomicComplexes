@@ -1,5 +1,6 @@
 import torch
 import dill
+import joblib
 import numpy as np
 import pandas as pd
 from typing import Tuple
@@ -568,7 +569,7 @@ class LoadDatasetForTask:
             return tuple([X, y])
         elif self.repn == "stacked_complexes":
             with open(self.X, "rb") as f:
-                x_data = dill.load(f)
+                x_data = joblib.load(f)
             X = []
             for x in x_data:
                 X.append(x_data[x][0][0])

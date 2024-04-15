@@ -98,12 +98,14 @@ def one_experiment(target, encoding, n_trials, n_iters):
             y_column=target,
         ).load_matbench()
     elif encoding == "stacked_complexes":
+        print("loading started")
         X, y = LoadDatasetForTask(
             X="dataset/materials_project/stacked_complex_lookup_repn.pkl",
             y="dataset/materials_project/materials_data.csv",
             repn=encoding,
             y_column=target,
         ).load_matbench()
+        print("loading completed")
 
     if ENCODING != "GRAPHS" and encoding != "stacked_complexes":
         (
@@ -124,6 +126,7 @@ def one_experiment(target, encoding, n_trials, n_iters):
             figure_path=f"results/{EXPERIMENT_TYPE}/confidence_mae_model_{ENCODING}_{target}.png",
         )
     elif encoding == "stacked_complexes":
+        print("started training")
         (
             r2_list,
             rmse_list,
@@ -160,7 +163,7 @@ def one_experiment(target, encoding, n_trials, n_iters):
 
 if __name__ == "__main__":
     EXPERIMENT_TYPE = "MP_MatBench"
-    ENCODING = "complexes"
+    ENCODING = "stacked_complexes"
     N_TRIALS = 20
     N_ITERS = 5
     holdout_set_size = 0.33
@@ -182,7 +185,7 @@ if __name__ == "__main__":
         results.append([column, mean_r2, mean_rmse, mean_mae, mean_crps])
         print(f"current results {results}")
 
-    with Pool(2) as p:
+    with Pool(1) as p:
         p.map(
             func=helper,
             iterable=possible_target_cols,

@@ -185,7 +185,7 @@ def one_experiment(target, encoding, n_trials, n_iters):
 
 if __name__ == "__main__":
     EXPERIMENT_TYPE = "Materials Project"
-    ENCODING = "complexes"
+    ENCODING = "stacked_complexes"
     N_TRIALS = 7
     N_ITERS = 5
     holdout_set_size = 0.9
@@ -211,11 +211,13 @@ if __name__ == "__main__":
         results.append([column, mean_r2, mean_rmse, mean_mae, mean_crps])
         print(f"current results {results}")
 
-    with Pool(1) as p:
-        p.map(
-            func=helper,
-            iterable=possible_target_cols,
-        )
+    # with Pool(1) as p:
+    #    p.map(
+    #        func=helper,
+    #        iterable=possible_target_cols,
+    #    )
+    for col in possible_target_cols:
+        helper(col)
 
     if type(EXPERIMENT_TYPE) is str:
         trial_num = len(os.listdir(f"results/{EXPERIMENT_TYPE}"))

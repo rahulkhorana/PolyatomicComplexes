@@ -170,7 +170,7 @@ def one_experiment(target, encoding, n_trials, n_iters):
 
 if __name__ == "__main__":
     EXPERIMENT_TYPE = "JDFT2D"
-    ENCODING = "deep_complexes"
+    ENCODING = "stacked_complexes"
     N_TRIALS = 20
     N_ITERS = 10
     holdout_set_size = 0.2
