@@ -23,5 +23,5 @@ jobs:
       
       - name: run tests
         working-directory: .
-        run: python -B -m pytest -v
+        run: python -B -m pytest
       
