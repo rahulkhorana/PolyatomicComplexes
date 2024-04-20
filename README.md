@@ -37,10 +37,20 @@ For materials based experiments:
 pip install -Ur requirements_mat.txt
 ```
 
-Details on available [] are available in our [user guide](), which also includes numerous usage examples and information on [].
-
 ## License
 
 [MIT License](https://github.com/rahulkhorana/PolyatomicComplexes/blob/master/LICENSE).
 
 ## Reference
+
+```
+@inproceedings{
+khorana2024polyatomiccomplexes,
+title={Polyatomic Complexes},
+author={Rahul Khorana, Marcus M. Noack, Jin Qian},
+booktitle={Submitted},
+year={2024},
+url={https://openreview.net/forum?id=}
+}
+
+```
