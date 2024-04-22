@@ -6,7 +6,6 @@ import pandas as pd
 from typing import Tuple
 from gauche.dataloader import MolPropLoader
 from sklearn.preprocessing import StandardScaler
-from sklearn.utils.extmath import randomized_svd
 
 
 class LoadDatasetForTask:

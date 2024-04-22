@@ -1,13 +1,11 @@
 """
-This code was adapted and modified from the Gauche Project.
+This file contains code that was adapted and modified from the Gauche Project.
 We use their code per the MIT license in their repo.
 All credits go to the original authors. We cite them in our manuscript.
 # Credit: https://github.com/leojklarner/gauche
 # Original Paper: https://arxiv.org/abs/2212.04450
 """
 
-import os
-import sys
 import time
 import torch
 from typing import Tuple

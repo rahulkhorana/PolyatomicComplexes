@@ -1,10 +1,8 @@
 import os
-import sys
 import torch
 import time
 import numpy as np
 from load_process_data import LoadDatasetForTask
-from multiprocessing.pool import ThreadPool as Pool
 
 # botorch specific
 from botorch.models.gp_regression import ExactGP

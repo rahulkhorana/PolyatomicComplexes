@@ -9,12 +9,14 @@ class CRPS:
 
     def crps(self):
         """
+        credit: https://docs.pyro.ai/en/dev/_modules/pyro/ops/stats.html
         adapted from pyro.ops.stats
         :param torch.Tensor pred: A set of sample predictions batched on rightmost dim.
             This should have shape ``(num_samples,) + truth.shape``.
         :param torch.Tensor truth: A tensor of true observations.
         :return: A tensor of shape ``truth.shape``.
         :rtype: torch.Tensor
+        :used per the Apache-2.0 license
         """
         opts = dict(device=self.pred.device, dtype=self.pred.dtype)
         num_samples = self.pred.size(0)

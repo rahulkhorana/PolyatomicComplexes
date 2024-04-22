@@ -100,8 +100,9 @@ class ElectronField:
 
 
 class NSphere(object):
-    # author: Kip Hart
+    # author credited: Kip Hart
     # docs: https://docs.microstructpy.org/en/latest/_modules/microstructpy/geometry/sphere.html
+    # we make use of this code per the MIT license
     def __init__(self, **kwargs):
         if "r" in kwargs:
             self.r = kwargs["r"]
