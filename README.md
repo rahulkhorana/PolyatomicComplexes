@@ -37,6 +37,14 @@ For materials based experiments:
 pip install -Ur requirements_mat.txt
 ```
 
+3. Get all large files from git lfs
+
+```sh
+git lfs fetch --all
+git lfs pull
+```
+
+
 ## License
 
 [MIT License](https://github.com/rahulkhorana/PolyatomicComplexes/blob/master/LICENSE).
