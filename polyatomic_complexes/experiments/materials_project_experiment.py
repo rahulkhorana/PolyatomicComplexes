@@ -183,7 +183,7 @@ def one_experiment(target, encoding, n_trials, n_iters):
 
 if __name__ == "__main__":
     EXPERIMENT_TYPE = "Materials Project"
-    ENCODING = "stacked_complexes"
+    ENCODING = "complexes"
     N_TRIALS = 7
     N_ITERS = 5
     holdout_set_size = 0.9
