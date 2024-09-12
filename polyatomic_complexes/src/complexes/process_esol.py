@@ -7,12 +7,17 @@ from rdkit import Chem
 from collections import defaultdict
 
 sys.path.append(".")
-from src.complexes.polyatomic_complex import PolyAtomComplex
+from .polyatomic_complex import PolyAtomComplex
 
 
 class ProcessESOL:
-    def __init__(self):
-        self.src = os.getcwd() + "/dataset/esol/"
+    def __init__(
+        self,
+        source_path=os.getcwd() + "/polyatomic_complexes/dataset/esol/",
+        target_path=os.getcwd() + "/polyatomic_complexes/dataset/esol/",
+    ):
+        self.src = source_path
+        self.tgt = target_path
         assert "ESOL.csv" in os.listdir(self.src)
         self.datapath = self.src + "ESOL.csv"
         self.data = pd.read_csv(self.datapath)
@@ -26,7 +31,7 @@ class ProcessESOL:
             atoms = self.smiles_to_atoms(row)
             representations[i] = PolyAtomComplex(atom_list=atoms).fast_build_complex()
 
-        with open(self.src + "fast_complex_lookup_repn.pkl", "wb") as f:
+        with open(self.tgt + "fast_complex_lookup_repn.pkl", "wb") as f:
             dill.dump(representations, f)
         return None
 
@@ -40,7 +45,7 @@ class ProcessESOL:
                 atom_list=atoms
             ).general_build_complex()
 
-        with open(self.src + "deep_complex_lookup_repn.pkl", "wb") as f:
+        with open(self.tgt + "deep_complex_lookup_repn.pkl", "wb") as f:
             dill.dump(representations, f)
         return None
 
@@ -52,7 +57,7 @@ class ProcessESOL:
             atoms = self.smiles_to_atoms(row)
             representations[i] = PolyAtomComplex(atom_list=atoms).fast_stacked_complex()
 
-        with open(self.src + "stacked_complex_lookup_repn.pkl", "wb") as f:
+        with open(self.tgt + "stacked_complex_lookup_repn.pkl", "wb") as f:
             dill.dump(representations, f)
         return None
 

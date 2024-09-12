@@ -1,5 +1,6 @@
 from src.complexes.atomic_complex import AtomComplex
 from typing import List
+import os
 import pytest
 import json
 import random
@@ -15,8 +16,12 @@ cases = [
 ]
 
 
+os.getcwd()
+root_data = os.getcwd() + "/polyatomic_complexes/"
+
+
 def fuzz_test(n=50):
-    with open("dataset/construct/lookup_map.json") as data:
+    with open(root_data + "dataset/construct/lookup_map.json") as data:
         lookup = json.load(data)
     assert isinstance(lookup, dict)
     items = random.sample(list(lookup.items()), n)

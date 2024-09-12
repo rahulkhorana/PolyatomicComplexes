@@ -9,10 +9,12 @@ setup.py
 .github/workflows/build_graph.yml
 .github/workflows/build_mat.yml
 .github/workflows/ci.yml
+polyatomic_complexes/__init__.py
 polyatomic_complexes.egg-info/PKG-INFO
 polyatomic_complexes.egg-info/SOURCES.txt
 polyatomic_complexes.egg-info/dependency_links.txt
 polyatomic_complexes.egg-info/top_level.txt
+polyatomic_complexes/experiments/__init__.py
 polyatomic_complexes/experiments/esol_experiment.py
 polyatomic_complexes/experiments/freesolv_experiment.py
 polyatomic_complexes/experiments/gaussian_process.py
@@ -24,6 +26,7 @@ polyatomic_complexes/experiments/materials_project_experiment.py
 polyatomic_complexes/experiments/metrics.py
 polyatomic_complexes/experiments/mp_matbench_experiment.py
 polyatomic_complexes/experiments/photoswitches_experiment.py
+polyatomic_complexes/src/__init__.py
 polyatomic_complexes/src/complexes/__init__.py
 polyatomic_complexes/src/complexes/atomic_complex.py
 polyatomic_complexes/src/complexes/build_atom_lookup.py

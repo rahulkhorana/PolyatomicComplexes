@@ -2,7 +2,7 @@ import os
 import torch
 import time
 import numpy as np
-from load_process_data import LoadDatasetForTask
+from .load_process_data import LoadDatasetForTask
 from multiprocessing.pool import ThreadPool as Pool
 
 # botorch specific
@@ -17,8 +17,8 @@ from gpytorch.mlls import ExactMarginalLogLikelihood
 from gpytorch.priors import GammaPrior
 
 # kernels + gp
-from kernels import TanimotoKernel
-from gaussian_process import evaluate_model, evaluate_graph_model
+from .kernels import TanimotoKernel
+from .gaussian_process import evaluate_model, evaluate_graph_model
 from gauche import SIGP, NonTensorialInputs
 from gauche.kernels.graph_kernels import (
     ShortestPathKernel,

@@ -22,7 +22,7 @@ import warnings
 # sklearn specific
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
-from metrics import CRPS
+from .metrics import CRPS
 
 # gp specific
 

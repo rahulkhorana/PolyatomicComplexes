@@ -9,8 +9,39 @@ version = "1.0.0"
 [tools.pytest.ini_options]
 adopts = '--cov=polyatomic_complexes/src/complexes'
 testpaths = [
-    "polyatomic_complexes/tests"
+    "polyatomic_complexes/tests",
+    "sanity_testing_build"
 ]
+authors = [
+    {name = "Rahul Khorana", email = "rahul.khorana.email@gmail.com"},
+]
+description = "A system for modeling atomistic environments as described in the referenced research paper."
+readme = "README.md"
+requires-python = ">=3.11.6"
+license = {text = "MIT License"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "torch",
+    "jax",
+    "jaxlib",
+    "rdkit",
+    "dill",
+    "pandas",
+    "gpytorch",
+    "botorch",
+    "gauche",
+    "pytest==8.1.1",
+    "pytest-cov==5.0.0",
+    "flake8==7.0.0",
+    "mypy==1.9.0",
+    "pyglview",
+    "gmsh",
+    "git-lfs",
+]
+dynamic = ["version"]
+
 
 [mypy]
 mypy_path = "./polyatomic_complexes"

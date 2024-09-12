@@ -8,12 +8,17 @@ from multiprocessing.pool import ThreadPool as Pool
 from collections import defaultdict
 
 sys.path.append(".")
-from src.complexes.polyatomic_complex import PolyAtomComplex
+from .polyatomic_complex import PolyAtomComplex
 
 
 class ProcessMP:
-    def __init__(self):
-        self.src = os.getcwd() + "/dataset/materials_project/"
+    def __init__(
+        self,
+        source_path=os.getcwd() + "/polyatomic_complexes/dataset/materials_project/",
+        target_path=os.getcwd() + "/polyatomic_complexes/dataset/materials_project/",
+    ):
+        self.src = source_path
+        self.tgt = target_path
         assert "materials_data.csv" in os.listdir(self.src)
         self.datapath = self.src + "materials_data.csv"
         self.data = pd.read_csv(self.datapath, low_memory=False)
@@ -34,7 +39,7 @@ class ProcessMP:
                 atoms = comp
             representations[i] = PolyAtomComplex(atom_list=atoms).fast_build_complex()
         assert len(representations) == len(self.data)
-        with open(self.src + "fast_complex_lookup_repn.pkl", "wb") as f:
+        with open(self.tgt + "fast_complex_lookup_repn.pkl", "wb") as f:
             dill.dump(representations, f)
         return None
 
@@ -53,7 +58,7 @@ class ProcessMP:
                 atoms = comp
             representations[i] = PolyAtomComplex(atom_list=atoms).fast_stacked_complex()
         assert len(representations) == len(self.data)
-        with open(self.src + "stacked_complex_lookup_repn.pkl", "wb") as f:
+        with open(self.tgt + "stacked_complex_lookup_repn.pkl", "wb") as f:
             dill.dump(representations, f)
         return None
 
@@ -86,7 +91,7 @@ class ProcessMP:
             )
 
         assert len(representations) == len(self.data)
-        with open(self.src + "deep_complex_lookup_repn.pkl", "wb") as f:
+        with open(self.tgt + "deep_complex_lookup_repn.pkl", "wb") as f:
             dill.dump(representations, f)
         return None
 

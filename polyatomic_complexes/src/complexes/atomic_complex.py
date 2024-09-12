@@ -4,8 +4,8 @@ import numpy as np
 from typing import List, Tuple
 
 sys.path.append(".")
-from src.complexes.building_blocks import Electron, Proton, Neutron
-from src.complexes.general_utils import GeneralComplexUtils
+from .building_blocks import Electron, Proton, Neutron
+from .general_utils import GeneralComplexUtils
 
 
 seed = np.random.randint(0, 10 * 3)

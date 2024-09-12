@@ -7,7 +7,7 @@ from typing import List, Tuple
 from collections import defaultdict
 
 sys.path.append(".")
-from src.complexes.core_utils import GluingMap, NSphere
+from .core_utils import GluingMap, NSphere
 
 
 class GeneralComplexUtils:

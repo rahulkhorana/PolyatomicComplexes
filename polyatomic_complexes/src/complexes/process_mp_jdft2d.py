@@ -9,12 +9,17 @@ from pymatgen.core import Structure
 from collections import defaultdict
 
 sys.path.append(".")
-from src.complexes.polyatomic_complex import PolyAtomComplex
+from .polyatomic_complex import PolyAtomComplex
 
 
 class ProcessJDFT:
-    def __init__(self):
-        self.src = os.getcwd() + "/dataset/mp_matbench_jdft2d/"
+    def __init__(
+        self,
+        source_path=os.getcwd() + "/polyatomic_complexes/dataset/mp_matbench_jdft2d/",
+        target_path=os.getcwd() + "/polyatomic_complexes/dataset/mp_matbench_jdft2d/",
+    ):
+        self.src = source_path
+        self.tgt = target_path
         assert "matbench_jdft2d.json" in os.listdir(self.src)
         self.datapath = self.src + "matbench_jdft2d.json"
         with open(self.datapath) as f:
@@ -33,7 +38,7 @@ class ProcessJDFT:
             atoms = self.extract_atoms(elem, comp)
             representations[i] = PolyAtomComplex(atom_list=atoms).fast_build_complex()
         assert len(representations) == len(self.data)
-        with open(self.src + "fast_complex_lookup_repn.pkl", "wb") as f:
+        with open(self.tgt + "fast_complex_lookup_repn.pkl", "wb") as f:
             dill.dump(representations, f)
         return None
 
@@ -45,7 +50,7 @@ class ProcessJDFT:
             atoms = self.extract_atoms(elem, comp)
             representations[i] = PolyAtomComplex(atom_list=atoms).fast_stacked_complex()
         assert len(representations) == len(self.data)
-        with open(self.src + "stacked_complex_lookup_repn.pkl", "wb") as f:
+        with open(self.tgt + "stacked_complex_lookup_repn.pkl", "wb") as f:
             dill.dump(representations, f)
         return None
 
@@ -70,7 +75,7 @@ class ProcessJDFT:
             )
 
         assert len(representations) == len(self.data)
-        with open(self.src + "deep_complex_lookup_repn.pkl", "wb") as f:
+        with open(self.tgt + "deep_complex_lookup_repn.pkl", "wb") as f:
             dill.dump(representations, f)
         return None
 

@@ -2,7 +2,7 @@ import os
 import torch
 import time
 import numpy as np
-from load_process_data import LoadDatasetForTask
+from .load_process_data import LoadDatasetForTask
 
 # botorch specific
 from botorch.models.gp_regression import ExactGP
@@ -15,8 +15,8 @@ from gpytorch.likelihoods import GaussianLikelihood, Likelihood
 from gpytorch.mlls import ExactMarginalLogLikelihood
 
 # kernels + gp
-from kernels import TanimotoKernel
-from gaussian_process import evaluate_model, evaluate_graph_model
+from .kernels import TanimotoKernel
+from .gaussian_process import evaluate_model, evaluate_graph_model
 from gauche import SIGP, NonTensorialInputs
 from gauche.kernels.graph_kernels import (
     ShortestPathKernel,
