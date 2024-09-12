@@ -80,7 +80,7 @@ soupsieve==2.5
 suds-community==1.1.2
 sympy==1.12
 tenacity==8.2.3
-threadpoolctl==3.4.0
+threadpoolctl==3.5.0
 torch==2.1.2
 tqdm==4.66.2
 typeguard==2.13.3
