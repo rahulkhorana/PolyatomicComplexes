@@ -1,5 +1,5 @@
 appdirs==1.4.4
-attrs==23.2.0
+attrs==24.2.0
 beautifulsoup4==4.12.3
 biopandas==0.5.1.dev0
 biopython==1.83
