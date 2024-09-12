@@ -92,4 +92,4 @@ wrapt==1.16.0
 xarray==2024.3.0
 xmltodict==0.13.0
 zope.event==5.0
-zope.interface==6.2
+zope.interface==7.0.3
