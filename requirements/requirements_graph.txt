@@ -22,7 +22,7 @@ fonttools==4.50.0
 fsspec==2024.3.1
 future==1.0.0
 gevent==24.2.1
-gpytorch==1.11
+gpytorch==1.13
 GraKeL==0.1.10
 graphein==1.7.6
 greenlet==3.0.3
