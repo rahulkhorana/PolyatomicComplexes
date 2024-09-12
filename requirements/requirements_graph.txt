@@ -52,7 +52,7 @@ networkx==3.2.1
 numpy==1.23.5
 opt-einsum==3.3.0
 ordered-set==4.1.0
-packaging==24.0
+packaging==24.1
 pandas==1.5.3
 pexpect==4.9.0
 pillow==10.2.0
