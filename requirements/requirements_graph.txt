@@ -82,7 +82,7 @@ sympy==1.12
 tenacity==8.2.3
 threadpoolctl==3.4.0
 torch==2.1.2
-tqdm==4.66.2
+tqdm==4.66.5
 typeguard==2.13.3
 typing_extensions==4.5.0
 url-normalize==1.4.3
