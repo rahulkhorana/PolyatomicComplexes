@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - productionizing 
 
 jobs:
   build:
