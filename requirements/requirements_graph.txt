@@ -78,7 +78,7 @@ seaborn==0.13.2
 six==1.16.0
 soupsieve==2.5
 suds-community==1.1.2
-sympy==1.12
+sympy==1.13.2
 tenacity==8.2.3
 threadpoolctl==3.4.0
 torch==2.1.2
