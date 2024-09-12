@@ -89,7 +89,7 @@ url-normalize==1.4.3
 urllib3==2.2.1
 wget==3.2
 wrapt==1.16.0
-xarray==2024.3.0
+xarray==2024.9.0
 xmltodict==0.13.0
 zope.event==5.0
 zope.interface==6.2
