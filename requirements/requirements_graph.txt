@@ -25,7 +25,7 @@ gevent==24.2.1
 gpytorch==1.11
 GraKeL==0.1.10
 graphein==1.7.6
-greenlet==3.0.3
+greenlet==3.1.0
 grequests==0.7.0
 idna==3.6
 jax==0.4.25
