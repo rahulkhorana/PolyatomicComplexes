@@ -1,10 +1,2 @@
-./polyatomic_complexes/dataset/materials_project/* filter=lfs diff=lfs merge=lfs -text
-./polyatomic_complexes/dataset/*.pkl filter=lfs diff=lfs merge=lfs -text
-./polyatomic_complexes/dataset/*/*.pkl filter=lfs diff=lfs merge=lfs -text
-./polyatomic_complexes/dataset/materials_project/fast_complex_lookup_repn.pkl filter=lfs diff=lfs merge=lfs -text
-./polyatomic_complexes/dataset/materials_project/materials_data.csv filter=lfs diff=lfs merge=lfs -text
-dataset/materials_project/* filter=lfs diff=lfs merge=lfs -text
-dataset/*.pkl filter=lfs diff=lfs merge=lfs -text
-dataset/materials_project/fast_complex_lookup_repn.pkl filter=lfs diff=lfs merge=lfs -text
-dataset/materials_project/materials_data.csv filter=lfs diff=lfs merge=lfs -text
 *.pkl filter=lfs diff=lfs merge=lfs -text
+*.csv filter=lfs diff=lfs merge=lfs -text
