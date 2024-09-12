@@ -1,15 +1,19 @@
 [build-system]
-requires = ["setuptools>=42.0", "wheel"]
+requires = ["setuptools>=42.0", "setuptools-scm", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[project]
+name = "polyatomic_complexes"
+version = "1.0.0"
+
 [tools.pytest.ini_options]
-adopts = '--cov=complexes'
+adopts = '--cov=polyatomic_complexes/src/complexes'
 testpaths = [
-    "tests"
+    "polyatomic_complexes/tests"
 ]
 
 [mypy]
-mypy_path = "src"
+mypy_path = "./polyatomic_complexes"
 check_untyped_defs = false
 disallow_any_generics = false
 ignore_missing_imports = true

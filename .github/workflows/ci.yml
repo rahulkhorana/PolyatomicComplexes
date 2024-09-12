@@ -19,10 +19,10 @@ jobs:
         with:
           python-version: ${{matrix.python-version}}
           cache: 'pip' # caching pip dependencies
-      - run: git lfs pull --include=dataset/construct/*
-      - run: pip install -r requirements.txt
+      - run: git lfs pull --include=polyatomic_complexes/dataset/construct/*
+      - run: pip install -r requirements/requirements.txt
       
       - name: run tests
-        working-directory: .
+        working-directory: ./polyatomic_complexes
         run: python -B -m pytest -v
       
