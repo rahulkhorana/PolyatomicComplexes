@@ -16,7 +16,7 @@ cycler==0.12.1
 Cython==3.0.10
 deepdiff==6.7.1
 dill==0.3.8
-easydev==0.13.1
+easydev==0.13.2
 filelock==3.13.3
 fonttools==4.50.0
 fsspec==2024.3.1
