@@ -16,7 +16,7 @@
 2. Ensure you have python >= 3.11.6 and set up a virtual environment.
 ```sh
 pip install virtualenv
-virtualenv .env
+virtualenv .env --python=python3.11.6
 source .env/bin/activate
 ```
 
@@ -24,17 +24,17 @@ source .env/bin/activate
 
 For standard/minimal usage:
 ```sh
-pip install -Ur requirements.txt
+pip install -Ur requirements/requirements.txt
 ```
 
 For graph based experiments:
 ```sh
-pip install -Ur requirements_graph.txt
+pip install -Ur requirements/requirements_graph.txt
 ```
 
 For materials based experiments:
 ```sh
-pip install -Ur requirements_mat.txt
+pip install -Ur requirements/requirements_mat.txt
 ```
 
 4. Get all large files from git lfs
