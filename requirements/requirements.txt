@@ -14,3 +14,4 @@ mypy==1.9.0
 pyglview
 gmsh
 git-lfs
+pymatgen
