@@ -305,7 +305,7 @@ def evaluate_model(
         score = r2_score(y_test, y_pred)
         rmse = np.sqrt(mean_squared_error(y_test, y_pred))
         mae = mean_absolute_error(y_test, y_pred)
-        crps = CRPS(y_pred, y_test).crps()
+        crps = CRPS(y_pred, y_test).crps().tolist()
 
         r2_list.append(score)
         rmse_list.append(rmse)
@@ -431,7 +431,7 @@ def evaluate_graph_model(
         score = r2_score(y_test, y_pred)
         rmse = np.sqrt(mean_squared_error(y_test, y_pred))
         mae = mean_absolute_error(y_test, y_pred)
-        crps = CRPS(y_pred, y_test).crps()
+        crps = CRPS(y_pred, y_test).crps().tolist()
 
         r2_list.append(score)
         rmse_list.append(rmse)

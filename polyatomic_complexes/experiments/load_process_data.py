@@ -7,6 +7,10 @@ from typing import Tuple
 from gauche.dataloader import MolPropLoader
 from sklearn.preprocessing import StandardScaler
 
+import os
+
+os.chdir("../")
+
 
 class LoadDatasetForTask:
     def __init__(self, X, y, y_column, repn):
