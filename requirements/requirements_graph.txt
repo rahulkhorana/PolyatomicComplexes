@@ -5,7 +5,7 @@ biopandas==0.5.1.dev0
 biopython==1.83
 bioservices==1.11.2
 botorch==0.10.0
-cattrs==23.2.3
+cattrs==24.1.1
 certifi==2024.2.2
 charset-normalizer==3.3.2
 click==8.1.7
