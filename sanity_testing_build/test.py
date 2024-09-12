@@ -1,5 +1,5 @@
 import os
-import torch
+import time
 import json
 import random
 import pytest
@@ -68,7 +68,7 @@ fuzz_test()
 
 @pytest.mark.parametrize(
     "atom,ans_p,ans_n,ans_e",
-    cases,
+    cases2,
 )
 def test_build(
     atom: complexes.atomic_complex.AtomComplex,
@@ -104,16 +104,178 @@ def test_build(
         assert atom.general_build_complex()
 
 
-def test_data_processing():
-    if "data/esol" not in os.listdir(cwd + "sanity_testing_build"):
-        os.makedirs(cwd + "/sanity_testing_build/data/esol")
-    src_path = root_data + "dataset/esol/"
-    dummy_path = cwd + "/sanity_testing_build/data/esol"
-    e = polyatomic_complexes.complexes.process_esol.ProcessESOL(src_path, dummy_path)
-    e.process()
-    e.process_deep_complexes()
-    e.process_stacked()
+all_paths = [
+    ("data/esol", "dataset/esol/"),
+    ("data/free_solv", "dataset/free_solv/"),
+    ("data/lipophilicity", "dataset/lipophilicity/"),
+    ("data/materials_project", "dataset/materials_project/"),
+    ("data/mp_matbench_jdft2d", "dataset/mp_matbench_jdft2d/"),
+    ("data/photoswitches", "dataset/photoswitches/"),
+]
+
+paths = [all_paths[0]]
+
+
+@pytest.mark.parametrize(
+    "build,root",
+    paths,
+)
+def test_data_processing(build: str, root: str):
+    if build not in os.listdir(cwd + "/sanity_testing_build"):
+        os.makedirs(cwd + "/sanity_testing_build/" + build)
+    src_path = root_data + root
+    dummy_path = cwd + "/sanity_testing_build/" + build + "/"
+    if "esol" in set(build.split("/")):
+        e = polyatomic_complexes.complexes.process_esol.ProcessESOL(
+            src_path, dummy_path
+        )
+        e.process()
+        e.process_deep_complexes()
+        e.process_stacked()
+    elif "free_solv" in set(build.split("/")):
+        e = polyatomic_complexes.complexes.process_freesolv.ProcessFreeSolv(
+            src_path, dummy_path
+        )
+        e.process()
+        e.process_deep_complexes()
+        e.process_stacked()
+    elif "lipophilicity" in set(build.split("/")):
+        e = polyatomic_complexes.complexes.process_lipophilicity.ProcessLipophilicity(
+            src_path, dummy_path
+        )
+        e.process()
+        e.process_deep_complexes()
+        e.process_stacked()
+    elif "materials_project" in set(build.split("/")):
+        e = polyatomic_complexes.complexes.process_materials_project.ProcessMP(
+            src_path, dummy_path
+        )
+        e.process()
+        e.process_deep_complexes()
+        e.process_stacked()
+    elif "mp_matbench_jdft2d" in set(build.split("/")):
+        e = polyatomic_complexes.complexes.process_mp_jdft2d.ProcessJDFT(
+            src_path, dummy_path
+        )
+        e.process()
+        e.process_deep_complexes()
+        e.process_stacked()
+    elif "photoswitches" in set(build.split("/")):
+        e = polyatomic_complexes.complexes.process_photoswitches.ProcessPhotoswitches(
+            src_path, dummy_path
+        )
+        e.process()
+        e.process_deep_complexes()
+        e.process_stacked()
     assert len(os.listdir(dummy_path)) == 3
 
 
-test_data_processing()
+def run_experiment(
+    possible_target_cols,
+    one_experiment_fn,
+    ENCODING,
+    N_TRIALS,
+    N_ITERS,
+    EXPERIMENT_TYPE,
+    destination_path,
+):
+    results = []
+    try:
+        for col in possible_target_cols:
+            mean_r2, mean_rmse, mean_mae, mean_crps = one_experiment_fn(
+                col, ENCODING, N_TRIALS, N_ITERS
+            )
+            results.append([col, mean_r2, mean_rmse, mean_mae, mean_crps])
+
+        if type(EXPERIMENT_TYPE) is str:
+            results_path = destination_path
+
+            with open(results_path, "w") as f:
+                f.write(EXPERIMENT_TYPE + ":")
+                f.write("\n")
+                f.write(ENCODING + ":")
+                for result in results:
+                    col, mean_r2, mean_rmse, mean_mae, mean_crps = result
+                    f.write(
+                        f"column: {col}, {mean_r2}, {mean_rmse}, {mean_mae}, {mean_crps}"
+                    )
+                    f.write("\n")
+            f.close()
+            return "SUCCESS"
+    except:
+        return "FAILED"
+
+
+experiment = [
+    (
+        "esol",
+        {
+            "target_columns": [
+                "ESOL predicted log solubility in mols per litre",
+                "Minimum Degree",
+                "Molecular Weight",
+            ]
+        },
+    ),
+    ("free_solv", {"target_columns": ["expt", "calc"]}),
+    (
+        "materials_project",
+        {
+            "target_columns": [
+                "energy_per_atom",
+                "formation_energy_per_atom",
+                "equilibrium_reaction_energy_per_atom",
+            ]
+        },
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    "experiment_name,experiment_params",
+    experiment,
+)
+def test_run_experiments(name: str, params: dict):
+    if name == "esol":
+        sample_encs = ["deep_complexes", "fingerprints", "GRAPHS", "SMILES"]
+        one_experiment_fn = experiments.esol_experiment.one_experiment
+        tgt_cols = params["target_columns"]
+        prefix = "results/esol"
+        if prefix not in os.listdir(cwd + "/sanity_testing_build"):
+            os.makedirs(cwd + "/sanity_testing_build/" + prefix)
+        for e in sample_encs:
+            esol_dest = (
+                cwd + "/sanity_testing_build/" + prefix + "/" + f"{e}_{time.time()}.txt"
+            )
+            status = run_experiment(
+                tgt_cols, one_experiment_fn, e, 5, 5, "ESOL", esol_dest
+            )
+            assert status == "SUCCESS"
+    elif name == "free_solv":
+        sample_encs = ["deep_complexes", "fingerprints", "GRAPHS", "SMILES"]
+        one_experiment_fn = experiments.freesolv_experiment.one_experiment
+        tgt_cols = params["target_columns"]
+        prefix = "results/free_solv"
+        if prefix not in os.listdir(cwd + "/sanity_testing_build"):
+            os.makedirs(cwd + "/sanity_testing_build/" + prefix)
+        for e in sample_encs:
+            free_solv_dest = (
+                cwd + "/sanity_testing_build/" + prefix + "/" + f"{e}_{time.time()}.txt"
+            )
+            status = run_experiment(
+                tgt_cols, one_experiment_fn, e, 5, 5, "FreeSolv", free_solv_dest
+            )
+            assert status == "SUCCESS"
+    elif name == "materials_project":
+        sample_encs = ["complexes"]
+        one_experiment_fn = experiments.materials_project_experiment.one_experiment
+        tgt_cols = params["target_columns"]
+        prefix = "results/materials_project"
+        if prefix not in os.listdir(cwd + "/sanity_testing_build"):
+            os.makedirs(cwd + "/sanity_testing_build/" + prefix)
+        for e in sample_encs:
+            mp_dest = (
+                cwd + "/sanity_testing_build/" + prefix + "/" + f"{e}_{time.time()}.txt"
+            )
+            status = run_experiment(tgt_cols, one_experiment_fn, e, 5, 5, "MP", mp_dest)
+            assert status == "SUCCESS"

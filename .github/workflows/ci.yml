@@ -22,6 +22,8 @@ jobs:
           cache: 'pip' # caching pip dependencies
       - run: git lfs pull --include=polyatomic_complexes/dataset/construct/*
       - run: pip install -r requirements/requirements.txt
+      - run: pip install -r requirements/requirements_graph.txt
+      - run: pip install -r requirements/requirements_mat.txt
       
       - name: run tests
         working-directory: ./polyatomic_complexes
