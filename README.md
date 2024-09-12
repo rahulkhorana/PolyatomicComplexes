@@ -16,7 +16,7 @@
 2. Ensure you have python >= 3.11.6 and set up a virtual environment.
 ```sh
 pip install virtualenv
-virtualenv .env
+virtualenv .env --python=python3.11.6
 source .env/bin/activate
 ```
 
