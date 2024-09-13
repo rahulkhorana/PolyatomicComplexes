@@ -27,9 +27,7 @@ jobs:
       
       - name: setup local package
         working-directory: ./
-        run: |
-          python setup.py sdist bdist_wheel
-          pip install dist/polyatomic_complexes-1.0.0-py3-none-any.whl --force-reinstall
+        run: pip install ./polyatomic_complexes
 
       - name: run tests
         working-directory: ./sanity_testing_build
