@@ -18,6 +18,7 @@ class LoadDatasetForTask:
         self.y = y
         self.y_column = y_column
         self.repn = repn
+        self.data_root = os.getcwd() + "/polyatomic_complexes/"
 
     def load_photoswitches(self) -> Tuple[torch.Tensor, torch.Tensor]:
         if self.repn == "complexes":
@@ -48,7 +49,6 @@ class LoadDatasetForTask:
             )
             return tuple([X, y])
         elif self.repn == "deep_complexes":
-            print(f"here")
             with open(self.X, "rb") as f:
                 x_data = dill.load(f)
             X = []
@@ -96,7 +96,8 @@ class LoadDatasetForTask:
             loader = MolPropLoader()
             loader.validate = lambda: False
             loader.load_benchmark(
-                "Photoswitch", path="dataset/photoswitches/photoswitches.csv"
+                "Photoswitch",
+                path=self.data_root + "dataset/photoswitches/photoswitches.csv",
             )
             loader.featurize("ecfp_fragprints")
             X = loader.features
@@ -116,7 +117,8 @@ class LoadDatasetForTask:
             loader = MolPropLoader()
             loader.validate = lambda: False
             loader.load_benchmark(
-                "Photoswitch", path="dataset/photoswitches/photoswitches.csv"
+                "Photoswitch",
+                path=self.data_root + "dataset/photoswitches/photoswitches.csv",
             )
             loader.featurize("bag_of_selfies")
             X = loader.features
@@ -136,7 +138,8 @@ class LoadDatasetForTask:
             loader = MolPropLoader()
             loader.validate = lambda: False
             loader.load_benchmark(
-                "Photoswitch", path="dataset/photoswitches/photoswitches.csv"
+                "Photoswitch",
+                path=self.data_root + "dataset/photoswitches/photoswitches.csv",
             )
             loader.featurize("molecular_graphs")
             X = loader.features
@@ -151,7 +154,8 @@ class LoadDatasetForTask:
             loader = MolPropLoader()
             loader.validate = lambda: False
             loader.load_benchmark(
-                "Photoswitch", path="dataset/photoswitches/photoswitches.csv"
+                "Photoswitch",
+                path=self.data_root + "dataset/photoswitches/photoswitches.csv",
             )
             loader.featurize("bag_of_smiles")
             X = loader.features
@@ -191,7 +195,6 @@ class LoadDatasetForTask:
             )
             return tuple([X, y])
         elif self.repn == "deep_complexes":
-            print(f"here")
             with open(self.X, "rb") as f:
                 x_data = dill.load(f)
             X = []
@@ -233,7 +236,7 @@ class LoadDatasetForTask:
             return tuple([X, y])
         elif self.repn == "fingerprints":
             loader = MolPropLoader()
-            loader.load_benchmark("ESOL", path="dataset/esol/ESOL.csv")
+            loader.load_benchmark("ESOL", path=self.data_root + "dataset/esol/ESOL.csv")
             loader.featurize("ecfp_fragprints")
             X = loader.features
             X = torch.from_numpy(X).type(torch.float64)
@@ -248,7 +251,7 @@ class LoadDatasetForTask:
             return tuple([X, y])
         elif self.repn == "SELFIES":
             loader = MolPropLoader()
-            loader.load_benchmark("ESOL", path="dataset/esol/ESOL.csv")
+            loader.load_benchmark("ESOL", path=self.data_root + "dataset/esol/ESOL.csv")
             loader.featurize("bag_of_selfies")
             X = loader.features
             X = torch.from_numpy(X).type(torch.float64)
@@ -263,7 +266,7 @@ class LoadDatasetForTask:
             return tuple([X, y])
         elif self.repn == "GRAPHS":
             loader = MolPropLoader()
-            loader.load_benchmark("ESOL", path="dataset/esol/ESOL.csv")
+            loader.load_benchmark("ESOL", path=self.data_root + "dataset/esol/ESOL.csv")
             loader.featurize("molecular_graphs")
             X = loader.features
             ydata = pd.read_csv(self.y)
@@ -273,7 +276,7 @@ class LoadDatasetForTask:
             return tuple([X, y])
         elif self.repn == "SMILES":
             loader = MolPropLoader()
-            loader.load_benchmark("ESOL", path="dataset/esol/ESOL.csv")
+            loader.load_benchmark("ESOL", path=self.data_root + "dataset/esol/ESOL.csv")
             loader.featurize("bag_of_smiles")
             X = loader.features
             X = torch.from_numpy(X).type(torch.float64)
@@ -314,7 +317,6 @@ class LoadDatasetForTask:
             )
             return tuple([X, y])
         elif self.repn == "deep_complexes":
-            print(f"here")
             with open(self.X, "rb") as f:
                 x_data = dill.load(f)
             X = []
@@ -356,7 +358,9 @@ class LoadDatasetForTask:
             return tuple([X, y])
         elif self.repn == "fingerprints":
             loader = MolPropLoader()
-            loader.load_benchmark("FreeSolv", path="dataset/free_solv/FreeSolv.csv")
+            loader.load_benchmark(
+                "FreeSolv", path=self.data_root + "dataset/free_solv/FreeSolv.csv"
+            )
             loader.featurize("ecfp_fragprints")
             X = loader.features
             X = torch.from_numpy(X).type(torch.float64)
@@ -371,7 +375,9 @@ class LoadDatasetForTask:
             return tuple([X, y])
         elif self.repn == "SELFIES":
             loader = MolPropLoader()
-            loader.load_benchmark("FreeSolv", path="dataset/free_solv/FreeSolv.csv")
+            loader.load_benchmark(
+                "FreeSolv", path=self.data_root + "dataset/free_solv/FreeSolv.csv"
+            )
             loader.featurize("bag_of_selfies")
             X = loader.features
             X = torch.from_numpy(X).type(torch.float64)
@@ -386,7 +392,9 @@ class LoadDatasetForTask:
             return tuple([X, y])
         elif self.repn == "GRAPHS":
             loader = MolPropLoader()
-            loader.load_benchmark("FreeSolv", path="dataset/free_solv/FreeSolv.csv")
+            loader.load_benchmark(
+                "FreeSolv", path=self.data_root + "dataset/free_solv/FreeSolv.csv"
+            )
             loader.featurize("molecular_graphs")
             X = loader.features
             ydata = pd.read_csv(self.y)
@@ -396,7 +404,9 @@ class LoadDatasetForTask:
             return tuple([X, y])
         elif self.repn == "SMILES":
             loader = MolPropLoader()
-            loader.load_benchmark("FreeSolv", path="dataset/free_solv/FreeSolv.csv")
+            loader.load_benchmark(
+                "FreeSolv", path=self.data_root + "dataset/free_solv/FreeSolv.csv"
+            )
             loader.featurize("bag_of_smiles")
             X = loader.features
             X = torch.from_numpy(X).type(torch.float64)
@@ -437,7 +447,6 @@ class LoadDatasetForTask:
             )
             return tuple([X, y])
         elif self.repn == "deep_complexes":
-            print(f"here")
             with open(self.X, "rb") as f:
                 x_data = dill.load(f)
             X = []
@@ -480,7 +489,8 @@ class LoadDatasetForTask:
         elif self.repn == "fingerprints":
             loader = MolPropLoader()
             loader.load_benchmark(
-                "Lipophilicity", path="dataset/lipophilicity/Lipophilicity.csv"
+                "Lipophilicity",
+                path=self.data_root + "dataset/lipophilicity/Lipophilicity.csv",
             )
             loader.featurize("ecfp_fragprints")
             X = loader.features
@@ -497,7 +507,8 @@ class LoadDatasetForTask:
         elif self.repn == "SELFIES":
             loader = MolPropLoader()
             loader.load_benchmark(
-                "Lipophilicity", path="dataset/lipophilicity/Lipophilicity.csv"
+                "Lipophilicity",
+                path=self.data_root + "dataset/lipophilicity/Lipophilicity.csv",
             )
             loader.featurize("bag_of_selfies")
             X = loader.features
@@ -514,7 +525,8 @@ class LoadDatasetForTask:
         elif self.repn == "GRAPHS":
             loader = MolPropLoader()
             loader.load_benchmark(
-                "Lipophilicity", path="dataset/lipophilicity/Lipophilicity.csv"
+                "Lipophilicity",
+                path=self.data_root + "dataset/lipophilicity/Lipophilicity.csv",
             )
             loader.featurize("molecular_graphs")
             X = loader.features
@@ -526,7 +538,8 @@ class LoadDatasetForTask:
         elif self.repn == "SMILES":
             loader = MolPropLoader()
             loader.load_benchmark(
-                "Lipophilicity", path="dataset/lipophilicity/Lipophilicity.csv"
+                "Lipophilicity",
+                path=self.data_root + "dataset/lipophilicity/Lipophilicity.csv",
             )
             loader.featurize("bag_of_smiles")
             X = loader.features
@@ -557,7 +570,6 @@ class LoadDatasetForTask:
                 )
                 for x in X
             ]
-            print("here")
             X = torch.stack(data)
             X = torch.linalg.vector_norm(X, ord=2, dim=(-1))
             X = X.view(len(X), 1)
@@ -608,7 +620,6 @@ class LoadDatasetForTask:
                 )
                 for x in X
             ]
-            print("here")
             X = torch.stack(data)
             X = torch.linalg.vector_norm(X, ord=2, dim=(-1))
             X = X.view(len(X), 1)

@@ -87,26 +87,47 @@ def initialize_stacked_gp(train_x, train_obj, likelihood, kernel, **kwargs):
     return model
 
 
-def one_experiment(target, encoding, n_trials, n_iters):
+def one_experiment(
+    target,
+    encoding,
+    n_trials,
+    n_iters,
+    encoding_path=None,
+    data_path=None,
+    fig_path=None,
+    holdout_set_size=0.33,
+):
     X, y = [], []
+    if data_path is None:
+        data_path = (
+            os.getcwd() + "/polyatomic_complexes/materials_project/materials_data.csv"
+        )
+    if fig_path is None:
+        fig_path = (
+            os.getcwd()
+            + f"/polyatomic_complexes/results/MP_MatBench/{encoding}_Results/confidence_mae_model_{encoding}_{target}.png"
+        )
+    if encoding_path is None:
+        root_enc_path = os.getcwd() + "/polyatomic_complexes/dataset/materials_project"
+        if encoding == "complexes":
+            encoding_path = root_enc_path + "/fast_complex_lookup_repn.pkl"
+        elif encoding == "stacked_complexes":
+            encoding_path = root_enc_path + "/stacked_complex_lookup_repn.pkl"
     if encoding == "complexes":
         X, y = LoadDatasetForTask(
-            X="dataset/materials_project/fast_complex_lookup_repn.pkl",
-            y="dataset/materials_project/materials_data.csv",
+            X=encoding_path,
+            y=data_path,
             repn=encoding,
             y_column=target,
         ).load_matbench()
     elif encoding == "stacked_complexes":
-        print("loading started")
         X, y = LoadDatasetForTask(
-            X="dataset/materials_project/stacked_complex_lookup_repn.pkl",
-            y="dataset/materials_project/materials_data.csv",
+            X=encoding_path,
+            y=data_path,
             repn=encoding,
             y_column=target,
         ).load_matbench()
-        print("loading completed")
-
-    if ENCODING != "GRAPHS" and encoding != "stacked_complexes":
+    if encoding != "GRAPHS" and encoding != "stacked_complexes":
         (
             r2_list,
             rmse_list,
@@ -122,7 +143,7 @@ def one_experiment(target, encoding, n_trials, n_iters):
             test_set_size=holdout_set_size,
             X=X,
             y=y,
-            figure_path=f"results/{EXPERIMENT_TYPE}/confidence_mae_model_{ENCODING}_{target}.png",
+            figure_path=fig_path,
         )
     elif encoding == "stacked_complexes":
         print("started training")
@@ -141,7 +162,7 @@ def one_experiment(target, encoding, n_trials, n_iters):
             test_set_size=holdout_set_size,
             X=X,
             y=y,
-            figure_path=f"results/{EXPERIMENT_TYPE}/confidence_mae_model_{ENCODING}_{target}.png",
+            figure_path=fig_path,
             kernel=GraphletSamplingKernel,
         )
 

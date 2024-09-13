@@ -178,13 +178,24 @@ def run_experiment(
     N_ITERS,
     EXPERIMENT_TYPE,
     destination_path,
+    x_path,
+    y_path,
+    fig_path,
 ):
     results = []
     try:
         for col in possible_target_cols:
+            print(f"column: {col}")
             mean_r2, mean_rmse, mean_mae, mean_crps = one_experiment_fn(
-                col, ENCODING, N_TRIALS, N_ITERS
+                target=col,
+                encoding=ENCODING,
+                n_trials=N_TRIALS,
+                n_iters=N_ITERS,
+                encoding_path=x_path,
+                data_path=y_path,
+                fig_path=fig_path,
             )
+            print("finished")
             results.append([col, mean_r2, mean_rmse, mean_mae, mean_crps])
 
         if type(EXPERIMENT_TYPE) is str:
@@ -202,11 +213,12 @@ def run_experiment(
                     f.write("\n")
             f.close()
             return "SUCCESS"
-    except:
+    except Exception as e:
+        print(e)
         return "FAILED"
 
 
-experiment = [
+experimental = [
     (
         "esol",
         {
@@ -214,10 +226,11 @@ experiment = [
                 "ESOL predicted log solubility in mols per litre",
                 "Minimum Degree",
                 "Molecular Weight",
-            ]
+            ],
+            "root": "dataset/esol/",
         },
     ),
-    ("free_solv", {"target_columns": ["expt", "calc"]}),
+    ("free_solv", {"target_columns": ["expt", "calc"], "root": "dataset/free_solv/"}),
     (
         "materials_project",
         {
@@ -225,14 +238,23 @@ experiment = [
                 "energy_per_atom",
                 "formation_energy_per_atom",
                 "equilibrium_reaction_energy_per_atom",
-            ]
+            ],
+            "root": "dataset/materials_project/",
         },
     ),
 ]
 
+experiment = [experimental[0]]
+
+path_mappings = {
+    "deep_complexes": "deep_complex_lookup_repn.pkl",
+    "fast_complexes": "fast_complex_lookup_repn.pkl",
+    "stacked_complexes": "stacked_complex_lookup_repn.pkl",
+}
+
 
 @pytest.mark.parametrize(
-    "experiment_name,experiment_params",
+    "name,params",
     experiment,
 )
 def test_run_experiments(name: str, params: dict):
@@ -241,41 +263,131 @@ def test_run_experiments(name: str, params: dict):
         one_experiment_fn = experiments.esol_experiment.one_experiment
         tgt_cols = params["target_columns"]
         prefix = "results/esol"
-        if prefix not in os.listdir(cwd + "/sanity_testing_build"):
+        if prefix not in os.listdir(cwd + "/sanity_testing_build") and not (
+            os.path.exists(cwd + "/sanity_testing_build/" + prefix)
+        ):
             os.makedirs(cwd + "/sanity_testing_build/" + prefix)
-        for e in sample_encs:
-            esol_dest = (
-                cwd + "/sanity_testing_build/" + prefix + "/" + f"{e}_{time.time()}.txt"
-            )
-            status = run_experiment(
-                tgt_cols, one_experiment_fn, e, 5, 5, "ESOL", esol_dest
-            )
-            assert status == "SUCCESS"
+        for t in tgt_cols:
+            for e in sample_encs:
+                esol_dest = (
+                    cwd
+                    + "/sanity_testing_build/"
+                    + prefix
+                    + "/"
+                    + f"{e}_{time.time()}.txt"
+                )
+                src_path = root_data + params["root"]
+                y_path = src_path + "ESOL.csv"
+                fig_path = (
+                    cwd
+                    + "/sanity_testing_build/"
+                    + prefix
+                    + f"/confidence_mae_model_{e}_{t}.png"
+                )
+                if e in path_mappings.keys():
+                    x_path = src_path + path_mappings[e]
+                else:
+                    x_path = None
+                print(f"x and y paths: {x_path} {y_path}")
+                if x_path is not None:
+                    print(f"{os.path.exists(x_path)}")
+                    print(f"{os.path.exists(y_path)}")
+                status = run_experiment(
+                    tgt_cols,
+                    one_experiment_fn,
+                    e,
+                    5,
+                    5,
+                    "ESOL",
+                    esol_dest,
+                    x_path,
+                    y_path,
+                    fig_path,
+                )
+                assert status == "SUCCESS"
     elif name == "free_solv":
         sample_encs = ["deep_complexes", "fingerprints", "GRAPHS", "SMILES"]
         one_experiment_fn = experiments.freesolv_experiment.one_experiment
         tgt_cols = params["target_columns"]
         prefix = "results/free_solv"
-        if prefix not in os.listdir(cwd + "/sanity_testing_build"):
+        if prefix not in os.listdir(cwd + "/sanity_testing_build") and not (
+            os.path.exists(cwd + "/sanity_testing_build/" + prefix)
+        ):
             os.makedirs(cwd + "/sanity_testing_build/" + prefix)
-        for e in sample_encs:
-            free_solv_dest = (
-                cwd + "/sanity_testing_build/" + prefix + "/" + f"{e}_{time.time()}.txt"
-            )
-            status = run_experiment(
-                tgt_cols, one_experiment_fn, e, 5, 5, "FreeSolv", free_solv_dest
-            )
-            assert status == "SUCCESS"
+        for t in tgt_cols:
+            for e in sample_encs:
+                free_solv_dest = (
+                    cwd
+                    + "/sanity_testing_build/"
+                    + prefix
+                    + "/"
+                    + f"{e}_{time.time()}.txt"
+                )
+                src_path = root_data + params["root"]
+                y_path = src_path + "FreeSolv.csv"
+                fig_path = (
+                    cwd
+                    + "/sanity_testing_build/"
+                    + prefix
+                    + f"/confidence_mae_model_{e}_{t}.png"
+                )
+                if e in path_mappings.keys():
+                    x_path = src_path + path_mappings[e]
+                else:
+                    x_path = None
+                status = run_experiment(
+                    tgt_cols,
+                    one_experiment_fn,
+                    e,
+                    5,
+                    5,
+                    "FreeSolv",
+                    free_solv_dest,
+                    x_path,
+                    y_path,
+                    fig_path,
+                )
+                assert status == "SUCCESS"
     elif name == "materials_project":
         sample_encs = ["complexes"]
         one_experiment_fn = experiments.materials_project_experiment.one_experiment
         tgt_cols = params["target_columns"]
         prefix = "results/materials_project"
-        if prefix not in os.listdir(cwd + "/sanity_testing_build"):
+        if prefix not in os.listdir(cwd + "/sanity_testing_build") and not (
+            os.path.exists(cwd + "/sanity_testing_build/" + prefix)
+        ):
             os.makedirs(cwd + "/sanity_testing_build/" + prefix)
-        for e in sample_encs:
-            mp_dest = (
-                cwd + "/sanity_testing_build/" + prefix + "/" + f"{e}_{time.time()}.txt"
-            )
-            status = run_experiment(tgt_cols, one_experiment_fn, e, 5, 5, "MP", mp_dest)
-            assert status == "SUCCESS"
+        for t in tgt_cols:
+            for e in sample_encs:
+                mp_dest = (
+                    cwd
+                    + "/sanity_testing_build/"
+                    + prefix
+                    + "/"
+                    + f"{e}_{time.time()}.txt"
+                )
+                if e in path_mappings.keys():
+                    x_path = src_path + path_mappings[e]
+                else:
+                    x_path = None
+                src_path = root_data + params["root"]
+                y_path = src_path + "materials_data.csv"
+                fig_path = (
+                    cwd
+                    + "/sanity_testing_build/"
+                    + prefix
+                    + f"/confidence_mae_model_{e}_{t}.png"
+                )
+                status = run_experiment(
+                    tgt_cols,
+                    one_experiment_fn,
+                    e,
+                    5,
+                    5,
+                    "MP",
+                    mp_dest,
+                    x_path,
+                    y_path,
+                    fig_path,
+                )
+                assert status == "SUCCESS"

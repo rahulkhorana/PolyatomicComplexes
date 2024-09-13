@@ -107,53 +107,78 @@ def initialize_stacked_gp(train_x, train_obj, likelihood, kernel, **kwargs):
     return model
 
 
-def one_experiment(target, encoding, n_trials, n_iters):
+def one_experiment(
+    target,
+    encoding,
+    n_trials,
+    n_iters,
+    encoding_path=None,
+    data_path=None,
+    fig_path=None,
+    holdout_set_size=0.33,
+):
     X, y = [], []
+    if data_path is None:
+        data_path = os.getcwd() + "/polyatomic_complexes/dataset/esol/ESOL.csv"
+    if fig_path is None:
+        fig_path = (
+            os.getcwd()
+            + f"/polyatomic_complexes/results/ESOL/{encoding}_Results/confidence_mae_model_{encoding}_{target}.png"
+        )
+    if encoding_path is None:
+        root_enc_path = os.getcwd() + "/polyatomic_complexes/dataset/esol"
+        if encoding == "complexes":
+            encoding_path = root_enc_path + "/fast_complex_lookup_repn.pkl"
+        elif encoding == "deep_complexes":
+            encoding_path = root_enc_path + "/deep_complex_lookup_repn.pkl"
+        elif encoding == "stacked_complexes":
+            encoding_path = root_enc_path + "/stacked_complex_lookup_repn.pkl"
+
     if encoding == "complexes":
         X, y = LoadDatasetForTask(
-            X="dataset/esol/fast_complex_lookup_repn.pkl",
-            y="dataset/esol/ESOL.csv",
+            X=encoding_path,
+            y=data_path,
             repn=encoding,
             y_column=target,
         ).load_esol()
     elif encoding == "deep_complexes":
         X, y = LoadDatasetForTask(
-            X="dataset/esol/deep_complex_lookup_repn.pkl",
-            y="dataset/esol/ESOL.csv",
+            X=encoding_path,
+            y=data_path,
             repn=encoding,
             y_column=target,
         ).load_esol()
     elif encoding == "stacked_complexes":
         X, y = LoadDatasetForTask(
-            X="dataset/esol/stacked_complex_lookup_repn.pkl",
-            y="dataset/esol/ESOL.csv",
+            X=encoding_path,
+            y=data_path,
             repn=encoding,
             y_column=target,
         ).load_esol()
-    elif ENCODING == "fingerprints":
+    elif encoding == "fingerprints":
         X, y = LoadDatasetForTask(
-            X="gauche_ecfp", y="dataset/esol/ESOL.csv", repn=encoding, y_column=target
+            X="gauche_ecfp", y=data_path, repn=encoding, y_column=target
         ).load_esol()
-    elif ENCODING == "SELFIES":
+    elif encoding == "SELFIES":
         X, y = LoadDatasetForTask(
             X="gauche_selfies",
-            y="dataset/esol/ESOL.csv",
+            y=data_path,
             repn=encoding,
             y_column=target,
         ).load_esol()
-    elif ENCODING == "GRAPHS":
+    elif encoding == "GRAPHS":
         X, y = LoadDatasetForTask(
-            X="gauche_graphs", y="dataset/esol/ESOL.csv", repn=encoding, y_column=target
+            X="gauche_graphs", y=data_path, repn=encoding, y_column=target
         ).load_esol()
-    elif ENCODING == "SMILES":
+    elif encoding == "SMILES":
         X, y = LoadDatasetForTask(
             X="gauche_smiles",
-            y="dataset/esol/ESOL.csv",
+            y=data_path,
             repn=encoding,
             y_column=target,
         ).load_esol()
 
-    if ENCODING != "GRAPHS" and ENCODING != "stacked_complexes":
+    if encoding != "GRAPHS" and encoding != "stacked_complexes":
         (
             r2_list,
             rmse_list,
@@ -169,7 +194,7 @@ def one_experiment(target, encoding, n_trials, n_iters):
             test_set_size=holdout_set_size,
             X=X,
             y=y,
-            figure_path=f"results/{EXPERIMENT_TYPE}/confidence_mae_model_{ENCODING}_{target}.png",
+            figure_path=fig_path,
         )
     elif encoding == "stacked_complexes":
         (
@@ -187,7 +212,7 @@ def one_experiment(target, encoding, n_trials, n_iters):
             test_set_size=holdout_set_size,
             X=X,
             y=y,
-            figure_path=f"results/{EXPERIMENT_TYPE}/confidence_mae_model_{ENCODING}_{target}.png",
+            figure_path=fig_path,
             kernel=GraphletSamplingKernel,
         )
     else:
@@ -206,7 +231,7 @@ def one_experiment(target, encoding, n_trials, n_iters):
             test_set_size=holdout_set_size,
             X=X,
             y=y,
-            figure_path=f"results/{EXPERIMENT_TYPE}/confidence_mae_model_{ENCODING}_{target}.png",
+            figure_path=fig_path,
         )
 
     mean_r2 = "\nmean R^2: {:.4f} +- {:.4f}".format(
