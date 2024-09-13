@@ -27,7 +27,7 @@ jobs:
       
       - name: setup local package
         working-directory: ./
-        run: pip install ./polyatomic_complexes
+        run: pip install PolyatomicComplexes
 
       - name: run tests
         working-directory: ./sanity_testing_build
