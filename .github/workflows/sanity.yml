@@ -29,5 +29,5 @@ jobs:
         working-directory: ./sanity_testing_build
         run: |
           pip install pytest pytest-cov
-          pytest tests.py
+          pytest test.py
       

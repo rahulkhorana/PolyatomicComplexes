@@ -3,6 +3,7 @@ import time
 import json
 import random
 import pytest
+import subprocess
 import polyatomic_complexes
 import polyatomic_complexes.src.complexes as complexes
 import polyatomic_complexes.experiments as experiments
@@ -114,6 +115,19 @@ all_paths = [
 ]
 
 paths = [all_paths[0]]
+
+
+def run_git_lfs_pull():
+    result = subprocess.run(["git", "lfs", "pull"], capture_output=True, text=True)
+
+    if result.returncode == 0:
+        print("Git LFS pull successful.")
+    else:
+        print("Git LFS pull failed.")
+        print(result.stderr)
+
+
+run_git_lfs_pull()
 
 
 @pytest.mark.parametrize(
