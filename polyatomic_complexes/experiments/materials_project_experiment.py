@@ -133,9 +133,7 @@ def one_experiment(
             + f"/polyatomic_complexes/results/Materials Project/{encoding}_Results_n_7/confidence_mae_model_{encoding}_{target}.png"
         )
     if encoding_path is None:
-        root_enc_path = (
-            os.getcwd() + "/polyatomic_complexes/materials_project/materials_data.csv"
-        )
+        root_enc_path = os.getcwd() + "/polyatomic_complexes/dataset/materials_project"
         if encoding == "complexes":
             encoding_path = root_enc_path + "/fast_complex_lookup_repn.pkl"
         elif encoding == "stacked_complexes":

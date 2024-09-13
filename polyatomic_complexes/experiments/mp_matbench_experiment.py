@@ -100,7 +100,8 @@ def one_experiment(
     X, y = [], []
     if data_path is None:
         data_path = (
-            os.getcwd() + "/polyatomic_complexes/materials_project/materials_data.csv"
+            os.getcwd()
+            + "/polyatomic_complexes/dataset/materials_project/materials_data.csv"
         )
     if fig_path is None:
         fig_path = (

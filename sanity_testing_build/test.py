@@ -261,13 +261,11 @@ experimental = [
     (
         "mp_matbench_jdft2d",
         {
-            "target_columns": ["g_vrh", "k_voigt"],
+            "target_columns": ["exfoliation_en"],
             "root": "dataset/mp_matbench_jdft2d/",
         },
     ),
 ]
-
-experiment = [experimental[0]]
 
 path_mappings = {
     "deep_complexes": "deep_complex_lookup_repn.pkl",
@@ -277,6 +275,7 @@ path_mappings = {
 
 
 def run_exp_over(sample_encs, tgt_cols, prefix, params, f, name):
+    statuses = True
     for t in tgt_cols:
         for e in sample_encs:
             esol_dest = (
@@ -294,10 +293,6 @@ def run_exp_over(sample_encs, tgt_cols, prefix, params, f, name):
                 x_path = src_path + path_mappings[e]
             else:
                 x_path = None
-            print(f"x and y paths: {x_path} {y_path}")
-            if x_path is not None:
-                print(f"{os.path.exists(x_path)}")
-                print(f"{os.path.exists(y_path)}")
             status = run_experiment(
                 tgt_cols,
                 f,
@@ -310,11 +305,13 @@ def run_exp_over(sample_encs, tgt_cols, prefix, params, f, name):
                 y_path,
                 fig_path,
             )
+            statuses = statuses and (status == "SUCCESS")
+    return statuses
 
 
 @pytest.mark.parametrize(
     "name,params",
-    experiment,
+    experimental,
 )
 def test_run_experiments(name: str, params: dict):
     if name == "esol":
@@ -329,7 +326,7 @@ def test_run_experiments(name: str, params: dict):
         status = run_exp_over(
             sample_encs, tgt_cols, prefix, params, one_experiment_fn, "ESOL"
         )
-        assert status == "SUCCESS"
+        assert status
     elif name == "free_solv":
         sample_encs = ["deep_complexes", "fingerprints", "GRAPHS", "SMILES"]
         one_experiment_fn = experiments.freesolv_experiment.one_experiment
@@ -342,7 +339,7 @@ def test_run_experiments(name: str, params: dict):
         status = run_exp_over(
             sample_encs, tgt_cols, prefix, params, one_experiment_fn, "FreeSolv"
         )
-        assert status == "SUCCESS"
+        assert status
     elif name == "materials_project":
         sample_encs = ["complexes"]
         one_experiment_fn = experiments.materials_project_experiment.one_experiment
@@ -355,7 +352,7 @@ def test_run_experiments(name: str, params: dict):
         status = run_exp_over(
             sample_encs, tgt_cols, prefix, params, one_experiment_fn, "materials_data"
         )
-        assert status == "SUCCESS"
+        assert status
     elif name == "lipophilicity":
         sample_encs = ["complexes", "fingerprints", "GRAPHS", "SMILES"]
         one_experiment_fn = experiments.lipophilicity_experiment.one_experiment
@@ -368,7 +365,7 @@ def test_run_experiments(name: str, params: dict):
         status = run_exp_over(
             sample_encs, tgt_cols, prefix, params, one_experiment_fn, "Lipophilicity"
         )
-        assert status == "SUCCESS"
+        assert status
     elif name == "photoswitches":
         sample_encs = ["complexes", "fingerprints", "GRAPHS", "SMILES"]
         one_experiment_fn = experiments.photoswitches_experiment.one_experiment
@@ -381,10 +378,10 @@ def test_run_experiments(name: str, params: dict):
         status = run_exp_over(
             sample_encs, tgt_cols, prefix, params, one_experiment_fn, "photoswitches"
         )
-        assert status == "SUCCESS"
+        assert status
     elif name == "mp_matbench_jdft2d":
         sample_encs = ["complexes"]
-        one_experiment_fn = experiments.photoswitches_experiment.one_experiment
+        one_experiment_fn = experiments.jdft2d_matbench_experiment.one_experiment
         tgt_cols = params["target_columns"]
         prefix = "results/mp_matbench_jdft2d"
         if prefix not in os.listdir(cwd + "/sanity_testing_build") and not (
@@ -394,7 +391,7 @@ def test_run_experiments(name: str, params: dict):
         status = run_exp_over(
             sample_encs, tgt_cols, prefix, params, one_experiment_fn, "jdft2d"
         )
-        assert status == "SUCCESS"
+        assert status
     else:
         print(f"invalid experiment name {name}")
         assert True
