@@ -237,9 +237,32 @@ experimental = [
             "target_columns": [
                 "energy_per_atom",
                 "formation_energy_per_atom",
-                "equilibrium_reaction_energy_per_atom",
             ],
             "root": "dataset/materials_project/",
+        },
+    ),
+    (
+        "lipophilicity",
+        {
+            "target_columns": ["exp"],
+            "root": "dataset/lipophilicity/",
+        },
+    ),
+    (
+        "photoswitches",
+        {
+            "target_columns": [
+                "Z PhotoStationaryState",
+                "PBE0 DFT E isomer pi-pi* wavelength in nm",
+            ],
+            "root": "dataset/photoswitches/",
+        },
+    ),
+    (
+        "mp_matbench_jdft2d",
+        {
+            "target_columns": ["g_vrh", "k_voigt"],
+            "root": "dataset/mp_matbench_jdft2d/",
         },
     ),
 ]
@@ -251,6 +274,42 @@ path_mappings = {
     "fast_complexes": "fast_complex_lookup_repn.pkl",
     "stacked_complexes": "stacked_complex_lookup_repn.pkl",
 }
+
+
+def run_exp_over(sample_encs, tgt_cols, prefix, params, f, name):
+    for t in tgt_cols:
+        for e in sample_encs:
+            esol_dest = (
+                cwd + "/sanity_testing_build/" + prefix + "/" + f"{e}_{time.time()}.txt"
+            )
+            src_path = root_data + params["root"]
+            y_path = src_path + f"{name}.csv"
+            fig_path = (
+                cwd
+                + "/sanity_testing_build/"
+                + prefix
+                + f"/confidence_mae_model_{e}_{t}.png"
+            )
+            if e in path_mappings.keys():
+                x_path = src_path + path_mappings[e]
+            else:
+                x_path = None
+            print(f"x and y paths: {x_path} {y_path}")
+            if x_path is not None:
+                print(f"{os.path.exists(x_path)}")
+                print(f"{os.path.exists(y_path)}")
+            status = run_experiment(
+                tgt_cols,
+                f,
+                e,
+                5,
+                5,
+                name,
+                esol_dest,
+                x_path,
+                y_path,
+                fig_path,
+            )
 
 
 @pytest.mark.parametrize(
@@ -267,44 +326,10 @@ def test_run_experiments(name: str, params: dict):
             os.path.exists(cwd + "/sanity_testing_build/" + prefix)
         ):
             os.makedirs(cwd + "/sanity_testing_build/" + prefix)
-        for t in tgt_cols:
-            for e in sample_encs:
-                esol_dest = (
-                    cwd
-                    + "/sanity_testing_build/"
-                    + prefix
-                    + "/"
-                    + f"{e}_{time.time()}.txt"
-                )
-                src_path = root_data + params["root"]
-                y_path = src_path + "ESOL.csv"
-                fig_path = (
-                    cwd
-                    + "/sanity_testing_build/"
-                    + prefix
-                    + f"/confidence_mae_model_{e}_{t}.png"
-                )
-                if e in path_mappings.keys():
-                    x_path = src_path + path_mappings[e]
-                else:
-                    x_path = None
-                print(f"x and y paths: {x_path} {y_path}")
-                if x_path is not None:
-                    print(f"{os.path.exists(x_path)}")
-                    print(f"{os.path.exists(y_path)}")
-                status = run_experiment(
-                    tgt_cols,
-                    one_experiment_fn,
-                    e,
-                    5,
-                    5,
-                    "ESOL",
-                    esol_dest,
-                    x_path,
-                    y_path,
-                    fig_path,
-                )
-                assert status == "SUCCESS"
+        status = run_exp_over(
+            sample_encs, tgt_cols, prefix, params, one_experiment_fn, "ESOL"
+        )
+        assert status == "SUCCESS"
     elif name == "free_solv":
         sample_encs = ["deep_complexes", "fingerprints", "GRAPHS", "SMILES"]
         one_experiment_fn = experiments.freesolv_experiment.one_experiment
@@ -314,40 +339,10 @@ def test_run_experiments(name: str, params: dict):
             os.path.exists(cwd + "/sanity_testing_build/" + prefix)
         ):
             os.makedirs(cwd + "/sanity_testing_build/" + prefix)
-        for t in tgt_cols:
-            for e in sample_encs:
-                free_solv_dest = (
-                    cwd
-                    + "/sanity_testing_build/"
-                    + prefix
-                    + "/"
-                    + f"{e}_{time.time()}.txt"
-                )
-                src_path = root_data + params["root"]
-                y_path = src_path + "FreeSolv.csv"
-                fig_path = (
-                    cwd
-                    + "/sanity_testing_build/"
-                    + prefix
-                    + f"/confidence_mae_model_{e}_{t}.png"
-                )
-                if e in path_mappings.keys():
-                    x_path = src_path + path_mappings[e]
-                else:
-                    x_path = None
-                status = run_experiment(
-                    tgt_cols,
-                    one_experiment_fn,
-                    e,
-                    5,
-                    5,
-                    "FreeSolv",
-                    free_solv_dest,
-                    x_path,
-                    y_path,
-                    fig_path,
-                )
-                assert status == "SUCCESS"
+        status = run_exp_over(
+            sample_encs, tgt_cols, prefix, params, one_experiment_fn, "FreeSolv"
+        )
+        assert status == "SUCCESS"
     elif name == "materials_project":
         sample_encs = ["complexes"]
         one_experiment_fn = experiments.materials_project_experiment.one_experiment
@@ -357,37 +352,49 @@ def test_run_experiments(name: str, params: dict):
             os.path.exists(cwd + "/sanity_testing_build/" + prefix)
         ):
             os.makedirs(cwd + "/sanity_testing_build/" + prefix)
-        for t in tgt_cols:
-            for e in sample_encs:
-                mp_dest = (
-                    cwd
-                    + "/sanity_testing_build/"
-                    + prefix
-                    + "/"
-                    + f"{e}_{time.time()}.txt"
-                )
-                if e in path_mappings.keys():
-                    x_path = src_path + path_mappings[e]
-                else:
-                    x_path = None
-                src_path = root_data + params["root"]
-                y_path = src_path + "materials_data.csv"
-                fig_path = (
-                    cwd
-                    + "/sanity_testing_build/"
-                    + prefix
-                    + f"/confidence_mae_model_{e}_{t}.png"
-                )
-                status = run_experiment(
-                    tgt_cols,
-                    one_experiment_fn,
-                    e,
-                    5,
-                    5,
-                    "MP",
-                    mp_dest,
-                    x_path,
-                    y_path,
-                    fig_path,
-                )
-                assert status == "SUCCESS"
+        status = run_exp_over(
+            sample_encs, tgt_cols, prefix, params, one_experiment_fn, "materials_data"
+        )
+        assert status == "SUCCESS"
+    elif name == "lipophilicity":
+        sample_encs = ["complexes", "fingerprints", "GRAPHS", "SMILES"]
+        one_experiment_fn = experiments.lipophilicity_experiment.one_experiment
+        tgt_cols = params["target_columns"]
+        prefix = "results/lipophilicity"
+        if prefix not in os.listdir(cwd + "/sanity_testing_build") and not (
+            os.path.exists(cwd + "/sanity_testing_build/" + prefix)
+        ):
+            os.makedirs(cwd + "/sanity_testing_build/" + prefix)
+        status = run_exp_over(
+            sample_encs, tgt_cols, prefix, params, one_experiment_fn, "Lipophilicity"
+        )
+        assert status == "SUCCESS"
+    elif name == "photoswitches":
+        sample_encs = ["complexes", "fingerprints", "GRAPHS", "SMILES"]
+        one_experiment_fn = experiments.photoswitches_experiment.one_experiment
+        tgt_cols = params["target_columns"]
+        prefix = "results/photoswitches"
+        if prefix not in os.listdir(cwd + "/sanity_testing_build") and not (
+            os.path.exists(cwd + "/sanity_testing_build/" + prefix)
+        ):
+            os.makedirs(cwd + "/sanity_testing_build/" + prefix)
+        status = run_exp_over(
+            sample_encs, tgt_cols, prefix, params, one_experiment_fn, "photoswitches"
+        )
+        assert status == "SUCCESS"
+    elif name == "mp_matbench_jdft2d":
+        sample_encs = ["complexes"]
+        one_experiment_fn = experiments.photoswitches_experiment.one_experiment
+        tgt_cols = params["target_columns"]
+        prefix = "results/mp_matbench_jdft2d"
+        if prefix not in os.listdir(cwd + "/sanity_testing_build") and not (
+            os.path.exists(cwd + "/sanity_testing_build/" + prefix)
+        ):
+            os.makedirs(cwd + "/sanity_testing_build/" + prefix)
+        status = run_exp_over(
+            sample_encs, tgt_cols, prefix, params, one_experiment_fn, "jdft2d"
+        )
+        assert status == "SUCCESS"
+    else:
+        print(f"invalid experiment name {name}")
+        assert True
