@@ -25,6 +25,12 @@ jobs:
       - run: pip install -r requirements/requirements_graph.txt
       - run: pip install -r requirements/requirements_mat.txt
       
+      - name: setup local package
+        working-directory: ./
+        run: |
+          python setup.py sdist bdist_wheel
+          pip install dist/polyatomic_complexes-1.0.0-py3-none-any.whl --force-reinstall
+
       - name: run tests
         working-directory: ./sanity_testing_build
         run: |
