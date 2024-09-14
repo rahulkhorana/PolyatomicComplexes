@@ -246,16 +246,6 @@ experimental = [
     ),
     ("free_solv", {"target_columns": ["expt", "calc"], "root": "dataset/free_solv/"}),
     (
-        "materials_project",
-        {
-            "target_columns": [
-                "energy_per_atom",
-                "formation_energy_per_atom",
-            ],
-            "root": "dataset/materials_project/",
-        },
-    ),
-    (
         "lipophilicity",
         {
             "target_columns": ["exp"],
@@ -279,6 +269,15 @@ experimental = [
             "root": "dataset/mp_matbench_jdft2d/",
         },
     ),
+    (
+        "materials_project",
+        {
+            "target_columns": [
+                "formation_energy_per_atom",
+            ],
+            "root": "dataset/materials_project/",
+        },
+    ),
 ]
 
 path_mappings = {
@@ -292,7 +291,7 @@ def run_exp_over(sample_encs, tgt_cols, prefix, params, f, name):
     statuses = True
     for t in tgt_cols:
         for e in sample_encs:
-            esol_dest = (
+            _dest = (
                 cwd + "/sanity_testing_build/" + prefix + "/" + f"{e}_{time.time()}.txt"
             )
             src_path = root_data + params["root"]
@@ -311,10 +310,10 @@ def run_exp_over(sample_encs, tgt_cols, prefix, params, f, name):
                 tgt_cols,
                 f,
                 e,
-                5,
-                5,
+                2,
+                2,
                 name,
-                esol_dest,
+                _dest,
                 x_path,
                 y_path,
                 fig_path,
