@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 if __name__ == "__main__":
     setup(
         name="polyatomic_complexes",
-        version="0.0.4",
+        version="0.0.5",
         url="https://github.com/rahulkhorana/PolyatomicComplexes",
         author="Rahul Khorana",
         packages=find_packages(),

@@ -1,1 +1,4 @@
-include polyatomic_complexes/dataset/*
+include polyatomic_complexes/dataset *.csv
+include polyatomic_complexes/dataset *.pkl
+include polyatomic_complexes/dataset *.json
+recursive-include polyatomic_complexes/dataset *.csv *.json *.pkl *.py
