@@ -7,7 +7,7 @@ if __name__ == "__main__":
         url="https://github.com/rahulkhorana/PolyatomicComplexes",
         author="Rahul Khorana",
         packages=find_packages(),
-        install_requirements=[
+        install_requires=[
             "anyio==4.4.0",
             "appdirs==1.4.4",
             "appnope==0.1.4",
@@ -225,5 +225,11 @@ if __name__ == "__main__":
             "zope.interface==6.2",
         ],
         include_package_data=True,
-        package_data={"": ["data/*.csv", "data/*.pkl", "data/*.json"]},
+        package_data={
+            "": [
+                "PolyatomicComplexes/polyatomic_complexes/dataset/*.csv",
+                "PolyatomicComplexes/polyatomic_complexes/dataset/*.pkl",
+                "PolyatomicComplexes/polyatomic_complexes/dataset/*.json",
+            ]
+        },
     )
