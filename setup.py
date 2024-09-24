@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 if __name__ == "__main__":
     setup(
         name="polyatomic_complexes",
-        version="0.0.2",
+        version="0.0.3",
         url="https://github.com/rahulkhorana/PolyatomicComplexes",
         author="Rahul Khorana",
         packages=find_packages(),
@@ -223,11 +223,5 @@ if __name__ == "__main__":
             "zope.interface==6.2",
         ],
         include_package_data=True,
-        package_data={
-            "": [
-                "PolyatomicComplexes/polyatomic_complexes/dataset/*.csv",
-                "PolyatomicComplexes/polyatomic_complexes/dataset/*.pkl",
-                "PolyatomicComplexes/polyatomic_complexes/dataset/*.json",
-            ]
-        },
+        package_data={"": ["dataset/*"]},
     )

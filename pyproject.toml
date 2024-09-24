@@ -4,6 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "polyatomic_complexes"
+version = "0.0.3"
 authors = [
     {name = "Rahul Khorana", email = "rahul.khorana.email@gmail.com"},
 ]
@@ -229,7 +230,6 @@ dependencies = [
     "zope.event==5.0",
     "zope.interface==6.2",
 ]
-version = "0.0.2"
 
 [mypy]
 mypy_path = "./polyatomic_complexes"
