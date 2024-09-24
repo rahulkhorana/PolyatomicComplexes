@@ -8,10 +8,14 @@ from collections import defaultdict
 sys.path.append(".")
 from .atomic_complex import AtomComplex
 
+import importlib_resources
+
+import_path = importlib_resources.files("polyatomic_complexes").__str__()
+
 
 class BuildAtoms:
     def __init__(self):
-        self.cwd = os.getcwd()
+        self.cwd = import_path
         self.datapath = self.cwd + "/dataset/construct"
 
     def build_lookup_table(self) -> None:

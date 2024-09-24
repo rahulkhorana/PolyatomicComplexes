@@ -11,6 +11,8 @@ os.chdir(".")
 from .core_utils import GluingMap, ElectronField
 from .building_blocks import Electron
 
+import importlib_resources
+
 
 class PolyAtomComplex:
 
@@ -28,8 +30,8 @@ class PolyAtomComplex:
         self.atoms = atom_list
         self.using_radial = using_radial
         self.using_force = using_force
-        self.cwd = os.getcwd()
-        self.datapath = self.cwd + "/polyatomic_complexes" + "/dataset/construct"
+        self.cwd = importlib_resources.files("polyatomic_complexes").__str__()
+        self.datapath = self.cwd + "/dataset/construct"
         assert "atom_lookup.pkl" in os.listdir(self.datapath)
         assert "lookup_map.json" in os.listdir(self.datapath)
         self.reference = self.datapath + "/lookup_map.json"

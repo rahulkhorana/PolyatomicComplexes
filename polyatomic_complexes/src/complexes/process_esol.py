@@ -9,12 +9,16 @@ from collections import defaultdict
 sys.path.append(".")
 from .polyatomic_complex import PolyAtomComplex
 
+import importlib_resources
+
+import_path = importlib_resources.files("polyatomic_complexes").__str__()
+
 
 class ProcessESOL:
     def __init__(
         self,
-        source_path=os.getcwd() + "/polyatomic_complexes/dataset/esol/",
-        target_path=os.getcwd() + "/polyatomic_complexes/dataset/esol/",
+        source_path=import_path + "/dataset/esol/",
+        target_path=import_path + "/dataset/esol/",
     ):
         self.src = source_path
         self.tgt = target_path

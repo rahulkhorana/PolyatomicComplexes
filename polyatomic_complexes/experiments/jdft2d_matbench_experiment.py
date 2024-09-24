@@ -38,6 +38,10 @@ else:
     dev = "cpu"
 device = torch.device(dev)
 
+import importlib_resources
+
+import_path = importlib_resources.files("polyatomic_complexes").__str__()
+
 
 class ExactGPModel(ExactGP):
     def __init__(self, train_x: torch.Tensor, train_y, likelihood):
@@ -101,16 +105,14 @@ def one_experiment(
 ):
     X, y = [], []
     if data_path is None:
-        data_path = (
-            os.getcwd() + "/polyatomic_complexes/dataset/mp_matbench_jdft2d/jdft2d.csv"
-        )
+        data_path = import_path + "/dataset/mp_matbench_jdft2d/jdft2d.csv"
     if fig_path is None:
         fig_path = (
-            os.getcwd()
-            + f"/polyatomic_complexes/results/JDFT2D/{encoding}_Results/confidence_mae_model_{encoding}_{target}.png"
+            import_path
+            + f"/results/JDFT2D/{encoding}_Results/confidence_mae_model_{encoding}_{target}.png"
         )
     if encoding_path is None:
-        root_enc_path = os.getcwd() + "/polyatomic_complexes/dataset/mp_matbench_jdft2d"
+        root_enc_path = import_path + "/dataset/mp_matbench_jdft2d"
         if encoding == "complexes":
             encoding_path = root_enc_path + "/fast_complex_lookup_repn.pkl"
         elif encoding == "deep_complexes":

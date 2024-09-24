@@ -11,6 +11,10 @@ import os
 
 os.chdir("../")
 
+import importlib_resources
+
+import_path = importlib_resources.files("polyatomic_complexes").__str__()
+
 
 class LoadDatasetForTask:
     def __init__(self, X, y, y_column, repn):
@@ -18,7 +22,7 @@ class LoadDatasetForTask:
         self.y = y
         self.y_column = y_column
         self.repn = repn
-        self.data_root = os.getcwd() + "/polyatomic_complexes/"
+        self.data_root = import_path + "/"
 
     def load_photoswitches(self) -> Tuple[torch.Tensor, torch.Tensor]:
         if self.repn == "complexes":

@@ -9,12 +9,16 @@ from collections import defaultdict
 sys.path.append(".")
 from .polyatomic_complex import PolyAtomComplex
 
+import importlib_resources
+
+import_path = importlib_resources.files("polyatomic_complexes").__str__()
+
 
 class ProcessFreeSolv:
     def __init__(
         self,
-        source_path=os.getcwd() + "/polyatomic_complexes/dataset/free_solv/",
-        target_path=os.getcwd() + "/polyatomic_complexes/dataset/free_solv/",
+        source_path=import_path + "/dataset/free_solv/",
+        target_path=import_path + "/dataset/free_solv/",
     ):
         self.src = source_path
         self.tgt = target_path

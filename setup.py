@@ -69,6 +69,7 @@ if __name__ == "__main__":
             "idna==3.6",
             "imgcat==0.5.0",
             "importlib_metadata==8.5.0",
+            "importlib_resources==6.4.5",
             "iniconfig==2.0.0",
             "isoduration==20.11.0",
             "jaraco.classes==3.4.0",
@@ -223,5 +224,9 @@ if __name__ == "__main__":
             "zope.interface==6.2",
         ],
         include_package_data=True,
-        package_data={"": ["dataset/*"]},
+        package_data={
+            "": ["*.pkl"],
+            "": ["*.csv"],
+            "": ["*.json"],
+        },
     )
