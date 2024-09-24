@@ -5,13 +5,6 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "polyatomic_complexes"
 version = "0.0.1"
-
-[tools.pytest.ini_options]
-adopts = '--cov=polyatomic_complexes/src/complexes'
-testpaths = [
-    "polyatomic_complexes/tests",
-    "sanity_testing_build"
-]
 authors = [
     {name = "Rahul Khorana", email = "rahul.khorana.email@gmail.com"},
 ]
@@ -249,3 +242,11 @@ disallow_any_generics = false
 ignore_missing_imports = true
 show_error_codes = true
 ignore_errors = true
+
+
+[tools.pytest.ini_options]
+adopts = '--cov=polyatomic_complexes/src/complexes'
+testpaths = [
+    "polyatomic_complexes/tests",
+    "sanity_testing_build"
+]
