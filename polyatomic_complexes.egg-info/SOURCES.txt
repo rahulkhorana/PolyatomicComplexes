@@ -13,6 +13,7 @@ polyatomic_complexes/__init__.py
 polyatomic_complexes.egg-info/PKG-INFO
 polyatomic_complexes.egg-info/SOURCES.txt
 polyatomic_complexes.egg-info/dependency_links.txt
+polyatomic_complexes.egg-info/requires.txt
 polyatomic_complexes.egg-info/top_level.txt
 polyatomic_complexes/dataset/__init__.py
 polyatomic_complexes/experiments/__init__.py

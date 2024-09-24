@@ -4,7 +4,6 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "polyatomic_complexes"
-version = "0.0.1"
 authors = [
     {name = "Rahul Khorana", email = "rahul.khorana.email@gmail.com"},
 ]
@@ -250,3 +249,4 @@ testpaths = [
     "polyatomic_complexes/tests",
     "sanity_testing_build"
 ]
+version = "0.0.1"
