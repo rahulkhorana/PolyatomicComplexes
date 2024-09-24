@@ -1,6 +1,7 @@
 .gitattributes
 .gitignore
 LICENSE
+MANIFEST.in
 README.md
 pyproject.toml
 setup.py
