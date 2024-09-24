@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: polyatomic_complexes
-Version: 0.0.1
+Version: 0.0.2
 Summary: A system for modeling atomistic environments as described in the referenced research paper.
 Home-page: https://github.com/rahulkhorana/PolyatomicComplexes
 Author: Rahul Khorana

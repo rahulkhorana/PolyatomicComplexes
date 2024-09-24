@@ -229,8 +229,7 @@ dependencies = [
     "zope.event==5.0",
     "zope.interface==6.2",
 ]
-dynamic = ["version"]
-
+version = "0.0.2"
 
 [mypy]
 mypy_path = "./polyatomic_complexes"
@@ -247,4 +246,3 @@ testpaths = [
     "polyatomic_complexes/tests",
     "sanity_testing_build"
 ]
-version = "0.0.1"
