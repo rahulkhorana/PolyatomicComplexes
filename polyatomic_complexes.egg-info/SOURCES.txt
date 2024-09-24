@@ -14,6 +14,7 @@ polyatomic_complexes.egg-info/PKG-INFO
 polyatomic_complexes.egg-info/SOURCES.txt
 polyatomic_complexes.egg-info/dependency_links.txt
 polyatomic_complexes.egg-info/top_level.txt
+polyatomic_complexes/dataset/__init__.py
 polyatomic_complexes/experiments/__init__.py
 polyatomic_complexes/experiments/esol_experiment.py
 polyatomic_complexes/experiments/freesolv_experiment.py
