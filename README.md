@@ -8,7 +8,7 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 ![PyPI - Version](https://img.shields.io/pypi/v/polyatomic-complexes?style=plastic&logo=%233775A9&logoSize=auto&labelColor=%233775A9&color=%23e1ad01&link=https%3A%2F%2Fpypi.org%2Fproject%2Fpolyatomic-complexes%2F0.0.8%2F)
 ![PyPI - Format](https://img.shields.io/pypi/format/polyatomic-complexes)
-
+![PyPI - Downloads](https://img.shields.io/pypi/dm/polyatomic-complexes)
 
 </h4>
 
