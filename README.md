@@ -22,7 +22,7 @@ source .env/bin/activate
 ```
 2. Run the following
 ```sh
-pip install polyatomic-complexes==0.0.8
+pip install -U polyatomic-complexes==0.0.8
 ```
 
 
