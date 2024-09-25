@@ -12,7 +12,22 @@
 
 </h4>
 
-## Installation
+## Installation (pip)
+
+1. Ensure you have python >= 3.11.6 and set up a virtual environment.
+```sh
+pip install virtualenv
+virtualenv .env --python=python3.11.6
+source .env/bin/activate
+```
+2. Run the following
+```sh
+pip install polyatomic-complexes==0.0.8
+```
+
+
+
+## Installation (Repo)
 
 1. Clone the repo.
 
