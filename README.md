@@ -6,6 +6,9 @@
 ![workflow](https://github.com/rahulkhorana/PolyatomicComplexes/actions/workflows/ci.yml/badge.svg)
 [![Github License](https://img.shields.io/badge/License-MIT%202.0-blue.svg)](https://opensource.org/licenses/MIT)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+![PyPI - Version](https://img.shields.io/pypi/v/polyatomic-complexes?style=plastic&logo=%233775A9&logoSize=auto&labelColor=%233775A9&color=%23e1ad01&link=https%3A%2F%2Fpypi.org%2Fproject%2Fpolyatomic-complexes%2F0.0.8%2F)
+![PyPI - Format](https://img.shields.io/pypi/format/polyatomic-complexes)
+
 
 </h4>
 
@@ -52,13 +55,14 @@ git lfs pull
 ## Reference
 
 ```
-@inproceedings{
-khorana2024polyatomiccomplexes,
-title={Polyatomic Complexes},
-author={Rahul Khorana, Marcus M. Noack, Jin Qian},
-booktitle={Submitted},
-year={2024},
-url={https://openreview.net/forum?id=}
+@misc{khorana2024polyatomiccomplexestopologicallyinformedlearning,
+      title={Polyatomic Complexes: A topologically-informed learning representation for atomistic systems}, 
+      author={Rahul Khorana and Marcus Noack and Jin Qian},
+      year={2024},
+      eprint={2409.15600},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2409.15600}, 
 }
 
 ```
