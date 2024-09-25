@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: polyatomic_complexes
-Version: 0.0.5
+Version: 0.0.8
 Summary: A system for modeling atomistic environments as described in the referenced research paper.
 Home-page: https://github.com/rahulkhorana/PolyatomicComplexes
 Author: Rahul Khorana
@@ -71,6 +71,7 @@ Requires-Dist: httpx==0.27.2
 Requires-Dist: idna==3.6
 Requires-Dist: imgcat==0.5.0
 Requires-Dist: importlib_metadata==8.5.0
+Requires-Dist: importlib_resources==6.4.5
 Requires-Dist: iniconfig==2.0.0
 Requires-Dist: isoduration==20.11.0
 Requires-Dist: jaraco.classes==3.4.0
