@@ -6,15 +6,16 @@ import pandas as pd
 from rdkit import Chem
 from collections import defaultdict
 
-sys.path.append(".")
-from .polyatomic_complex import PolyAtomComplex
+from polyatomic_complexes.src.complexes.polyatomic_complex import PolyAtomComplex
+
+os.chdir("..")
 
 
 class ProcessFreeSolv:
     def __init__(
         self,
-        source_path=os.getcwd() + "/polyatomic_complexes/dataset/free_solv/",
-        target_path=os.getcwd() + "/polyatomic_complexes/dataset/free_solv/",
+        source_path=os.getcwd() + "/dataset/free_solv/",
+        target_path=os.getcwd() + "/dataset/free_solv/",
     ):
         self.src = source_path
         self.tgt = target_path
@@ -61,6 +62,21 @@ class ProcessFreeSolv:
             dill.dump(representations, f)
         return None
 
+    def process_dimension(self) -> None:
+        representations = defaultdict(tuple)
+        for i, row in enumerate(self.data["smiles"]):
+            print(f"row {row}")
+            print(f"tpe {type(row)}")
+            atoms = self.smiles_to_atoms(row)
+            representations[i] = PolyAtomComplex(
+                atom_list=atoms
+            ).dimension_build_complex()
+            print(f"repi: {representations[i][0].shape}")
+
+        with open(self.tgt + "dimension_complex_lookup_repn.pkl", "wb") as f:
+            dill.dump(representations, f)
+        return None
+
     def smiles_to_atoms(self, smile: str) -> list:
         assert isinstance(smile, str)
         mol = Chem.MolFromSmiles(smile)
@@ -97,4 +113,5 @@ if __name__ == "__main__":
     prc = ProcessFreeSolv()
     # prc.process()
     # prc.process_deep_complexes()
-    prc.process_stacked()
+    # prc.process_stacked()
+    prc.process_dimension()

@@ -7,9 +7,10 @@ import networkx as nx
 import jax.numpy as jnp
 from typing import List, Tuple
 
-os.chdir(".")
-from .core_utils import GluingMap, ElectronField
-from .building_blocks import Electron
+from polyatomic_complexes.src.complexes.core_utils import GluingMap, ElectronField
+from polyatomic_complexes.src.complexes.building_blocks import Electron
+
+os.chdir("..")
 
 
 class PolyAtomComplex:
@@ -29,7 +30,7 @@ class PolyAtomComplex:
         self.using_radial = using_radial
         self.using_force = using_force
         self.cwd = os.getcwd()
-        self.datapath = self.cwd + "/polyatomic_complexes" + "/dataset/construct"
+        self.datapath = self.cwd + "/dataset/construct"
         assert "atom_lookup.pkl" in os.listdir(self.datapath)
         assert "lookup_map.json" in os.listdir(self.datapath)
         self.reference = self.datapath + "/lookup_map.json"
@@ -63,6 +64,55 @@ class PolyAtomComplex:
             C += list(acomplex[0].ravel())
         C = np.asarray(C)
         return tuple([C, [], [], []])
+
+    def dimension_build_complex(self):
+        lookup = self.datapath + "/atom_lookup.pkl"
+        with open(lookup, "rb") as f:
+            lookup = dill.load(f)
+        eleminfo = self.lookup_map
+        A = []
+        for i, a in enumerate(self.atoms):
+            acomplex = lookup[a]
+            inf = eleminfo[a]
+            info = [inf[2], acomplex[0], acomplex[1], acomplex[2], acomplex[3]]
+            A.append(info)
+        C = np.asarray([])
+        self.E = ElectronField()
+        self.F = np.array([])
+        self.DE = np.array([])
+
+        def disjont_union(
+            gluing_map: np.ndarray, skeleton: np.ndarray, particle: np.ndarray
+        ) -> np.ndarray:
+            particle = particle.reshape(len(particle), 1)
+            skeleton = skeleton.reshape(len(skeleton), 1)
+            K = np.vstack([skeleton, particle])
+            return K
+
+        def electron_union(EF_1: tuple, EF_2: tuple) -> None:
+            ee0_1 = EF_1[0]
+            wv_1 = EF_1[1]
+            assert isinstance(ee0_1, np.ndarray)
+            assert isinstance(wv_1, np.ndarray)
+            e_field = np.union1d(ee0_1, [])
+            wves = np.concatenate([wv_1.ravel()])
+            e_field, waves = e_field.ravel(), wves.ravel()
+            self.E.add_electrons(e_field, waves)
+            return
+
+        while A:
+            data = A.pop(0)
+            num_elec, k, _, df, de = data
+            if len(C) == 0:
+                C = k
+            phi = GluingMap(C, k, target=C).construct_map()
+            map = np.asarray(list(phi.values()), dtype=jnp.float32)
+            map = np.unique(map)
+            C = disjont_union(map, C, k)
+            ae = self.gen_elec_info(num_elec)
+            electron_union(ae, [])
+        C = C.repeat(3, 1)
+        return tuple([C, self.E.get_efield(), self.F, self.DE])
 
     def general_build_complex(self):
         lookup = self.datapath + "/atom_lookup.pkl"
@@ -184,6 +234,12 @@ def sanity_test(atom_list, kind):
             print("success ✅")
         except Exception:
             print("failed ❌")
+    elif kind == "dimension_build":
+        try:
+            pac.dimension_build_complex()
+            print("success ✅")
+        except:
+            print("failed ❌")
     else:
         try:
             pac.fast_build_complex()
@@ -193,9 +249,10 @@ def sanity_test(atom_list, kind):
 
 
 if __name__ == "__main__":
-    sanity_test(["H", "H", "O"], "")
+    sanity_test(["H", "H", "O"], "dimension_build")
     sanity_test(["H", "H", "O"], "fast_stacked")
     sanity_test(["C", "H", "H", "H"], "")
+    sanity_test(["C", "H", "H", "H"], "dimension_build")
     sanity_test(
         [
             "Np",
@@ -260,7 +317,73 @@ if __name__ == "__main__":
             "O",
             "O",
         ],
+        "dimension_build",
+    )
+    sanity_test(
+        [
+            "Np",
+            "U",
+            "P",
+            "P",
+            "P",
+            "P",
+            "H",
+            "H",
+            "H",
+            "H",
+            "C",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+            "C",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+        ],
         "",
+    )
+    sanity_test(
+        [
+            "Np",
+            "U",
+            "P",
+            "P",
+            "P",
+            "P",
+            "H",
+            "H",
+            "H",
+            "H",
+            "C",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+            "C",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+        ],
+        "dimension_build",
     )
     sanity_test(["H", "H", "O"], "general")
     sanity_test(["C", "H", "H", "H"], "general")
@@ -364,4 +487,37 @@ if __name__ == "__main__":
             "O",
         ],
         "fast_stacked",
+    )
+    sanity_test(
+        [
+            "Np",
+            "U",
+            "P",
+            "P",
+            "P",
+            "P",
+            "H",
+            "H",
+            "H",
+            "H",
+            "C",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+            "C",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+            "O",
+        ],
+        "dimension_build",
     )
