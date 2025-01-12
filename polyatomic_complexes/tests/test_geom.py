@@ -88,22 +88,40 @@ def check_abstract_complex_test(complex: AbstractComplex):
     atm_struct = complex.atomic_structure()
     assert isinstance(atm_struct, list)
     assert True in check_types(atm_struct) and len(check_types(atm_struct)) == 1
-
     bonds = complex.bonds()
+    check_bonds = lambda bnds: set(
+        [
+            len(b) == 3
+            and isinstance(b, tuple)
+            and isinstance(b[0], str)
+            and isinstance(b[1], str)
+            and isinstance(b[2], list)
+            for b in bnds
+        ]
+    )
     assert isinstance(bonds, list)
-    print(bonds)
+    assert True in check_bonds(bonds) and len(check_bonds(bonds)) == 1
+
+    expected_to_NI_methods = [
+        complex.forces,
+        complex.electrostatics,
+        complex.get_forces,
+        complex.get_electrostatics,
+        complex.wavefunctions,
+    ]
+    for method in expected_to_NI_methods:
+        with pytest.raises(NotImplementedError) as excinfo:
+            method()
+        assert (
+            str(excinfo.value)
+            == "This is not defined behavior for an Abstract Complex!"
+        )
 
     ato_top = complex.atomic_topology()
     nice_print("ato_top", ato_top)
 
     ato_struct = complex.atomic_structure()
     nice_print("ato_struct", ato_struct)
-
-    elec = complex.electrostatics
-    nice_print("elec", elec)
-
-    forc = complex.forces
-    nice_print("forc", forc)
 
     adj = complex.get_adjacencies()
     nice_print("adj", adj)
@@ -123,9 +141,6 @@ def check_abstract_complex_test(complex: AbstractComplex):
     get_betti = complex.get_betti_numbers()
     nice_print("get_betti", get_betti)
 
-    get_forces = complex.get_forces()
-    nice_print("get_forces", get_forces)
-
     get_incidences = complex.get_incidence()
     nice_print("get_incidences", get_incidences)
 
@@ -137,9 +152,6 @@ def check_abstract_complex_test(complex: AbstractComplex):
 
     get_dirac = complex.get_dirac()
     nice_print("get_dirac", get_dirac)
-
-    get_elec = complex.get_electrostatics()
-    nice_print("get_elec", get_elec)
 
     get_def_or = complex.get_default_orientations()
     nice_print("get_def_or", get_def_or)
@@ -205,3 +217,6 @@ def test_small_test_polyatomic_geometry(smile, mode):
         assert check_quantum_waves_complex_test(pgs)
     else:
         raise Exception("INVALID + UNSUPPORTED")
+
+
+# test_small_test_polyatomic_geometry(smile=smiles[0], mode=modes[0])

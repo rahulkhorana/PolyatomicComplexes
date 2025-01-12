@@ -346,26 +346,26 @@ class AbstractComplex(PolyatomicComplex):
         return self.get_complex("abstract_complex")
 
     def electrostatics(self):
-        return NotImplementedError(
+        raise NotImplementedError(
             "This is not defined behavior for an Abstract Complex!"
         )
 
     def forces(self):
-        return NotImplementedError(
+        raise NotImplementedError(
             "This is not defined behavior for an Abstract Complex!"
         )
 
     def get_electrostatics(self):
-        return NotImplementedError(
+        raise NotImplementedError(
             "This is not defined behavior for an Abstract Complex!"
         )
 
     def get_forces(self):
-        return NotImplementedError(
+        raise NotImplementedError(
             "This is not defined behavior for an Abstract Complex!"
         )
 
     def wavefunctions(self):
-        return NotImplementedError(
+        raise NotImplementedError(
             "This is not defined behavior for an Abstract Complex!"
         )

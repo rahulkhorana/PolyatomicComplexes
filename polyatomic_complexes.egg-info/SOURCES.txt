@@ -15,6 +15,7 @@ polyatomic_complexes.egg-info/SOURCES.txt
 polyatomic_complexes.egg-info/dependency_links.txt
 polyatomic_complexes.egg-info/top_level.txt
 polyatomic_complexes/dataset/construct/atom_lookup.pkl
+polyatomic_complexes/dataset/construct/atomic_mass.json
 polyatomic_complexes/dataset/construct/lookup_map.json
 polyatomic_complexes/dataset/esol/ESOL.csv
 polyatomic_complexes/dataset/esol/deep_complex_lookup_repn.pkl
@@ -258,3 +259,4 @@ requirements/requirements.txt
 requirements/requirements_graph.txt
 requirements/requirements_mat.txt
 sanity_testing_build/test.py
+sanity_testing_build/test_geometry_interface.py
