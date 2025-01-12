@@ -6,8 +6,8 @@ import jax.numpy as jnp
 from typing import List, Tuple
 from collections import defaultdict
 
-sys.path.append(".")
-from .core_utils import GluingMap, NSphere
+sys.path.append("..")
+from polyatomic_complexes.src.complexes.core_utils import GluingMap, NSphere
 
 
 class GeneralComplexUtils:
@@ -68,7 +68,7 @@ class GeneralComplexUtils:
             return v / jnp.linalg.norm(v)
 
         @jax.jit
-        def compute_norm(mat: np.ndarray) -> jnp.float32:
+        def compute_norm(mat: np.ndarray):
             return jnp.linalg.norm(mat)
 
         normalize = jax.jit(normalize_vector)

@@ -1,4 +1,4 @@
-from src.complexes.polyatomic_complex import PolyAtomComplex
+from polyatomic_complexes.src.complexes.polyatomic_complex import PolyAtomComplex
 from typing import List
 import os
 import pytest
@@ -54,8 +54,7 @@ cases = [
     (PolyAtomComplex(atom_list=atom_lists[2]), "fast_stacked"),
 ]
 
-os.getcwd()
-root_data = os.getcwd() + "/polyatomic_complexes/"
+root_data = os.getcwd() + "/featuredev/PolyatomicComplexes/polyatomic_complexes/"
 
 
 def fuzz_test(n=20, k=15):

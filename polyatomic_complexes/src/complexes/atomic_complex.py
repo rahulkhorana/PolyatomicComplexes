@@ -3,9 +3,9 @@ import jax
 import numpy as np
 from typing import List, Tuple
 
-sys.path.append(".")
-from .building_blocks import Electron, Proton, Neutron
-from .general_utils import GeneralComplexUtils
+
+from polyatomic_complexes.src.complexes.building_blocks import Electron, Proton, Neutron
+from polyatomic_complexes.src.complexes.general_utils import GeneralComplexUtils
 
 
 seed = np.random.randint(0, 10 * 3)

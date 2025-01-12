@@ -1,4 +1,4 @@
-from src.complexes.atomic_complex import AtomComplex
+from polyatomic_complexes.src.complexes.atomic_complex import AtomComplex
 from typing import List
 import os
 import pytest
@@ -15,9 +15,7 @@ cases = [
     (AtomComplex(12, 1, 2, 17, 9, 9, 0), 12, 1, 2),
 ]
 
-
-os.getcwd()
-root_data = os.getcwd() + "/polyatomic_complexes/"
+root_data = os.getcwd() + "/featuredev/PolyatomicComplexes/polyatomic_complexes/"
 
 
 def fuzz_test(n=50):

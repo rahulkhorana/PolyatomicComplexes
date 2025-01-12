@@ -5,11 +5,11 @@ import json
 import numpy as np
 import networkx as nx
 import jax.numpy as jnp
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
-os.chdir(".")
-from .core_utils import GluingMap, ElectronField
-from .building_blocks import Electron
+os.chdir("..")
+from polyatomic_complexes.src.complexes.core_utils import GluingMap, ElectronField
+from polyatomic_complexes.src.complexes.building_blocks import Electron
 
 
 class PolyAtomComplex:
@@ -29,7 +29,12 @@ class PolyAtomComplex:
         self.using_radial = using_radial
         self.using_force = using_force
         self.cwd = os.getcwd()
-        self.datapath = self.cwd + "/polyatomic_complexes" + "/dataset/construct"
+        self.datapath = (
+            self.cwd
+            + "/featuredev/PolyatomicComplexes"
+            + "/polyatomic_complexes"
+            + "/dataset/construct"
+        )
         assert "atom_lookup.pkl" in os.listdir(self.datapath)
         assert "lookup_map.json" in os.listdir(self.datapath)
         self.reference = self.datapath + "/lookup_map.json"

@@ -6,8 +6,8 @@ import pandas as pd
 from rdkit import Chem
 from collections import defaultdict
 
-sys.path.append(".")
-from .polyatomic_complex import PolyAtomComplex
+sys.path.append("..")
+from polyatomic_complexes.src.complexes.polyatomic_complex import PolyAtomComplex
 
 
 class ProcessFreeSolv:

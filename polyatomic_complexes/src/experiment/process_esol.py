@@ -6,20 +6,20 @@ import pandas as pd
 from rdkit import Chem
 from collections import defaultdict
 
-sys.path.append(".")
-from .polyatomic_complex import PolyAtomComplex
+sys.path.append("..")
+from polyatomic_complexes.src.complexes.polyatomic_complex import PolyAtomComplex
 
 
-class ProcessLipophilicity:
+class ProcessESOL:
     def __init__(
         self,
-        source_path=os.getcwd() + "/polyatomic_complexes/dataset/lipophilicity/",
-        target_path=os.getcwd() + "/polyatomic_complexes/dataset/lipophilicity/",
+        source_path=os.getcwd() + "/polyatomic_complexes/dataset/esol/",
+        target_path=os.getcwd() + "/polyatomic_complexes/dataset/esol/",
     ):
         self.src = source_path
         self.tgt = target_path
-        assert "Lipophilicity.csv" in os.listdir(self.src)
-        self.datapath = self.src + "Lipophilicity.csv"
+        assert "ESOL.csv" in os.listdir(self.src)
+        self.datapath = self.src + "ESOL.csv"
         self.data = pd.read_csv(self.datapath)
         assert isinstance(self.data, pd.DataFrame)
 
@@ -94,7 +94,7 @@ class ProcessLipophilicity:
 
 
 if __name__ == "__main__":
-    prc = ProcessLipophilicity()
+    prc = ProcessESOL()
     # prc.process()
     # prc.process_deep_complexes()
     prc.process_stacked()

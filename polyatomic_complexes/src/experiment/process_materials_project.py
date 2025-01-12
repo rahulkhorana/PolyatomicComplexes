@@ -3,39 +3,40 @@ import sys
 import dill
 import json
 import pandas as pd
-from typing import List, Tuple
+from typing import List
 from multiprocessing.pool import ThreadPool as Pool
-from pymatgen.core import Structure
 from collections import defaultdict
 
-sys.path.append(".")
-from .polyatomic_complex import PolyAtomComplex
+sys.path.append("..")
+from polyatomic_complexes.src.complexes.polyatomic_complex import PolyAtomComplex
 
 
-class ProcessJDFT:
+class ProcessMP:
     def __init__(
         self,
-        source_path=os.getcwd() + "/polyatomic_complexes/dataset/mp_matbench_jdft2d/",
-        target_path=os.getcwd() + "/polyatomic_complexes/dataset/mp_matbench_jdft2d/",
+        source_path=os.getcwd() + "/polyatomic_complexes/dataset/materials_project/",
+        target_path=os.getcwd() + "/polyatomic_complexes/dataset/materials_project/",
     ):
         self.src = source_path
         self.tgt = target_path
-        assert "matbench_jdft2d.json" in os.listdir(self.src)
-        self.datapath = self.src + "matbench_jdft2d.json"
-        with open(self.datapath) as f:
-            self.data = json.load(f)
-        cols = list(self.data["columns"])
-        self.data = pd.DataFrame.from_dict(self.data["data"])
-        self.data.columns = cols
-        self.data.to_csv(self.src + "jdft2d.csv")
+        assert "materials_data.csv" in os.listdir(self.src)
+        self.datapath = self.src + "materials_data.csv"
+        self.data = pd.read_csv(self.datapath, low_memory=False)
         assert isinstance(self.data, pd.DataFrame)
 
     def process(self) -> None:
         representations = defaultdict(tuple)
-        for i, struct in enumerate(self.data["structure"]):
-            structure = Structure.from_dict(struct)
-            elem, comp = self.extract_structure(structure)
-            atoms = self.extract_atoms(elem, comp)
+        for i, data in enumerate(zip(self.data["elements"], self.data["composition"])):
+            elem, comp = data
+            elem = eval(elem)
+            print(f"comp {comp}")
+            try:
+                comp = json.loads(comp)
+                atoms = self.extract_atoms(elem, comp)
+            except Exception:
+                # single edge case ['He']
+                comp = eval(comp)
+                atoms = comp
             representations[i] = PolyAtomComplex(atom_list=atoms).fast_build_complex()
         assert len(representations) == len(self.data)
         with open(self.tgt + "fast_complex_lookup_repn.pkl", "wb") as f:
@@ -44,10 +45,17 @@ class ProcessJDFT:
 
     def process_stacked(self) -> None:
         representations = defaultdict(tuple)
-        for i, struct in enumerate(self.data["structure"]):
-            structure = Structure.from_dict(struct)
-            elem, comp = self.extract_structure(structure)
-            atoms = self.extract_atoms(elem, comp)
+        for i, data in enumerate(zip(self.data["elements"], self.data["composition"])):
+            elem, comp = data
+            elem = eval(elem)
+            print(f"comp {comp}")
+            try:
+                comp = json.loads(comp)
+                atoms = self.extract_atoms(elem, comp)
+            except Exception:
+                # single edge case ['He']
+                comp = eval(comp)
+                atoms = comp
             representations[i] = PolyAtomComplex(atom_list=atoms).fast_stacked_complex()
         assert len(representations) == len(self.data)
         with open(self.tgt + "stacked_complex_lookup_repn.pkl", "wb") as f:
@@ -58,10 +66,16 @@ class ProcessJDFT:
         representations = defaultdict(tuple)
 
         def helper(data):
-            i, struct = data
-            structure = Structure.from_dict(struct)
-            elem, comp = self.extract_structure(structure)
-            atoms = self.extract_atoms(elem, comp)
+            i, row = data
+            elem, comp = row
+            elem = eval(elem)
+            try:
+                comp = json.loads(comp)
+                atoms = self.extract_atoms(elem, comp)
+            except Exception:
+                # single edge case ['He']
+                comp = eval(comp)
+                atoms = comp
             pc = PolyAtomComplex(atom_list=atoms)
             repn = pc.general_build_complex()
             representations[i] = repn
@@ -71,23 +85,15 @@ class ProcessJDFT:
         with Pool() as p:
             p.map(
                 func=helper,
-                iterable=list(enumerate(self.data["structure"])),
+                iterable=list(
+                    enumerate(zip(self.data["elements"], self.data["composition"]))
+                ),
             )
 
         assert len(representations) == len(self.data)
         with open(self.tgt + "deep_complex_lookup_repn.pkl", "wb") as f:
             dill.dump(representations, f)
         return None
-
-    def extract_structure(self, struct: Structure) -> Tuple[List, dict]:
-        structure_info = defaultdict(list)
-        cmp = struct.composition
-        for k in cmp:
-            if k != "@module" and k != "@class" and k != "@version":
-                strk = f"{k}"
-                key = strk.replace("Element ", "")
-                structure_info[key] = cmp[k]
-        return tuple([list(structure_info.keys()), structure_info])
 
     def extract_atoms(self, element, composition) -> List:
         atom_list = []
@@ -98,7 +104,7 @@ class ProcessJDFT:
 
 
 if __name__ == "__main__":
-    prc = ProcessJDFT()
+    prc = ProcessMP()
     # prc.process()
     # prc.process_deep_complexes()
     prc.process_stacked()

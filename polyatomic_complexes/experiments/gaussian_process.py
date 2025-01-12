@@ -15,7 +15,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # botorch specific
-from botorch import fit_gpytorch_model
+from botorch.fit import fit_gpytorch_mll
 from botorch.acquisition import ExpectedImprovement
 import warnings
 
@@ -146,7 +146,7 @@ def run_training_loop(
             t0 = time.time()
 
             # fit the model
-            fit_gpytorch_model(mll_ei)
+            fit_gpytorch_mll(mll_ei)
 
             # Use analytic acquisition function for batch size of 1.
             EI = ExpectedImprovement(
@@ -258,7 +258,7 @@ def evaluate_model(
 
         print("init done")
         # Use the BoTorch utility for fitting GPs in order to use the LBFGS-B optimiser (recommended)
-        fit_gpytorch_model(mll)
+        fit_gpytorch_mll(mll)
 
         print("fitting done")
 
@@ -407,7 +407,7 @@ def evaluate_graph_model(
 
         # Use the BoTorch utility for fitting GPs in order
         # to use the LBFGS-B optimiser (recommended)
-        fit_gpytorch_model(mll)
+        fit_gpytorch_mll(mll)
         print("fitting done")
         # Get into evaluation (predictive posterior) mode and compute predictions
         model.eval()
