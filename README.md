@@ -34,7 +34,7 @@ Note: If you are having trouble with the environment setup please see the follow
 
 1. Clone the repo.
 
-2. Ensure you have python >= 3.11.6 and set up a virtual environment.
+2. Ensure you have python >= 3.11.11 and set up a virtual environment.
 ```sh
 pip install virtualenv
 virtualenv .env --python=python3.11.6
