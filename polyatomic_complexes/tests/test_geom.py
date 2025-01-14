@@ -19,6 +19,7 @@ import os
 import pytest
 import json
 import random
+import numpy as np
 from collections import defaultdict
 from toponetx import CombinatorialComplex
 
@@ -30,12 +31,13 @@ def nice_print(argname, arg):
 
 
 def check_abstract_complex_test(complex: AbstractComplex):
+    # simple check abstract complex
     complex_ac = complex.abstract_complex()
     assert isinstance(complex_ac, defaultdict)
     for k in complex_ac.keys():
         assert len(k) == 2 and isinstance(k, tuple)
         assert isinstance(k[0], AtomComplex) and isinstance(k[1], str)
-    nice_print("complex ac", complex_ac)
+    # simple check rank order complex
     complex_roc = complex.rank_order_complex()
     assert isinstance(complex_roc, defaultdict)
     assert "molecule" in complex_roc and len(complex_roc["molecule"]) == 2
@@ -77,6 +79,7 @@ def check_abstract_complex_test(complex: AbstractComplex):
         True in check_features("electronic_structure")
         and len(check_features("electronic_structure")) == 1
     )
+    # simple check atomic structure
     check_types = lambda column: set(
         [
             len(x) == 3
@@ -88,6 +91,7 @@ def check_abstract_complex_test(complex: AbstractComplex):
     atm_struct = complex.atomic_structure()
     assert isinstance(atm_struct, list)
     assert True in check_types(atm_struct) and len(check_types(atm_struct)) == 1
+    # simple check bonds
     bonds = complex.bonds()
     check_bonds = lambda bnds: set(
         [
@@ -101,7 +105,7 @@ def check_abstract_complex_test(complex: AbstractComplex):
     )
     assert isinstance(bonds, list)
     assert True in check_bonds(bonds) and len(check_bonds(bonds)) == 1
-
+    # simple check not implemented methods
     expected_to_NI_methods = [
         complex.forces,
         complex.electrostatics,
@@ -116,22 +120,44 @@ def check_abstract_complex_test(complex: AbstractComplex):
             str(excinfo.value)
             == "This is not defined behavior for an Abstract Complex!"
         )
-
+    # simple check atomic topology
     ato_top = complex.atomic_topology()
-    nice_print("ato_top", ato_top)
-
+    rk, feats = ato_top
+    assert isinstance(rk, list) and isinstance(feats, dict)
+    assert set(
+        [isinstance(r, tuple) and len(r) == 2 and isinstance(r[1], list) for r in rk]
+    ) == set([True])
+    # simple check atomic structure
     ato_struct = complex.atomic_structure()
-    nice_print("ato_struct", ato_struct)
-
+    assert isinstance(ato_struct, list)
     adj = complex.get_adjacencies()
-    nice_print("adj", adj)
-
+    assert isinstance(adj, defaultdict)
+    assert "molecule_adjacencies" in adj
+    for sub_adj1 in adj["molecule_adjacencies"]:
+        for term1 in sub_adj1:
+            assert isinstance(term1[0], str)
+            assert isinstance(term1[1], np.ndarray)
+    # simple check coadjacency (all cell)
     all_cell_coaj = complex.get_all_cell_coadj()
     nice_print("all_cell_coaj", all_cell_coaj)
-
+    print(f"all cell is: {all_cell_coaj}")
+    assert isinstance(all_cell_coaj, defaultdict)
+    assert "molecule_all_cell_coadj" in all_cell_coaj
+    assert isinstance(all_cell_coaj["molecule_all_cell_coadj"], list)
+    assert isinstance(all_cell_coaj["molecule_all_cell_coadj"][0], list)
+    try:
+        all_cell = all_cell_coaj["molecule_all_cell_coadj"]
+        data = [np.asarray(row) for row in all_cell]
+        as_arr = np.asarray(data, dtype=object)
+        assert isinstance(as_arr, np.ndarray)
+        for c in as_arr:
+            assert isinstance(c, np.ndarray)
+    except Exception as e:
+        raise e
+    # simple check atomic structure
     get_structure = complex.get_atomic_structure()
-    nice_print("get_structure", get_structure)
-
+    assert isinstance(get_structure, list) and len(get_structure) != 1
+    # simple check atotop
     get_ato = complex.get_atomic_topology()
     nice_print("get_ato", get_ato)
 
@@ -167,6 +193,74 @@ def check_abstract_complex_test(complex: AbstractComplex):
 
     get_sk = complex.get_skeleta()
     nice_print("get_sk", get_sk)
+    return True
+
+
+def check_adjacency_lists_unique(complex1, complex2):
+    assert (
+        isinstance(complex1, AbstractComplex)
+        or isinstance(complex1, ForceComplex)
+        or isinstance(complex1, QuantumComplex)
+        or isinstance(complex1, QuantumWavesComplex)
+    )
+    assert (
+        isinstance(complex2, AbstractComplex)
+        or isinstance(complex2, ForceComplex)
+        or isinstance(complex2, QuantumComplex)
+        or isinstance(complex2, QuantumWavesComplex)
+    )
+    adj1, adj2 = complex1.get_adjacencies(), complex2.get_adjacencies()
+    assert isinstance(adj1, defaultdict)
+    assert isinstance(adj2, defaultdict)
+    assert "molecule_adjacencies" in adj1
+    assert "molecule_adjacencies" in adj2
+    for sub_adj1, sub_adj2 in zip(
+        adj1["molecule_adjacencies"], adj2["molecule_adjacencies"]
+    ):
+        for term1, term2 in zip(sub_adj1, sub_adj2):
+            assert isinstance(term1[0], str)
+            assert isinstance(term2[0], str)
+            assert isinstance(term1[1], np.ndarray)
+            assert isinstance(term2[1], np.ndarray)
+            arr_1, arr_2 = term1[1], term2[1]
+            assert not np.array_equal(arr_1, arr_2)
+    return True
+
+
+def check_all_cell_unique(complex1, complex2):
+    assert (
+        isinstance(complex1, AbstractComplex)
+        or isinstance(complex1, ForceComplex)
+        or isinstance(complex1, QuantumComplex)
+        or isinstance(complex1, QuantumWavesComplex)
+    )
+    assert (
+        isinstance(complex2, AbstractComplex)
+        or isinstance(complex2, ForceComplex)
+        or isinstance(complex2, QuantumComplex)
+        or isinstance(complex2, QuantumWavesComplex)
+    )
+
+    def convert_nd(coaj):
+        data = [np.asarray(row) for row in coaj]
+        as_arr = np.asarray(data, dtype=object)
+        return as_arr
+
+    all_cell_coaj1 = complex1.get_all_cell_coadj()
+    all_cell_coaj2 = complex2.get_all_cell_coadj()
+    assert isinstance(all_cell_coaj1, defaultdict)
+    assert "molecule_all_cell_coadj" in all_cell_coaj1
+    assert isinstance(all_cell_coaj2, defaultdict)
+    assert "molecule_all_cell_coadj" in all_cell_coaj2
+    all_c_1 = all_cell_coaj1["molecule_all_cell_coadj"]
+    all_c_2 = all_cell_coaj1["molecule_all_cell_coadj"]
+    arr_1, arr_2 = convert_nd(all_c_1), convert_nd(all_c_2)
+    assert isinstance(arr_1, np.ndarray)
+    assert isinstance(arr_2, np.ndarray)
+    for row1, row2 in zip(arr_1, arr_2):
+        assert isinstance(row1, np.ndarray)
+        assert isinstance(row2, np.ndarray)
+        assert not np.array_equal(arr_1, arr_2)
     return True
 
 
@@ -220,3 +314,4 @@ def test_small_test_polyatomic_geometry(smile, mode):
 
 
 # test_small_test_polyatomic_geometry(smile=smiles[0], mode=modes[0])
+# test_small_test_polyatomic_geometry(smile=smiles[1], mode=modes[0])
