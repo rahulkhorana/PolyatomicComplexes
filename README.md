@@ -17,7 +17,7 @@
 1. Ensure you have python == 3.11.11 and set up a virtual environment.
 ```sh
 pip install virtualenv
-virtualenv .env --python=python3.11.6
+virtualenv .env --python=python3.11.11
 source .env/bin/activate
 ```
 2. Run the following
