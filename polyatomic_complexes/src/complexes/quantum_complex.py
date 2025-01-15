@@ -10,10 +10,12 @@ from rdkit import Chem
 from rdkit.Chem import Mol
 from rdkit.Chem import AllChem
 from gpaw.cdft.cdft import CDFT
+from gpaw.poisson import PoissonSolver
 import matplotlib.pyplot as plt
 from collections import defaultdict
 from scipy.spatial import distance_matrix
 from rdkit.Chem.Descriptors import NumRadicalElectrons
+from pathlib import Path
 
 
 from polyatomic_complexes.src.complexes.abstract_complex import AbstractComplex
@@ -28,6 +30,18 @@ class QuantumComplex(AbstractComplex):
         self.bnds = bonds
         self.roc = self.rank_order_complex()
         self.figure_path = f"../../results/electron_density_viz_{smile}.png"
+        self.set_gpaw_path()
+
+    def set_gpaw_path(self) -> None:
+        script_dir = Path(__file__).resolve().parent
+        project_root = script_dir.parent.parent
+        setup_path = project_root / "gpaw_files"
+        if not setup_path.is_dir():
+            raise FileNotFoundError(f"The setup path '{setup_path}' does not exist.")
+        os.environ["GPAW_SETUP_PATH"] = str(setup_path)
+        print(f"GPAW_SETUP_PATH set to: {setup_path}")
+        self.setup_path = setup_path
+        return
 
     def unpack_roc(self):
         self._molecule, self._molecule_feat = self.roc["molecule"]
@@ -54,8 +68,16 @@ class QuantumComplex(AbstractComplex):
         positions = np.array(
             [list(conformer.GetAtomPosition(i)) for i in range(molecule.GetNumAtoms())]
         )
-        atoms = Atoms(symbols=symbols, positions=positions)
+        atoms = Atoms(symbols=symbols, positions=positions, pbc=False)
         atoms.center(vacuum=5.0)
+
+        symbols = [atom.symbol for atom in atoms]
+        for symbol in symbols:
+            if not os.path.exists(f"{self.setup_path}/{symbol}.PBE.gz"):
+                raise FileNotFoundError(
+                    f"Missing setup file for {symbol}: {self.setup_path}/{symbol}.PBE.gz"
+                )
+
         return atoms
 
     def _compute_realistic_constraints(self, atoms: Atoms, molecule: Mol):
@@ -70,7 +92,7 @@ class QuantumComplex(AbstractComplex):
         assert isinstance(atoms, Atoms) and isinstance(molecule, Mol)
         default_charges = {
             atom.symbol: getattr(
-                periodictable.elements.__getattr__(atom.symbol),
+                periodictable.elements.__getattribute__(atom.symbol),
                 "electronegativity_pauling",
                 0.0,
             )
@@ -131,14 +153,22 @@ class QuantumComplex(AbstractComplex):
             defaultdict: A defaultdict containing computed properties.
         """
         properties = defaultdict(dict)
-        atoms = self._generate_atoms_from_smile(self.smile)
+        atoms = self._generate_atoms_from_smile()
         molecule = Chem.MolFromSmiles(self.smile)
         Chem.AddHs(molecule)
+        # calc = GPAW(
+        #    xc="SCAN",
+        #    mode="pw",
+        #    basis=None,
+        #    convergence={"density": 1e-6},
+        #    poissonsolver=PoissonSolver(eps=1e-12),
+        # )
         calc = GPAW(
-            xc="SCAN",
-            mode="lcao",
+            mode="pw",
             basis="dzp",
-            convergence={"density": 1e-6},
+            xc="PBE",
+            convergence={"density": 1e-7, "energy": 1e-6, "eigenstates": 1e-8},
+            maxiter=150,
         )
         constraints = self._compute_realistic_constraints(atoms, molecule)
         cdft = self._get_constrained_dft(atoms, calc, constraints)

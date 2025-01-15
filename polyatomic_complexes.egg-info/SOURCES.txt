@@ -254,6 +254,7 @@ polyatomic_complexes/src/experiment/process_photoswitches.py
 polyatomic_complexes/tests/__init__.py
 polyatomic_complexes/tests/test_atoms.py
 polyatomic_complexes/tests/test_geom.py
+polyatomic_complexes/tests/test_large_geom.py
 polyatomic_complexes/tests/test_polyatoms.py
 requirements/requirements.txt
 requirements/requirements_graph.txt

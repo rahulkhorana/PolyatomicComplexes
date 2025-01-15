@@ -2,6 +2,7 @@ import os
 import sys
 import numpy as np
 from typing import List
+from pathlib import Path
 from collections import defaultdict
 from scipy.spatial import distance_matrix
 
@@ -16,6 +17,7 @@ from rdkit.Chem import AllChem
 # ase and gpaw
 from ase import Atoms
 from gpaw import GPAW
+from gpaw.poisson import PoissonSolver
 
 # tnx
 from toponetx import CombinatorialComplex
@@ -29,6 +31,17 @@ class ForceComplex(AbstractComplex):
         self.atoms = atoms
         self.bnds = bonds
         self.roc = self.rank_order_complex()
+        self.set_gpaw_path()
+
+    def set_gpaw_path(self) -> None:
+        script_dir = Path(__file__).resolve().parent
+        project_root = script_dir.parent.parent
+        setup_path = project_root / "gpaw_files"
+        if not setup_path.is_dir():
+            raise FileNotFoundError(f"The setup path '{setup_path}' does not exist.")
+        os.environ["GPAW_SETUP_PATH"] = str(setup_path)
+        print(f"GPAW_SETUP_PATH set to: {setup_path}")
+        return
 
     def unpack_roc(self):
         self._molecule, self._molecule_feat = self.roc["molecule"]
@@ -72,6 +85,8 @@ class ForceComplex(AbstractComplex):
         """
         describes forces/force field for entire molecule
         """
+        if not hasattr(self, "_molecule"):
+            self.unpack_roc()
         assert isinstance(self.smile, str) and isinstance(
             self._molecule, CombinatorialComplex
         )
@@ -85,8 +100,11 @@ class ForceComplex(AbstractComplex):
             [list(conformer.GetAtomPosition(i)) for i in range(molecule.GetNumAtoms())]
         )
         symbols = [atom.GetSymbol() for atom in molecule.GetAtoms()]
-        atoms = Atoms(symbols=symbols, positions=positions)
-        calc = GPAW(mode="lcao", basis="dzp", xc="PBE")
+        atoms = Atoms(symbols=symbols, positions=positions, pbc=False)
+        atoms.center(vacuum=5.0)
+        calc = GPAW(
+            mode="lcao", basis="dzp", xc="PBE", poissonsolver=PoissonSolver(eps=1e-12)
+        )
         atoms.calc = calc
         forces = atoms.get_forces()
         dist_matrix = distance_matrix(positions, positions)
