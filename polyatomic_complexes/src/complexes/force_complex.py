@@ -1,8 +1,10 @@
 import os
 import sys
+import gpaw.setup
 import numpy as np
 from typing import List
 from pathlib import Path
+import subprocess
 from collections import defaultdict
 from scipy.spatial import distance_matrix
 
@@ -14,10 +16,9 @@ import rdkit
 from rdkit import Chem
 from rdkit.Chem import AllChem
 
-# ase and gpaw
+# ase and pyscf
 from ase import Atoms
-from gpaw import GPAW
-from gpaw.poisson import PoissonSolver
+from pyscf import gto, dft, grad
 
 # tnx
 from toponetx import CombinatorialComplex
@@ -31,17 +32,7 @@ class ForceComplex(AbstractComplex):
         self.atoms = atoms
         self.bnds = bonds
         self.roc = self.rank_order_complex()
-        self.set_gpaw_path()
-
-    def set_gpaw_path(self) -> None:
-        script_dir = Path(__file__).resolve().parent
-        project_root = script_dir.parent.parent
-        setup_path = project_root / "gpaw_files"
-        if not setup_path.is_dir():
-            raise FileNotFoundError(f"The setup path '{setup_path}' does not exist.")
-        os.environ["GPAW_SETUP_PATH"] = str(setup_path)
-        print(f"GPAW_SETUP_PATH set to: {setup_path}")
-        return
+        self.gto = self._build_gto()
 
     def unpack_roc(self):
         self._molecule, self._molecule_feat = self.roc["molecule"]
@@ -49,30 +40,34 @@ class ForceComplex(AbstractComplex):
         self._electrons, self._electron_feat = self.roc["electronic_structure"]
         return
 
-    def electrostatics(self):
+    def _build_gto(self) -> gto.Mole:
+        """
+        Outputs a PySCF-compatible molecule.
+        """
+        mol = Chem.MolFromSmiles(self.smile)
+        mol = Chem.AddHs(mol)
+        AllChem.EmbedMolecule(mol, AllChem.ETKDG())
+        atoms = mol.GetAtoms()
+        coordinates = mol.GetConformers()[0].GetPositions()
+        symbols = [atom.GetSymbol() for atom in atoms]
+        mole = gto.M(
+            atom=[[symbols[i], *coordinates[i]] for i in range(len(atoms))],
+            basis="cc-pVDZ",
+        )
+        self.gto = mole
+        return mole
+
+    def electrostatics(self) -> np.ndarray:
         """
         returns the electrostatic potential
         """
-        if not hasattr(self, "_computed_features"):
-            self.forces()
-        positions, dist_matrix, top_data = (
-            self._computed_features["positions"],
-            self._computed_features["dist_matrix"],
-            self._computed_features["molecule_persistence"],
-        )
-        assert isinstance(positions, np.ndarray)
-        num_atoms = positions.shape[0]
-        electrostatic_potential = np.zeros(num_atoms)
-        for i in range(num_atoms):
-            for j in range(num_atoms):
-                if i != j:
-                    distance = dist_matrix[i, j]
-                    topo_weight = self.compute_top_weight(i, j, top_data)
-                    if topo_weight != 0:
-                        electrostatic_potential[i] += topo_weight / distance
-                    else:
-                        electrostatic_potential[i] += 1 / distance
-        return electrostatic_potential
+        if not hasattr(self, "gto"):
+            self._build_gto()
+        mf = dft.RKS(self.gto).density_fit()
+        mf.xc = "b3lyp"
+        mf.kernel(nproc=4)
+        veff = mf.get_veff()
+        return np.asarray(veff)
 
     def compute_top_weight(self, atom_i, atom_j, topology_data):
         weight = 1.0
@@ -81,49 +76,96 @@ class ForceComplex(AbstractComplex):
                 weight += persistence[0]
         return weight
 
-    def forces(self):
+    def forces(self) -> np.ndarray:
         """
         describes forces/force field for entire molecule
         """
         if not hasattr(self, "_molecule"):
             self.unpack_roc()
+        if not hasattr(self, "gto"):
+            self._build_gto()
         assert isinstance(self.smile, str) and isinstance(
             self._molecule, CombinatorialComplex
         )
+        assert isinstance(self.gto, gto.Mole)
         self._computed_features = defaultdict(list)
-        molecule = Chem.MolFromSmiles(self.smile)
-        molecule = Chem.AddHs(molecule)
-        AllChem.EmbedMolecule(molecule)
-        AllChem.UFFOptimizeMolecule(molecule)
-        conformer = molecule.GetConformer()
-        positions = np.array(
-            [list(conformer.GetAtomPosition(i)) for i in range(molecule.GetNumAtoms())]
-        )
-        symbols = [atom.GetSymbol() for atom in molecule.GetAtoms()]
-        atoms = Atoms(symbols=symbols, positions=positions, pbc=False)
-        atoms.center(vacuum=5.0)
-        calc = GPAW(
-            mode="lcao", basis="dzp", xc="PBE", poissonsolver=PoissonSolver(eps=1e-12)
-        )
-        atoms.calc = calc
-        forces = atoms.get_forces()
-        dist_matrix = distance_matrix(positions, positions)
+        mf = dft.RKS(self.gto).density_fit()
+        mf.xc = "b3lyp"
+        mf.kernel(nproc=4)
+        grad_calc = grad.RKS(mf)
+        forces = grad_calc.kernel()
+        forces = np.asarray(forces)
+        self._computed_features["forces"] = forces
         topology_data = self._molecule_feat["persistence"]
         self._computed_features["molecule_persistence"] = topology_data
-        self._computed_features["positions"] = positions
-        self._computed_features["dist_matrix"] = dist_matrix
-        self._computed_features["forces"] = forces
-        self._computed_features["symbols"] = symbols
         return forces
 
-    def get_electrostatics(self):
+    def positions(self) -> np.ndarray:
+        """
+        return positions matrix
+        """
+        if not hasattr(self, "gto"):
+            self._build_gto()
+        if not hasattr(self, "_computed_features"):
+            self.forces()
+        assert isinstance(self.gto, gto.Mole)
+        positions = np.array([atom[1:] for atom in self.gto.atom_coords()])
+        self._computed_features["positions"] = positions
+        return positions
+
+    def dist_matrix(self) -> np.ndarray:
+        """
+        return distance matrix
+        """
+        if not hasattr(self, "gto"):
+            self._build_gto()
+        if not hasattr(self, "_computed_features"):
+            self.forces()
+        assert isinstance(self.gto, gto.Mole)
+        positions = self.positions()
+        dist_matrix = distance_matrix(positions, positions)
+        self._computed_features["dist_matrix"] = dist_matrix
+        return dist_matrix
+
+    def symbols(self) -> List:
+        """
+        return symbols list
+        """
+        if not hasattr(self, "gto"):
+            self._build_gto()
+        if not hasattr(self, "_computed_features"):
+            self.forces()
+        assert isinstance(self.gto, gto.Mole)
+        symbols = [atom[0] for atom in self.gto.atom]
+        self._computed_features["symbols"] = symbols
+        return symbols
+
+    def get_electrostatics(self) -> np.ndarray:
         """
         getter method for electrostatic potential
         """
         return self.electrostatics()
 
-    def get_forces(self):
+    def get_forces(self) -> np.ndarray:
         """
         getter method for forces matrix
         """
         return self.forces()
+
+    def get_positions(self) -> np.ndarray:
+        """
+        getter method for positions matrix
+        """
+        return self.positions()
+
+    def get_dist_matrix(self) -> np.ndarray:
+        """
+        getter method for distance matrix
+        """
+        return self.dist_matrix()
+
+    def get_symbols(self) -> List:
+        """
+        getter method for symbols list
+        """
+        return self.symbols()
