@@ -435,7 +435,3 @@ def test_small_test_polyatomic_geometry(smile, mode):
         assert check_quantum_waves_complex_test(pgs)
     else:
         raise Exception("INVALID + UNSUPPORTED")
-
-
-test_small_test_polyatomic_geometry(smile=smiles[0], mode=modes[2])
-# test_small_test_polyatomic_geometry(smile=smiles[1], mode=modes[0])
