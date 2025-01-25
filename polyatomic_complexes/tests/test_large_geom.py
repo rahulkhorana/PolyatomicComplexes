@@ -17,14 +17,14 @@ from polyatomic_complexes.src.complexes.abstract_complex import AbstractComplex
 from polyatomic_complexes.src.complexes.quantum_theor_complex import QuantumWavesComplex
 
 
-from test_geom import (
+from .test_geom import (
     check_abstract_complex_test,
     check_force_complex_test,
     check_quantum_complex_test,
     check_quantum_waves_complex_test,
 )
 
-from test_geom_unique import (
+from .test_geom_unique import (
     check_adjacency_lists_unique,
     check_betti_numbers_unique,
     check_incidence_unique,
