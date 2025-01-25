@@ -5,17 +5,25 @@ import json
 import numpy as np
 import periodictable
 from ase import Atoms
-from gpaw import GPAW
+
 from rdkit import Chem
 from rdkit.Chem import Mol
 from rdkit.Chem import AllChem
-from gpaw.cdft.cdft import CDFT
-from gpaw.poisson import PoissonSolver
+
 import matplotlib.pyplot as plt
 from collections import defaultdict
 from scipy.spatial import distance_matrix
 from rdkit.Chem.Descriptors import NumRadicalElectrons
 from pathlib import Path
+
+from typing import List, Tuple, Dict, Any, Optional
+from scipy.fft import fftn, ifftn, fftfreq
+
+# pyscf
+from pyscf import gto, dft, grad
+from pyscf.geomopt import geometric_solver
+from pyscf.hessian import rks as rks_hessian
+from pyscf.dft import numint
 
 
 from polyatomic_complexes.src.complexes.abstract_complex import AbstractComplex
@@ -30,18 +38,10 @@ class QuantumComplex(AbstractComplex):
         self.bnds = bonds
         self.roc = self.rank_order_complex()
         self.figure_path = f"../../results/electron_density_viz_{smile}.png"
-        self.set_gpaw_path()
-
-    def set_gpaw_path(self) -> None:
-        script_dir = Path(__file__).resolve().parent
-        project_root = script_dir.parent.parent
-        setup_path = project_root / "gpaw_files"
-        if not setup_path.is_dir():
-            raise FileNotFoundError(f"The setup path '{setup_path}' does not exist.")
-        os.environ["GPAW_SETUP_PATH"] = str(setup_path)
-        print(f"GPAW_SETUP_PATH set to: {setup_path}")
-        self.setup_path = setup_path
-        return
+        self.gto = self._build_gto()
+        self.cm_to_au = 4.556335252767e-06
+        self.T = 298.15
+        self.k_B = 3.166811563e-06
 
     def unpack_roc(self):
         self._molecule, self._molecule_feat = self.roc["molecule"]
@@ -49,158 +49,265 @@ class QuantumComplex(AbstractComplex):
         self._electrons, self._electron_feat = self.roc["electronic_structure"]
         return
 
-    def _generate_atoms_from_smile(self) -> Atoms:
-        """
-        Generate ASE Atoms object from a SMILES string.
-        Args:
-            smile (str): SMILES string of the molecule.
-        Returns:
-            Atoms: ASE Atoms object with 3D coordinates.
-        """
-        molecule = Chem.MolFromSmiles(self.smile)
-        if molecule is None:
-            raise ValueError("Invalid SMILES string")
-        Chem.AddHs(molecule)
-        AllChem.EmbedMolecule(molecule)
-        AllChem.UFFOptimizeMolecule(molecule)
-        conformer = molecule.GetConformer()
-        symbols = [atom.GetSymbol() for atom in molecule.GetAtoms()]
-        positions = np.array(
-            [list(conformer.GetAtomPosition(i)) for i in range(molecule.GetNumAtoms())]
-        )
-        atoms = Atoms(symbols=symbols, positions=positions, pbc=False)
-        atoms.center(vacuum=5.0)
-
-        symbols = [atom.symbol for atom in atoms]
-        for symbol in symbols:
-            if not os.path.exists(f"{self.setup_path}/{symbol}.PBE.gz"):
-                raise FileNotFoundError(
-                    f"Missing setup file for {symbol}: {self.setup_path}/{symbol}.PBE.gz"
-                )
-
-        return atoms
-
-    def _compute_realistic_constraints(self, atoms: Atoms, molecule: Mol):
-        """
-        Compute realistic constraints (charges and spins) for constrained DFT.
-        Args:
-            atoms (Atoms): ASE Atoms object.
-            molecule (rdkit.Chem.Mol): RDKit molecule object.
-        Returns:
-            defaultdict: A defaultdict containing charge and spin constraints.
-        """
-        assert isinstance(atoms, Atoms) and isinstance(molecule, Mol)
-        default_charges = {
-            atom.symbol: getattr(
-                periodictable.elements.__getattribute__(atom.symbol),
-                "electronegativity_pauling",
-                0.0,
+    def _build_gto(self) -> gto.Mole:
+        mol = Chem.MolFromSmiles(self.smile)
+        if mol is None:
+            raise ValueError(f"Invalid SMILES string: {self.smile}")
+        mol = Chem.AddHs(mol)
+        embed_result = AllChem.EmbedMolecule(mol, AllChem.ETKDG())
+        if embed_result != 0:
+            raise ValueError(
+                "RDKit failed to embed the molecule. Please check the SMILES string."
             )
-            for atom in atoms
+        atoms = mol.GetAtoms()
+        coordinates = mol.GetConformers()[0].GetPositions()
+        symbols = [atom.GetSymbol() for atom in atoms]
+        mole = gto.M(
+            atom=[[symbols[i], *coordinates[i]] for i in range(len(atoms))],
+            basis="cc-pVDZ",
+            unit="Ang",
+            verbose=0,
+        )
+        if not isinstance(mole, gto.Mole):
+            raise TypeError(
+                f"Expected 'mole' to be a pyscf.gto.Mole instance, got {type(mole)}"
+            )
+        self.gto = mole
+        return mole
+
+    def _vib_thermal_correction(self, freq: float) -> float:
+        """
+        Computes the vibrational thermal correction for a given frequency.
+
+        Parameters:
+            freq (float): Vibrational frequency in atomic units (Hartree).
+
+        Returns:
+            float: Thermal correction energy in Hartree.
+        """
+        if not (isinstance(freq, float) or isinstance(freq, int)):
+            raise TypeError(f"Expected 'freq' to be a number, got {type(freq)}")
+        if freq < 1e-12:
+            return 0.0
+        x = freq / (self.k_B * self.T)
+        return freq / (np.exp(x) - 1.0)
+
+    def _nuclear_potential(self, mol_obj: gto.Mole, grid: np.ndarray) -> np.ndarray:
+        """
+        Computes the nuclear potential at each point in the grid.
+        Parameters:
+            mol_obj (pyscf.gto.Mole): PySCF Mole object.
+            grid (np.ndarray): Grid points as an (N, 3) array.
+        Returns:
+            np.ndarray: Nuclear potential at each grid point.
+        """
+        if not isinstance(mol_obj, gto.Mole):
+            raise TypeError(
+                f"Expected 'mol_obj' to be a pyscf.gto.Mole instance, got {type(mol_obj)}"
+            )
+        if not isinstance(grid, np.ndarray):
+            raise TypeError(f"Expected 'grid' to be a numpy.ndarray, got {type(grid)}")
+        if grid.ndim != 2 or grid.shape[1] != 3:
+            raise ValueError(f"Expected 'grid' to be of shape (N, 3), got {grid.shape}")
+        v_nuc = np.zeros(len(grid))
+        for ia in range(mol_obj.natm):
+            Z = mol_obj.atom_charge(ia)
+            Ra = mol_obj.atom_coord(ia)
+            diff = grid - Ra
+            r = np.linalg.norm(diff, axis=1)
+            r = np.where(r < 1e-6, 1e-6, r)
+            v_nuc += Z / r
+        return v_nuc
+
+    def _compute_quantum_properties(self) -> defaultdict:
+        """
+        Computes quantum-level properties at a DFT (B3LYP) level of theory,
+        including geometry optimization, thermal corrections via a frequency
+        calculation (harmonic approximation), and advanced properties like
+        effective potential and electrostatic potentials.
+
+        Returns:
+            defaultdict: A dictionary with property names as keys and computed
+                         values or None as values.
+        """
+        self.computed_props = defaultdict(list)
+        mol = self.gto
+        if not isinstance(mol, gto.Mole):
+            raise TypeError(
+                f"Expected 'mol' to be a pyscf.gto.Mole instance, got {type(mol)}"
+            )
+        mf = dft.RKS(mol)
+        mf.xc = "b3lyp"
+        mf.verbose = 4
+        mf_optimized = geometric_solver.optimize(mf)
+        mol_opt = mf_optimized.mol
+        if not isinstance(mol_opt, gto.Mole):
+            raise TypeError(
+                f"Expected 'mol_opt' to be a pyscf.gto.Mole instance, got {type(mol_opt)}"
+            )
+        self.mf_final = dft.RKS(mol_opt)
+        self.mf_final.xc = "b3lyp"
+        self.mf_final.kernel()
+        mf_final = self.mf_final
+        mo_energies = mf_final.mo_energy
+        mo_coeff = mf_final.mo_coeff
+        mo_occ = mf_final.mo_occ
+        total_energy = mf_final.e_tot
+        if not isinstance(mo_coeff, np.ndarray):
+            raise TypeError(
+                f"Expected mo_coeff to be a numpy.ndarray, got {type(mo_coeff)}"
+            )
+        if mo_coeff.ndim != 2:
+            raise ValueError(
+                f"Expected mo_coeff to be a 2D array, got {mo_coeff.ndim}D"
+            )
+        if not isinstance(mo_occ, np.ndarray):
+            raise TypeError(
+                f"Expected mo_occ to be a numpy.ndarray, got {type(mo_occ)}"
+            )
+        if mo_occ.ndim != 1:
+            raise ValueError(f"Expected mo_occ to be a 1D array, got {mo_occ.ndim}D")
+        if not (
+            isinstance(total_energy, float) or isinstance(total_energy, np.float32)
+        ):
+            raise TypeError(
+                f"Expected total_energy to be a float, got {type(total_energy)}"
+            )
+        hessian_obj = rks_hessian.Hessian(mf_final)
+        hess_mat = hessian_obj.kernel()
+        freq_analysis = hessian_obj.freq_analysis(hess_mat)
+        freqs_cm = freq_analysis[0]
+        freqs_au = np.array(freqs_cm) * self.cm_to_au
+        if not isinstance(freqs_cm, np.ndarray):
+            freqs_cm = np.array(freqs_cm)
+        if freqs_cm.ndim != 1:
+            raise ValueError(
+                f"Expected 'freqs_cm' to be a 1D array, got shape {freqs_cm.shape}"
+            )
+        positive_freqs_au = freqs_au[freqs_au > 0.0]
+        zpe_hartree = 0.5 * positive_freqs_au.sum()
+        vib_thermal = sum(self._vib_thermal_correction(w) for w in positive_freqs_au)
+        E_trans_rot = 4.5 * self.k_B * self.T
+        thermal_corr_internal_energy = zpe_hartree + vib_thermal + E_trans_rot
+        E0 = total_energy + zpe_hartree
+        refined_positions = mol_opt.atom_coords()
+        if not isinstance(refined_positions, np.ndarray):
+            refined_positions = np.array(refined_positions)
+        if refined_positions.ndim != 2 or refined_positions.shape[1] != 3:
+            raise ValueError(
+                f"Expected 'refined_positions' to be of shape (N, 3), got {refined_positions.shape}"
+            )
+        num_atoms = refined_positions.shape[0]
+        dist_matrix = np.zeros((num_atoms, num_atoms))
+        for i in range(num_atoms):
+            for j in range(i + 1, num_atoms):
+                dist = np.linalg.norm(refined_positions[i] - refined_positions[j])
+                dist_matrix[i, j] = dist
+                dist_matrix[j, i] = dist
+        grad_calculator = grad.RKS(mf_final)
+        forces = -grad_calculator.kernel()
+        if not isinstance(forces, np.ndarray):
+            forces = np.array(forces)
+        if forces.shape != refined_positions.shape:
+            raise ValueError(
+                f"Expected 'forces' to have shape {refined_positions.shape}, got {forces.shape}"
+            )
+        occupied_energies = mo_energies[mo_occ > 0]
+        virtual_energies = mo_energies[mo_occ == 0]
+        homo: Optional[float] = (
+            max(occupied_energies) if len(occupied_energies) else None
+        )
+        lumo: Optional[float] = min(virtual_energies) if len(virtual_energies) else None
+        if homo is not None and lumo is not None:
+            fermi_level = 0.5 * (homo + lumo)
+            homo_lumo_gap = lumo - homo
+        else:
+            fermi_level = None
+            homo_lumo_gap = None
+        dip_moment_components = mf_final.dip_moment()
+        if not isinstance(dip_moment_components, np.ndarray):
+            dip_moment_components = np.array(dip_moment_components)
+        if dip_moment_components.shape != (4,):
+            raise ValueError(
+                f"Expected 'dip_moment_components' to be of shape (4,), got {dip_moment_components.shape}"
+            )
+        dipole_vector = dip_moment_components[:3]
+        dipole_magnitude = dip_moment_components[3]
+        dm = mf_final.make_rdm1()
+        veff = mf_final.get_veff(mol_opt, dm)
+        coords = refined_positions
+        pad = 3.0
+        min_xyz = coords.min(axis=0) - pad
+        max_xyz = coords.max(axis=0) + pad
+        spacing = 0.2
+        xs = np.arange(min_xyz[0], max_xyz[0] + spacing, spacing)
+        ys = np.arange(min_xyz[1], max_xyz[1] + spacing, spacing)
+        zs = np.arange(min_xyz[2], max_xyz[2] + spacing, spacing)
+        X, Y, Z = np.meshgrid(xs, ys, zs, indexing="ij")
+        grid_points = np.vstack([X.ravel(), Y.ravel(), Z.ravel()]).T
+        if not isinstance(grid_points, np.ndarray):
+            grid_points = np.array(grid_points)
+        if grid_points.ndim != 2 or grid_points.shape[1] != 3:
+            raise ValueError(
+                f"Expected 'grid_points' to be of shape (N, 3), got {grid_points.shape}"
+            )
+        v_nuc = self._nuclear_potential(mol_opt, grid_points)
+        if not isinstance(v_nuc, np.ndarray):
+            v_nuc = np.array(v_nuc)
+        if v_nuc.shape[0] != grid_points.shape[0]:
+            raise ValueError(
+                f"Expected 'v_nuc' to have shape ({grid_points.shape[0]},), got {v_nuc.shape}"
+            )
+        ni = numint.NumInt()
+        ao = ni.eval_ao(mol_opt, grid_points)
+        electron_density_map = ni.eval_rho(mol_opt, ao, dm)
+        if not isinstance(electron_density_map, np.ndarray):
+            electron_density_map = np.array(electron_density_map)
+        if electron_density_map.shape[0] != grid_points.shape[0]:
+            raise ValueError(
+                f"Expected 'electron_density_map' to have shape ({grid_points.shape[0]},), got {electron_density_map.shape}"
+            )
+        grid_shape = X.shape
+        grid_spacing = spacing
+        grid_volume = grid_spacing**3
+        rho_k = fftn(electron_density_map)
+        kx = fftfreq(grid_shape[0], d=grid_spacing) * 2 * np.pi
+        ky = fftfreq(grid_shape[1], d=grid_spacing) * 2 * np.pi
+        kz = fftfreq(grid_shape[2], d=grid_spacing) * 2 * np.pi
+        KX, KY, KZ = np.meshgrid(kx, ky, kz, indexing="ij")
+        K_sq = KX**2 + KY**2 + KZ**2
+        K_sq[0, 0, 0] = 1.0
+        v_coul_k = 4 * np.pi * rho_k / K_sq
+        v_coul = np.real(ifftn(v_coul_k)) * grid_volume
+        v_total = v_nuc + v_coul
+        assert isinstance(v_total, np.ndarray)
+        v_total = v_total.reshape(grid_shape)
+        esp_data: Dict[str, Any] = {
+            "grid_coords": grid_points.tolist(),
+            "total_electrostatic_potential": v_total.tolist(),
         }
-        constraints = defaultdict(list)
-        for i, atom in enumerate(atoms):
-            symbol = atom.symbol
-            charge = (
-                default_charges.get(symbol, 0.0) - 0.5
-                if symbol in ["O", "N"]
-                else default_charges.get(symbol, 0.0)
-            )
-            constraints["charge_regions"].append([i])
-            constraints["charges"].append(charge)
-        for atom_idx in range(molecule.GetNumAtoms()):
-            num_radical_electrons = NumRadicalElectrons(molecule)
-            if num_radical_electrons > 0:
-                constraints["spin_regions"].append([atom_idx])
-                constraints["spins"].append(num_radical_electrons)
-        return constraints
-
-    def _get_constrained_dft(
-        self, atoms: Atoms, calc: GPAW, constraints: defaultdict
-    ) -> CDFT:
-        """
-        Apply Constrained DFT (CDFT) using GPAW to the given Atoms object.
-        Args:
-            atoms (Atoms): ASE Atoms object.
-            calc (GPAW): GPAW calculator instance.
-            constraints (defaultdict): Constraints containing charge and spin regions.
-        Returns:
-            CDFT: Initialized CDFT object with applied constraints.
-        """
-        assert (
-            isinstance(atoms, Atoms)
-            and isinstance(calc, GPAW)
-            and isinstance(constraints, defaultdict)
+        potential_energy = total_energy
+        self.computed_props["forces"] = forces.tolist()
+        self.computed_props["refined_positions"] = refined_positions.tolist()
+        self.computed_props["dist_matrix"] = dist_matrix.tolist()
+        self.computed_props["fermi_level"] = fermi_level
+        self.computed_props["eigenvalues"] = mo_energies.tolist()
+        self.computed_props["homo_lumo_gap"] = homo_lumo_gap
+        self.computed_props["dipole_moment"] = {
+            "vector": dipole_vector.tolist(),
+            "magnitude": dipole_magnitude,
+        }
+        self.computed_props["effective_potential"] = veff
+        self.computed_props["electrostatic_potentials"] = esp_data
+        self.computed_props["wavefunctions"] = mo_coeff.tolist()
+        self.computed_props["potential_energy"] = potential_energy
+        self.computed_props["zpe_hartree"] = zpe_hartree
+        self.computed_props["E0_elec_plus_zpe"] = E0
+        self.computed_props["freqs_cm^-1"] = freqs_cm.tolist()
+        self.computed_props["thermal_corr_internal_energy"] = (
+            thermal_corr_internal_energy
         )
-        cdft = CDFT(
-            calc=calc,
-            atoms=atoms,
-            charge_regions=constraints["charge_regions"],
-            charges=constraints["charges"],
-            spin_regions=constraints["spin_regions"],
-            spins=constraints["spins"],
-            method="CG",
-            minimizer_options={"gtol": 0.01},
-        )
-        return cdft
-
-    def _compute_quantum_properties(self):
-        """
-        Compute quantum properties for a molecule using Constrained DFT.
-        Args:
-            smile (str): SMILES string of the molecule.
-        Returns:
-            defaultdict: A defaultdict containing computed properties.
-        """
-        properties = defaultdict(dict)
-        atoms = self._generate_atoms_from_smile()
-        molecule = Chem.MolFromSmiles(self.smile)
-        Chem.AddHs(molecule)
-        # calc = GPAW(
-        #    xc="SCAN",
-        #    mode="pw",
-        #    basis=None,
-        #    convergence={"density": 1e-6},
-        #    poissonsolver=PoissonSolver(eps=1e-12),
-        # )
-        calc = GPAW(
-            mode="pw",
-            basis="dzp",
-            xc="PBE",
-            convergence={"density": 1e-7, "energy": 1e-6, "eigenstates": 1e-8},
-            maxiter=150,
-        )
-        constraints = self._compute_realistic_constraints(atoms, molecule)
-        cdft = self._get_constrained_dft(atoms, calc, constraints)
-        atoms.calc = cdft
-        assert (
-            isinstance(calc, GPAW)
-            and isinstance(cdft, CDFT)
-            and isinstance(atoms, Atoms)
-        )
-        num_bands = calc.get_number_of_bands()
-        num_spins = calc.get_number_of_spins()
-        wavefunctions = []
-        for band in range(num_bands):
-            for spin in range(num_spins):
-                wf = calc.get_pseudo_wave_function(band=band, spin=spin)
-                wavefunctions.append({"band": band, "spin": spin, "wavefunction": wf})
-
-        properties["potential_energy"] = atoms.get_potential_energy()
-        properties["forces"] = atoms.get_forces()
-        properties["refined_positions"] = atoms.get_positions()
-        properties["dist_matrix"] = distance_matrix(
-            properties["refined_positions"], properties["refined_positions"]
-        )
-        properties["fermi_level"] = calc.get_fermi_level()
-        properties["eigenvalues"] = calc.get_eigenvalues()
-        properties["homo_lumo_gap"] = calc.get_homo_lumo()
-        properties["dipole_moment"] = calc.get_dipole_moment()
-        properties["effective_potential"] = calc.get_effective_potential()
-        properties["electrostatic_potentials"] = calc.get_electrostatic_potential()
-        properties["orbital_magnetic_moments"] = calc.get_magnetic_moments()
-        properties["wavefunctions"] = wavefunctions
-        return properties
+        return self.computed_props
 
     def visualize_property(atoms, property_values, title="Molecular Properties"):
         """
@@ -237,9 +344,12 @@ class QuantumComplex(AbstractComplex):
                 "dipole_moment",
                 "effective_potential",
                 "electrostatic_potentials",
-                "orbital_magnetic_moments",
                 "wavefunctions",
                 "potential_energy",
+                "zpe_hartree",
+                "E0_elec_plus_zpe",
+                "freqs_cm^-1",
+                "thermal_corr_internal_energy",
             ]
         )
         if column_name in all_columns:
@@ -250,14 +360,17 @@ class QuantumComplex(AbstractComplex):
     def forces(self):
         return self._get_props("forces")
 
-    def electrostatics(self):
-        return self._get_props("electrostatic_potentials")
-
-    def distances(self):
-        return self._get_props("dist_matrix")
-
     def positions(self):
         return self._get_props("refined_positions")
+
+    def distance_matrix(self):
+        return self._get_props("dist_matrix")
+
+    def fermi_level(self):
+        return self._get_props("fermi_level")
+
+    def eigenvalues(self):
+        return self._get_props("eigenvalues")
 
     def homo_lumo_gap(self):
         return self._get_props("homo_lumo_gap")
@@ -268,38 +381,23 @@ class QuantumComplex(AbstractComplex):
     def effective_potential(self):
         return self._get_props("effective_potential")
 
-    def orbital_magnetic_moments(self):
-        return self._get_props("orbital_magnetic_moments")
+    def electrostatic_potentials(self):
+        return self._get_props("electrostatic_potentials")
 
     def wavefunctions(self):
         return self._get_props("wavefunctions")
 
-    def get_forces(self):
-        return self._get_props("forces")
-
-    def get_electrostatics(self):
-        return self._get_props("electrostatic_potentials")
-
-    def get_distances(self):
-        return self._get_props("dist_matrix")
-
-    def get_positions(self):
-        return self._get_props("refined_positions")
-
-    def get_homo_lumo_gap(self):
-        return self._get_props("homo_lumo_gap")
-
-    def get_dipole_moment(self):
-        return self._get_props("dipole_moment")
-
-    def get_effective_potential(self):
-        return self._get_props("effective_potential")
-
-    def get_orbital_magnetic_moments(self):
-        return self._get_props("orbital_magnetic_moments")
-
-    def get_wavefunctions(self):
-        return self._get_props("wavefunctions")
-
-    def get_potential_energy(self):
+    def potential_energy(self):
         return self._get_props("potential_energy")
+
+    def zpe_hartree(self):
+        return self._get_props("zpe_hartree")
+
+    def E0_elec_plus_zpe(self):
+        return self._get_props("E0_elec_plus_zpe")
+
+    def freqs_cm(self):
+        return self._get_props("freqs_cm^-1")
+
+    def thermal_corr_internal_energy(self):
+        return self._get_props("thermal_corr_internal_energy")
