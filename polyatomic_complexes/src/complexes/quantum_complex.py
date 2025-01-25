@@ -26,6 +26,12 @@ from pyscf.hessian import rks as rks_hessian
 from pyscf.dft import numint
 
 
+BASE_PATH = Path(__file__)
+project_root = BASE_PATH.parent.parent.parent.parent.resolve()
+src_dir = project_root
+if str(src_dir) not in sys.path:
+    sys.path.insert(0, str(src_dir))
+
 from polyatomic_complexes.src.complexes.abstract_complex import AbstractComplex
 
 

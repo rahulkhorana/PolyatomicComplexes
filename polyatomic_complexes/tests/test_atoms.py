@@ -1,10 +1,16 @@
+import sys
+import os
+
+sys.path.append(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+)
+
 from polyatomic_complexes.src.complexes.atomic_complex import AtomComplex
 from typing import List
-import os
 import pytest
 import json
 import random
-
+from pathlib import Path
 
 cases = [
     (AtomComplex(1, 1, 1, 5, 3, 3, 0), 1, 1, 1),
@@ -15,11 +21,11 @@ cases = [
     (AtomComplex(12, 1, 2, 17, 9, 9, 0), 12, 1, 2),
 ]
 
-root_data = os.getcwd() + "/featuredev/PolyatomicComplexes/polyatomic_complexes/"
+root_data = Path(__file__).parent.parent.__str__()
 
 
 def fuzz_test(n=50):
-    with open(root_data + "dataset/construct/lookup_map.json") as data:
+    with open(root_data + "/dataset/construct/lookup_map.json") as data:
         lookup = json.load(data)
     assert isinstance(lookup, dict)
     items = random.sample(list(lookup.items()), n)

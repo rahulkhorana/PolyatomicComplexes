@@ -6,8 +6,15 @@ import numpy as np
 import networkx as nx
 import jax.numpy as jnp
 from typing import List, Tuple, Optional
+from pathlib import Path
 
-os.chdir("..")
+
+BASE_PATH = Path(__file__)
+project_root = BASE_PATH.parent.parent.parent.parent.resolve()
+src_dir = project_root
+if str(src_dir) not in sys.path:
+    sys.path.insert(0, str(src_dir))
+
 from polyatomic_complexes.src.complexes.core_utils import GluingMap, ElectronField
 from polyatomic_complexes.src.complexes.building_blocks import Electron
 
@@ -28,13 +35,8 @@ class PolyAtomComplex:
         self.atoms = atom_list
         self.using_radial = using_radial
         self.using_force = using_force
-        self.cwd = os.getcwd()
-        self.datapath = (
-            self.cwd
-            + "/featuredev/PolyatomicComplexes"
-            + "/polyatomic_complexes"
-            + "/dataset/construct"
-        )
+        self.cwd = BASE_PATH
+        self.datapath = BASE_PATH.parent.parent.parent.__str__() + "/dataset/construct"
         assert "atom_lookup.pkl" in os.listdir(self.datapath)
         assert "lookup_map.json" in os.listdir(self.datapath)
         self.reference = self.datapath + "/lookup_map.json"

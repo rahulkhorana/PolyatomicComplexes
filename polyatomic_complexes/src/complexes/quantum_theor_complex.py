@@ -26,6 +26,11 @@ from dftd3.pyscf import DFTD3Dispersion
 from pyscf.geomopt import geometric_solver
 from pyscf.hessian import rks as rks_hessian
 
+BASE_PATH = Path(__file__)
+project_root = BASE_PATH.parent.parent.parent.parent.resolve()
+src_dir = project_root
+if str(src_dir) not in sys.path:
+    sys.path.insert(0, str(src_dir))
 
 from toponetx import CombinatorialComplex
 from polyatomic_complexes.src.complexes.quantum_complex import QuantumComplex

@@ -2,7 +2,13 @@ import sys
 import jax
 import numpy as np
 from typing import List, Tuple
+from pathlib import Path
 
+BASE_PATH = Path(__file__)
+project_root = BASE_PATH.parent.parent.parent.parent.resolve()
+src_dir = project_root
+if str(src_dir) not in sys.path:
+    sys.path.insert(0, str(src_dir))
 
 from polyatomic_complexes.src.complexes.building_blocks import Electron, Proton, Neutron
 from polyatomic_complexes.src.complexes.general_utils import GeneralComplexUtils

@@ -5,9 +5,15 @@ import json
 import numpy as np
 import networkx as nx
 import jax.numpy as jnp
+from pathlib import Path
 from typing import List, Tuple, Optional
-
 from collections import defaultdict
+
+BASE_PATH = Path(__file__)
+project_root = BASE_PATH.parent.parent.parent.parent.resolve()
+src_dir = project_root
+if str(src_dir) not in sys.path:
+    sys.path.insert(0, str(src_dir))
 
 # pc utils
 from polyatomic_complexes.src.complexes.atomic_complex import AtomComplex
@@ -20,8 +26,6 @@ from polyatomic_complexes.src.complexes.space_utils import (
 
 from scipy.sparse import coo_matrix
 
-os.chdir("..")
-
 
 class AbstractComplex(PolyatomicComplex):
     def __init__(self, smile, target_dimension, atoms, bonds, orientations=None):
@@ -29,12 +33,7 @@ class AbstractComplex(PolyatomicComplex):
         self.dim = target_dimension
         self.atoms = atoms
         self.bnds = bonds
-        self.lookup_fp = (
-            os.getcwd()
-            + "/featuredev/PolyatomicComplexes"
-            + "/polyatomic_complexes"
-            + "/dataset/construct"
-        )
+        self.lookup_fp = BASE_PATH.parent.parent.parent.__str__() + "/dataset/construct"
         assert "atom_lookup.pkl" in os.listdir(self.lookup_fp)
         assert "lookup_map.json" in os.listdir(self.lookup_fp)
         with open(self.lookup_fp + "/lookup_map.json", "rb") as f:

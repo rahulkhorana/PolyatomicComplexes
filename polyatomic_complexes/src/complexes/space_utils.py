@@ -6,6 +6,17 @@ import numpy as np
 from typing import List
 from collections import defaultdict
 from toponetx import CombinatorialComplex
+from pathlib import Path
+import sys
+import os
+
+
+BASE_PATH = Path(__file__)
+project_root = BASE_PATH.parent.parent.parent.parent.resolve()
+src_dir = project_root
+if str(src_dir) not in sys.path:
+    sys.path.insert(0, str(src_dir))
+
 from polyatomic_complexes.src.complexes.building_blocks import Neutron, Proton, Electron
 
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
@@ -14,9 +25,6 @@ import psutil
 import math
 from functools import partial
 
-# from GPAW
-os.chdir("..")
-
 
 def nice_print(arg):
     print("*" * 10)
@@ -24,13 +32,14 @@ def nice_print(arg):
     print("*" * 10)
 
 
+BASE_PATH = Path(__file__)
+
+
 class geometricPolyatomicComplex:
     def __init__(self, higher_relations):
         self.relations = higher_relations
         self.fp = (
-            os.getcwd()
-            + "/featuredev/PolyatomicComplexes"
-            + "/polyatomic_complexes"
+            BASE_PATH.parent.parent.parent.__str__()
             + "/dataset/construct/atomic_mass.json"
         )
         with open(self.fp, "r") as file:
@@ -248,9 +257,7 @@ class geometricAtomicComplex:
         self.neutrons = neutrons
         self.electrons = electrons
         self.fp = (
-            os.getcwd()
-            + "/featuredev/PolyatomicComplexes"
-            + "/polyatomic_complexes"
+            BASE_PATH.parent.parent.parent.__str__()
             + "/dataset/construct/atomic_mass.json"
         )
         with open(self.fp, "r") as file:

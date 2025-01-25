@@ -3,16 +3,22 @@ import sys
 import json
 import dill
 import numpy as np
+from pathlib import Path
 from collections import defaultdict
 
-sys.path.append("..")
+BASE_PATH = Path(__file__)
+project_root = BASE_PATH.parent.parent.parent.parent.resolve()
+src_dir = project_root
+if str(src_dir) not in sys.path:
+    sys.path.insert(0, str(src_dir))
+
 from polyatomic_complexes.src.complexes.atomic_complex import AtomComplex
 
 
 class BuildAtoms:
     def __init__(self):
-        self.cwd = os.getcwd()
-        self.datapath = self.cwd + "/dataset/construct"
+        self.cwd = BASE_PATH
+        self.datapath = BASE_PATH.parent.parent.parent.__str__() + "/dataset/construct"
 
     def build_lookup_table(self) -> None:
         assert "lookup_map.json" in os.listdir(self.datapath)

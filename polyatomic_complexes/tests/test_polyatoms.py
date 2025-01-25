@@ -1,9 +1,17 @@
-from polyatomic_complexes.src.complexes.polyatomic_complex import PolyAtomComplex
 from typing import List
 import os
 import pytest
 import json
 import random
+from pathlib import Path
+import sys
+
+sys.path.append(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+)
+
+
+from polyatomic_complexes.src.complexes.polyatomic_complex import PolyAtomComplex
 
 
 atom_lists = [
@@ -54,11 +62,11 @@ cases = [
     (PolyAtomComplex(atom_list=atom_lists[2]), "fast_stacked"),
 ]
 
-root_data = os.getcwd() + "/featuredev/PolyatomicComplexes/polyatomic_complexes/"
+root_data = Path(__file__).parent.parent.__str__()
 
 
 def fuzz_test(n=20, k=15):
-    with open(root_data + "dataset/construct/lookup_map.json") as data:
+    with open(root_data + "/dataset/construct/lookup_map.json") as data:
         lookup = json.load(data)
     assert isinstance(lookup, dict)
     for _ in range(n):

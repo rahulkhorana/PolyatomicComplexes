@@ -6,16 +6,16 @@ import numpy as np
 import networkx as nx
 import jax.numpy as jnp
 from typing import List, Tuple, Optional
-
-import polyatomic_complexes.src.complexes as complexes
-
-# import complexes.atomic_complex as AtomComplex
-# from complexes.core_utils import GluingMap, ElectronField
-# from complexes.building_blocks import Electron, Proton, Neutron
+from pathlib import Path
 
 # chemistry
 from rdkit import Chem
 from rdkit.Chem.rdchem import BondType
+
+project_root = Path(__file__).parent.parent.parent.parent.resolve()
+src_dir = project_root
+if str(src_dir) not in sys.path:
+    sys.path.insert(0, str(src_dir))
 
 # all pc variations
 from polyatomic_complexes.src.complexes.polyatomic_complex_cls import PolyatomicComplex
@@ -125,6 +125,16 @@ class PolyatomicGeometrySMILE:
 
 
 if __name__ == "__main__":
-    pg = PolyatomicGeometrySMILE(smile="CC(=O)OC")
+    pg = PolyatomicGeometrySMILE(smile="CC(=O)OC", mode="abstract")
     bonds, elements = pg.extract_smile_info()
+    pg.smiles_to_geom_complex()
     print(bonds, elements)
+    pg_force = PolyatomicGeometrySMILE(smile="CC(=O)OC", mode="force-field")
+    pg_force.smiles_to_geom_complex()
+    pg_quantum = PolyatomicGeometrySMILE(smile="CC(=O)OC", mode="quantum")
+    pg_quantum.smiles_to_geom_complex()
+    pg_waves = PolyatomicGeometrySMILE(smile="CC(=O)OC", mode="quantum-waves")
+    pg_waves.smiles_to_geom_complex()
+    print("*" * 10)
+    print("DONE")
+    print("*" * 10)
