@@ -10,6 +10,7 @@
 ![PyPI - Format](https://img.shields.io/pypi/format/polyatomic-complexes)
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/polyatomic-complexes)
 ![Pepy Total Downloads](https://img.shields.io/pepy/dt/polyatomic-complexes)
+[![Socket Badge](https://socket.dev/api/badge/pypi/package/polyatomic-complexes/0.0.8?artifact_id=tar-gz)](https://socket.dev/pypi/package/polyatomic-complexes/overview/0.0.8/tar-gz)
 
 </h4>
 
