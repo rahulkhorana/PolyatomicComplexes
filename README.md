@@ -9,6 +9,7 @@
 ![PyPI - Version](https://img.shields.io/pypi/v/polyatomic-complexes?style=plastic&logo=%233775A9&logoSize=auto&labelColor=%233775A9&color=%23e1ad01&link=https%3A%2F%2Fpypi.org%2Fproject%2Fpolyatomic-complexes%2F0.0.8%2F)
 ![PyPI - Format](https://img.shields.io/pypi/format/polyatomic-complexes)
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/polyatomic-complexes)
+![Pepy Total Downloads](https://img.shields.io/pepy/dt/polyatomic-complexes)
 
 </h4>
 
