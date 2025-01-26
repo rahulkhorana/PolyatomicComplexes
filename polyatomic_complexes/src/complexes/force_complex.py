@@ -1,10 +1,9 @@
 import os
 import sys
-import gpaw.setup
+import json
 import numpy as np
 from typing import List
 from pathlib import Path
-import subprocess
 from collections import defaultdict
 from scipy.spatial import distance_matrix
 
@@ -38,6 +37,9 @@ class ForceComplex(AbstractComplex):
         self.atoms = atoms
         self.bnds = bonds
         self.roc = self.rank_order_complex()
+        self.lookup_fp = BASE_PATH.parent.parent.parent.__str__() + "/dataset/construct"
+        with open(self.lookup_fp + "/basis_sets.json", "rb") as f:
+            self.basis_sets = json.load(f)
         self.gto = self._build_gto()
 
     def unpack_roc(self):
@@ -58,7 +60,7 @@ class ForceComplex(AbstractComplex):
         symbols = [atom.GetSymbol() for atom in atoms]
         mole = gto.M(
             atom=[[symbols[i], *coordinates[i]] for i in range(len(atoms))],
-            basis="cc-pVDZ",
+            basis=self.basis_sets,
         )
         self.gto = mole
         return mole

@@ -45,6 +45,9 @@ class QuantumWavesComplex(QuantumComplex):
         self.bnds = bonds
         self.roc = self.rank_order_complex()
         self.figure_path = f"../../results/electron_density_viz_{smile}.png"
+        self.lookup_fp = BASE_PATH.parent.parent.parent.__str__() + "/dataset/construct"
+        with open(self.lookup_fp + "/basis_sets.json", "rb") as f:
+            self.basis_sets = json.load(f)
         self.gto = self._build_gto()
         self.cm_to_au = 4.556335252767e-06
         self.T = 298.15
