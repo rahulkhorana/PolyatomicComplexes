@@ -70,7 +70,7 @@ ipython==8.31.0
 isoduration==20.11.0
 jax==0.5.0
 jaxlib==0.5.0
-jaxtyping==0.2.19
+jaxtyping==0.2.37
 jedi==0.19.2
 Jinja2==3.1.5
 joblib==1.4.2
