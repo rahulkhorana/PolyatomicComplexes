@@ -12,7 +12,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-20.04]
+        os: [ubuntu-latest]
         python-version: ['3.11.11']
         
     steps:
@@ -45,5 +45,14 @@ jobs:
 
       - name: Run tests
         working-directory: ./polyatomic_complexes
-        run: python -B -m pytest -v
+        run: python -B -m pytest -v --log-level=DEBUG
+      
+      - name: Upload test logs
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: pytest-logs
+          path: polyatomic_complexes/test_logs/
+      
+
       
