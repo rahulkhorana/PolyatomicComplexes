@@ -37,6 +37,7 @@ jobs:
         run: |
           git lfs pull --include=polyatomic_complexes/dataset/**/*.csv
           git lfs pull --include=polyatomic_complexes/dataset/**/*.json
+          git lfs pull --include=polyatomic_complexes/dataset/**/atom_lookup.pkl
       
       - name: Install Python packages
         run: |
@@ -49,7 +50,7 @@ jobs:
       
       - name: Upload test logs
         if: failure()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: pytest-logs
           path: polyatomic_complexes/test_logs/
