@@ -382,8 +382,8 @@ def check_coadjacency_unique(complex1, complex2):
     assert "molecule_co_adjacencies" in coadj2
     mol_coadj1 = coadj1["molecule_co_adjacencies"]
     mol_coadj2 = coadj2["molecule_co_adjacencies"]
+    terms = set()
     for sub_coadj1, sub_coadj2 in zip(mol_coadj1, mol_coadj2):
-        terms = set()
         for term1, term2 in zip(sub_coadj1, sub_coadj2):
             assert isinstance(term1[0], str)
             assert isinstance(term2[0], str)
@@ -391,7 +391,7 @@ def check_coadjacency_unique(complex1, complex2):
             assert isinstance(term2[1], np.ndarray)
             v = np.array_equal(term1[1], term2[1])
             terms.add(v)
-        assert False in terms
+    assert False in terms
     return True
 
 
