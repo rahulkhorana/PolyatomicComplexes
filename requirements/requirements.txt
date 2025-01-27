@@ -51,7 +51,6 @@ geometric==1.0.2
 gevent==24.11.1
 git-lfs==1.6
 gmsh==4.13.1
-gpaw==25.1.0
 gpytorch==1.13
 GraKeL==0.1.10
 graphein==1.7.7
