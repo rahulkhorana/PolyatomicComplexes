@@ -9,15 +9,17 @@
 ![PyPI - Version](https://img.shields.io/pypi/v/polyatomic-complexes?style=plastic&logo=%233775A9&logoSize=auto&labelColor=%233775A9&color=%23e1ad01&link=https%3A%2F%2Fpypi.org%2Fproject%2Fpolyatomic-complexes%2F0.0.8%2F)
 ![PyPI - Format](https://img.shields.io/pypi/format/polyatomic-complexes)
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/polyatomic-complexes)
+![Pepy Total Downloads](https://img.shields.io/pepy/dt/polyatomic-complexes)
+[![Socket Badge](https://socket.dev/api/badge/pypi/package/polyatomic-complexes/0.0.8?artifact_id=tar-gz)](https://socket.dev/pypi/package/polyatomic-complexes/overview/0.0.8/tar-gz)
 
 </h4>
 
 ## Installation (pip)
 
-1. Ensure you have python >= 3.11.6 and set up a virtual environment.
+1. Ensure you have python == 3.11.11 and set up a virtual environment.
 ```sh
 pip install virtualenv
-virtualenv .env --python=python3.11.6
+virtualenv .env --python=python3.11.11
 source .env/bin/activate
 ```
 2. Run the following
@@ -34,10 +36,10 @@ Note: If you are having trouble with the environment setup please see the follow
 
 1. Clone the repo.
 
-2. Ensure you have python >= 3.11.6 and set up a virtual environment.
+2. Ensure you have python >= 3.11.11 and set up a virtual environment.
 ```sh
 pip install virtualenv
-virtualenv .env --python=python3.11.6
+virtualenv .env --python=python3.11.11
 source .env/bin/activate
 ```
 

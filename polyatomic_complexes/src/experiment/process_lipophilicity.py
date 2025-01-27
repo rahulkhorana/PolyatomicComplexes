@@ -6,26 +6,26 @@ import pandas as pd
 from rdkit import Chem
 from collections import defaultdict
 
-sys.path.append(".")
-from .polyatomic_complex import PolyAtomComplex
+sys.path.append("..")
+from polyatomic_complexes.src.complexes.polyatomic_complex import PolyAtomComplex
 
 
-class ProcessPhotoswitches:
+class ProcessLipophilicity:
     def __init__(
         self,
-        source_path=os.getcwd() + "/polyatomic_complexes/dataset/photoswitches/",
-        target_path=os.getcwd() + "/polyatomic_complexes/dataset/photoswitches/",
+        source_path=os.getcwd() + "/polyatomic_complexes/dataset/lipophilicity/",
+        target_path=os.getcwd() + "/polyatomic_complexes/dataset/lipophilicity/",
     ):
         self.src = source_path
         self.tgt = target_path
-        assert "photoswitches.csv" in os.listdir(self.src)
-        self.datapath = self.src + "photoswitches.csv"
+        assert "Lipophilicity.csv" in os.listdir(self.src)
+        self.datapath = self.src + "Lipophilicity.csv"
         self.data = pd.read_csv(self.datapath)
         assert isinstance(self.data, pd.DataFrame)
 
     def process(self) -> None:
         representations = defaultdict(tuple)
-        for i, row in enumerate(self.data["SMILES"]):
+        for i, row in enumerate(self.data["smiles"]):
             print(f"row {row}")
             print(f"tpe {type(row)}")
             atoms = self.smiles_to_atoms(row)
@@ -37,7 +37,7 @@ class ProcessPhotoswitches:
 
     def process_deep_complexes(self) -> None:
         representations = defaultdict(tuple)
-        for i, row in enumerate(self.data["SMILES"]):
+        for i, row in enumerate(self.data["smiles"]):
             print(f"row {row}")
             print(f"tpe {type(row)}")
             atoms = self.smiles_to_atoms(row)
@@ -51,7 +51,7 @@ class ProcessPhotoswitches:
 
     def process_stacked(self) -> None:
         representations = defaultdict(tuple)
-        for i, row in enumerate(self.data["SMILES"]):
+        for i, row in enumerate(self.data["smiles"]):
             print(f"row {row}")
             print(f"tpe {type(row)}")
             atoms = self.smiles_to_atoms(row)
@@ -94,7 +94,7 @@ class ProcessPhotoswitches:
 
 
 if __name__ == "__main__":
-    prc = ProcessPhotoswitches()
+    prc = ProcessLipophilicity()
     # prc.process()
     # prc.process_deep_complexes()
     prc.process_stacked()

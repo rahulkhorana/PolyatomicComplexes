@@ -5,9 +5,15 @@ import numpy as np
 import jax.numpy as jnp
 from typing import List, Tuple
 from collections import defaultdict
+from pathlib import Path
 
-sys.path.append(".")
-from .core_utils import GluingMap, NSphere
+BASE_PATH = Path(__file__)
+project_root = BASE_PATH.parent.parent.parent.parent.resolve()
+src_dir = project_root
+if str(src_dir) not in sys.path:
+    sys.path.insert(0, str(src_dir))
+
+from polyatomic_complexes.src.complexes.core_utils import GluingMap, NSphere
 
 
 class GeneralComplexUtils:
@@ -68,7 +74,7 @@ class GeneralComplexUtils:
             return v / jnp.linalg.norm(v)
 
         @jax.jit
-        def compute_norm(mat: np.ndarray) -> jnp.float32:
+        def compute_norm(mat: np.ndarray):
             return jnp.linalg.norm(mat)
 
         normalize = jax.jit(normalize_vector)
