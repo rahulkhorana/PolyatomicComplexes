@@ -36,7 +36,7 @@ def fuzz_test(n=50):
         cases.append(case)
 
 
-# fuzz_test()
+fuzz_test()
 
 
 @pytest.mark.parametrize(
