@@ -169,7 +169,7 @@ def check_abstract_complex_test(complex: AbstractComplex):
     except Exception as e:
         raise e
     get_structure = complex.get_atomic_structure()
-    assert isinstance(get_structure, list) and len(get_structure) != 1
+    assert isinstance(get_structure, list) and len(get_structure) > 0
     get_ato = complex.get_atomic_topology()
     rk, feats = get_ato
     assert isinstance(rk, list) and isinstance(feats, dict)
