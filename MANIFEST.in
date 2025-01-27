@@ -1,0 +1,27 @@
+# MANIFEST.in
+
+# Include only CSV files in dataset directories
+include polyatomic_complexes/dataset/construct/atom_lookup.pkl
+include polyatomic_complexes/dataset/construct/*.csv
+include polyatomic_complexes/dataset/esol/ESOL.csv
+include polyatomic_complexes/dataset/free_solv/FreeSolv.csv
+include polyatomic_complexes/dataset/lipophilicity/Lipophilicity.csv
+include polyatomic_complexes/dataset/photoswitches/photoswitches.csv
+
+
+# Exclude unwanted files
+exclude polyatomic_complexes/dataset/mp_matbench_jdft2d/jdft2d.csv
+exclude polyatomic_complexes/dataset/materials_project/materials_data.csv
+global-exclude polyatomic_complexes/dataset/**/*.pkl
+global-exclude polyatomic_complexes/results/*
+global-exclude polyatomic_complexes/tests/*
+
+
+# Include README and License files
+include README.md
+include LICENSE
+
+# Prune top-level tests directory if exists
+prune */__pycache__ 
+prune .env/*
+prune .github/*
