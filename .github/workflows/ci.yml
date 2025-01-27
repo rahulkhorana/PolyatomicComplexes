@@ -45,7 +45,7 @@ jobs:
 
       - name: Run tests
         working-directory: ./polyatomic_complexes
-        run: python -B -m pytest -v --log-level=DEBUG
+        run: python -B -m pytest -v --log-level=DEBUG --maxfail=1
       
       - name: Upload test logs
         if: failure()
