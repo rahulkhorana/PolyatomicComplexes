@@ -27,7 +27,7 @@ source .env/bin/activate
 pip install -U polyatomic-complexes==1.0.5
 ```
 Note: If you are having trouble with the environment setup please see the following demo in colab:
-[![Environment Setup](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1m9AXhypRekLd0Lbomaff4UN8xkX28Cao#scrollTo=uvnToYOTGD3K)
+[![Environment Setup](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/19uyB67lXdk937AI5y48PYzIjXypR86Sr?usp=sharing)
 
 
 
