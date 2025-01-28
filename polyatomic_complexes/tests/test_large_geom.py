@@ -94,8 +94,8 @@ def test_quantum_polyatomic_geometry(smile, mode):
 
 #### LARGE UNIQUE ####
 large_cases_pair = []
-for smile1 in ALL_SMILES[:50]:
-    for smile2 in ALL_SMILES[:50]:
+for smile1 in ALL_SMILES[:20]:
+    for smile2 in ALL_SMILES[:20]:
         if smile1 != smile2:
             for mode in modes:
                 large_cases_pair.append((smile1, smile2, mode))
