@@ -53,7 +53,7 @@ smiles_freesolv = pd.read_csv(datapath_freesolv)["smiles"].tolist()
 smiles_lipo = pd.read_csv(datapath_lipo)["smiles"].tolist()
 smiles_photo = pd.read_csv(datapath_photo)["SMILES"].tolist()
 ALL_SMILES = smiles_esol + smiles_freesolv + smiles_lipo + smiles_photo
-ALL_SMILES = np.random.choice(a=ALL_SMILES, size=30, replace=False).tolist()
+ALL_SMILES = np.random.choice(a=ALL_SMILES, size=10, replace=False).tolist()
 
 large_cases = []
 for smile in ALL_SMILES:
