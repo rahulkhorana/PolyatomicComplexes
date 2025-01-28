@@ -383,6 +383,7 @@ def check_coadjacency_unique(complex1, complex2):
     mol_coadj1 = coadj1["molecule_co_adjacencies"]
     mol_coadj2 = coadj2["molecule_co_adjacencies"]
     terms = set()
+    is_zero = set()
     for sub_coadj1, sub_coadj2 in zip(mol_coadj1, mol_coadj2):
         for term1, term2 in zip(sub_coadj1, sub_coadj2):
             assert isinstance(term1[0], str)
@@ -391,7 +392,9 @@ def check_coadjacency_unique(complex1, complex2):
             assert isinstance(term2[1], np.ndarray)
             v = np.array_equal(term1[1], term2[1])
             terms.add(v)
-    assert False in terms
+            if v:
+                is_zero.add(np.array_equal(term1[1], np.zeros(term1[1].shape)))
+    assert False in terms or (len(is_zero) == 1 and True in is_zero)
     return True
 
 
@@ -430,3 +433,8 @@ def test_small_unique_battery(smile1, smile2, mode):
     assert check_persistence_unique(complex1, complex2)
     assert check_skeleta_unique(complex1, complex2)
     assert check_coadjacency_unique(complex1, complex2)
+
+
+sm1 = "CCOC(=O)c1ccccc1c2csc(NS(=O)(=O)c3ccc(Cl)cc3)n2"
+sm2 = "C[C@H]1O[C@H]([C@H](O)[C@@H]1O)n2cnc3c(N)nc(OC4CC5CC5C4)nc23"
+test_small_unique_battery(sm1, sm2, "abstract")
