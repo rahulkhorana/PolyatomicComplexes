@@ -4,6 +4,7 @@ import dill
 import json
 import numpy as np
 import periodictable
+import traceback
 from ase import Atoms
 
 from rdkit import Chem
@@ -25,6 +26,7 @@ from pyscf import gto, dft, grad
 from dftd3.pyscf import DFTD3Dispersion
 from pyscf.geomopt import geometric_solver
 from pyscf.hessian import rks as rks_hessian
+from pyscf.hessian import thermo
 
 BASE_PATH = Path(__file__)
 project_root = BASE_PATH.parent.parent.parent.parent.resolve()
@@ -99,31 +101,6 @@ class QuantumWavesComplex(QuantumComplex):
             v_nuc += Z / r
         return v_nuc
 
-    def _compute_dispersion_energy(self) -> Optional[float]:
-        """
-        Computes the dispersion energy using DFT-D3 via the DFTD3Dispersion class.
-
-        Returns:
-            Optional[float]: Dispersion energy in Hartree, or None if computation fails.
-        """
-        try:
-            d3_model = DFTD3Dispersion(self.mf_final)
-            d3_model.initialize()
-            d3_model.kernel()
-            d3_energy = d3_model.d3_energy
-            if (
-                not isinstance(d3_energy, int)
-                or isinstance(d3_energy, float)
-                or isinstance(d3_energy, np.float32)
-            ):
-                raise TypeError(
-                    f"Expected 'd3_energy' to be a number, got {type(d3_energy)}"
-                )
-            return float(d3_energy)
-        except Exception as e:
-            print(f"Dispersion energy computation failed: {e}")
-            return None
-
     def _compute_quantum_properties(self) -> defaultdict:
         """
         Computes quantum-level properties at a DFT (B3LYP) level of theory,
@@ -145,7 +122,7 @@ class QuantumWavesComplex(QuantumComplex):
         mf.xc = "b3lyp"
         mf.verbose = 4
         mf_optimized = geometric_solver.optimize(mf)
-        mol_opt = mf_optimized.mol
+        mol_opt = mf_optimized
         if not isinstance(mol_opt, gto.Mole):
             raise TypeError(
                 f"Expected 'mol_opt' to be a pyscf.gto.Mole instance, got {type(mol_opt)}"
@@ -180,8 +157,16 @@ class QuantumWavesComplex(QuantumComplex):
             )
         hessian_obj = rks_hessian.Hessian(mf_final)
         hess_mat = hessian_obj.kernel()
-        freq_analysis = hessian_obj.freq_analysis(hess_mat)
-        freqs_cm = freq_analysis[0]
+        mass = mf_final.mol.atom_mass_list()
+        freq_analysis = thermo.harmonic_analysis(
+            mol=mf_final.mol,
+            hess=hess_mat,
+            exclude_trans=True,
+            exclude_rot=True,
+            imaginary_freq=True,
+            mass=mass,
+        )
+        freqs_cm = freq_analysis["freq_wavenumber"]
         freqs_au = np.array(freqs_cm) * self.cm_to_au
         if not isinstance(freqs_cm, np.ndarray):
             freqs_cm = np.array(freqs_cm)
@@ -232,12 +217,9 @@ class QuantumWavesComplex(QuantumComplex):
         dip_moment_components = mf_final.dip_moment()
         if not isinstance(dip_moment_components, np.ndarray):
             dip_moment_components = np.array(dip_moment_components)
-        if dip_moment_components.shape != (4,):
-            raise ValueError(
-                f"Expected 'dip_moment_components' to be of shape (4,), got {dip_moment_components.shape}"
-            )
+        print(f"dip moment com: {dip_moment_components}")
         dipole_vector = dip_moment_components[:3]
-        dipole_magnitude = dip_moment_components[3]
+        dipole_magnitude = dip_moment_components[2]
         dm = mf_final.make_rdm1()
         veff = mf_final.get_veff(mol_opt, dm)
         coords = refined_positions
@@ -273,17 +255,19 @@ class QuantumWavesComplex(QuantumComplex):
                 f"Expected 'electron_density_map' to have shape ({grid_points.shape[0]},), got {electron_density_map.shape}"
             )
         grid_shape = X.shape
-        grid_spacing_val = spacing
-        grid_volume = grid_spacing_val**3
+        grid_spacing = spacing
+        grid_volume = grid_spacing**3
         rho_k = fftn(electron_density_map)
-        kx = fftfreq(grid_shape[0], d=grid_spacing_val) * 2 * np.pi
-        ky = fftfreq(grid_shape[1], d=grid_spacing_val) * 2 * np.pi
-        kz = fftfreq(grid_shape[2], d=grid_spacing_val) * 2 * np.pi
+        rho_k = rho_k.reshape(grid_shape)
+        kx = fftfreq(grid_shape[0], d=grid_spacing) * 2 * np.pi
+        ky = fftfreq(grid_shape[1], d=grid_spacing) * 2 * np.pi
+        kz = fftfreq(grid_shape[2], d=grid_spacing) * 2 * np.pi
         KX, KY, KZ = np.meshgrid(kx, ky, kz, indexing="ij")
         K_sq = KX**2 + KY**2 + KZ**2
         K_sq[0, 0, 0] = 1.0
         v_coul_k = 4 * np.pi * rho_k / K_sq
         v_coul = np.real(ifftn(v_coul_k)) * grid_volume
+        v_nuc = v_nuc.reshape(grid_shape)
         v_total = v_nuc + v_coul
         assert isinstance(v_total, np.ndarray)
         v_total = v_total.reshape(grid_shape)
@@ -325,7 +309,7 @@ class QuantumWavesComplex(QuantumComplex):
 
         Stores the computed properties in self.computed_props.
         """
-        if not self.computed_props:
+        if not hasattr(self, "computed_props"):
             self._compute_quantum_properties()
         total_energy = self.computed_props.get("potential_energy")
         dipole_moment = self.computed_props.get("dipole_moment")
@@ -335,6 +319,8 @@ class QuantumWavesComplex(QuantumComplex):
             "thermal_corr_internal_energy"
         )
         dispersion_energy = self.computed_props.get("dispersion_energy")
+        if dispersion_energy is not None:
+            dispersion_energy = dispersion_energy[0]
         quadrupole_moment = self._compute_quadrupole_moment()
         radius_of_gyration = self._compute_radius_of_gyration()
         free_energy = None
@@ -362,6 +348,43 @@ class QuantumWavesComplex(QuantumComplex):
         self.computed_props["thermal_energy"] = thermal_corr_internal_energy
         self.computed_props["free_energy"] = free_energy
 
+    def _compute_dispersion_energy(self) -> Optional[Tuple]:
+        """
+        Computes the dispersion energy using DFT-D3 via the DFTD3Dispersion class.
+        Returns:
+            Optional[float]: Tuple of (dispersion energy in Hartree, d3 energy matrix), or None if computation fails.
+        """
+        try:
+            if not hasattr(self, "mf_final"):
+                raise AttributeError("mf_final not found")
+            mol = self.mf_final.mol
+            if mol is None:
+                raise ValueError("Molecule object is None")
+            d3_model = DFTD3Dispersion(mol)
+            d3_model.scf = self.mf_final
+            kernel = d3_model.kernel()
+            assert len(kernel) == 2
+            d3_energy = kernel[0]
+            d3_energy_matrix = kernel[1]
+            assert isinstance(d3_energy, np.ndarray)
+            d3_energy = d3_energy.tolist()
+            assert (
+                isinstance(d3_energy, float)
+                or isinstance(d3_energy, int)
+                or isinstance(d3_energy, np.floating)
+            )
+            assert isinstance(d3_energy_matrix, np.ndarray)
+            if not (isinstance(d3_energy, (int, float, np.floating))):
+                raise TypeError(
+                    f"Expected 'd3_energy' to be a number, got {type(d3_energy)}"
+                )
+            return float(d3_energy), d3_energy_matrix
+        except Exception as e:
+            print(f"Dispersion energy computation failed: {str(e)}")
+            print(f"Error type: {type(e).__name__}")
+            print(traceback.format_exc())
+            return None
+
     def _compute_quadrupole_moment(self) -> Optional[List[float]]:
         """
         Computes the quadrupole moment of the molecule.
@@ -371,31 +394,44 @@ class QuantumWavesComplex(QuantumComplex):
                                    or None if computation fails.
         """
         try:
+            # Add verification steps
+            if not hasattr(self, "mf_final"):
+                raise AttributeError("mf_final not found")
             mol_opt = self.mf_final.mol
+            if mol_opt is None:
+                raise ValueError("Molecule object is None")
             dm = self.mf_final.make_rdm1()
-            ni = numint.NumInt()
-            ao = ni.eval_ao(
-                mol_opt, self.computed_props["electrostatic_potentials"]["grid_coords"]
-            )
-            electron_density = ni.eval_rho(mol_opt, ao, dm)
+            if "electrostatic_potentials" not in self.computed_props:
+                raise KeyError("electrostatic_potentials not found in computed_props")
             grid_coords = np.array(
                 self.computed_props["electrostatic_potentials"]["grid_coords"]
             )
+            ni = numint.NumInt()
+            ao = ni.eval_ao(mol_opt, grid_coords)
+            electron_density = ni.eval_rho(mol_opt, ao, dm)
             Q = np.zeros((3, 3))
             r_sq = np.sum(grid_coords**2, axis=1)
-
+            grid_volume = 0.2**3
             for i in range(3):
                 for j in range(3):
-                    Q[i, j] = np.sum(
-                        (3 * grid_coords[:, i] * grid_coords[:, j] - r_sq * (i == j))
-                        * electron_density
-                    ) * (0.2**3)
+                    Q[i, j] = (
+                        np.sum(
+                            (
+                                3 * grid_coords[:, i] * grid_coords[:, j]
+                                - r_sq * (i == j)
+                            )
+                            * electron_density
+                        )
+                        * grid_volume
+                    )
+            assert isinstance(mol_opt, gto.Mole)
             for ia in range(mol_opt.natm):
                 Z = mol_opt.atom_charge(ia)
                 R = mol_opt.atom_coord(ia)
+                R_sq = np.dot(R, R)
                 for i in range(3):
                     for j in range(3):
-                        Q[i, j] -= Z * (3 * R[i] * R[j] - (np.dot(R, R)) * (i == j))
+                        Q[i, j] -= Z * (3 * R[i] * R[j] - R_sq * (i == j))
             quad_moment_list = [
                 Q[0, 0],
                 Q[1, 1],
@@ -406,7 +442,9 @@ class QuantumWavesComplex(QuantumComplex):
             ]
             return quad_moment_list
         except Exception as e:
-            print(f"Quadrupole moment computation failed: {e}")
+            print(f"Quadrupole moment computation failed: {str(e)}")
+            print(f"Error type: {type(e).__name__}")
+            print(traceback.format_exc())
             return None
 
     def _compute_radius_of_gyration(self) -> Optional[float]:
@@ -417,8 +455,15 @@ class QuantumWavesComplex(QuantumComplex):
             Optional[float]: Radius of gyration in Angstroms, or None if computation fails.
         """
         try:
+            if not hasattr(self, "mf_final"):
+                raise AttributeError("mf_final not found")
             mol = self.mf_final.mol
+            if mol is None:
+                raise ValueError("Molecule object is None")
             coords = mol.atom_coords()
+            if coords is None:
+                raise ValueError("Could not get atomic coordinates")
+            assert isinstance(mol, gto.Mole)
             natm = mol.natm
             masses = np.array(
                 [
@@ -426,7 +471,6 @@ class QuantumWavesComplex(QuantumComplex):
                     for ia in range(natm)
                 ]
             )
-
             total_mass = masses.sum()
             center_of_mass = np.sum(coords * masses[:, np.newaxis], axis=0) / total_mass
             rg_sq = (
@@ -434,9 +478,12 @@ class QuantumWavesComplex(QuantumComplex):
                 / total_mass
             )
             radius_of_gyration = np.sqrt(rg_sq)
+            print(f"radius of gyration: {radius_of_gyration}")
             return radius_of_gyration
         except Exception as e:
-            print(f"Radius of gyration computation failed: {e}")
+            print(f"Radius of gyration computation failed: {str(e)}")
+            print(f"Error type: {type(e).__name__}")
+            print(traceback.format_exc())
             return None
 
     def _compute_wavefunction_overlaps(
