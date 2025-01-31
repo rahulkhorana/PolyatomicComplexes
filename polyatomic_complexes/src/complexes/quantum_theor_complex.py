@@ -65,6 +65,11 @@ class QuantumWavesComplex(QuantumComplex):
         Returns:
             float: Thermal correction energy in Hartree.
         """
+        if isinstance(freq, (np.complex128, complex)):
+            if abs(freq.imag) < 1e-10:
+                freq = freq.real
+            else:
+                return 0.0
         if not (isinstance(freq, float) or isinstance(freq, int)):
             raise TypeError(f"Expected 'freq' to be a number, got {type(freq)}")
         if freq < 1e-12:
