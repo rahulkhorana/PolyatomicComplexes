@@ -24,6 +24,8 @@ from pyscf import gto, dft, grad
 from pyscf.geomopt import geometric_solver
 from pyscf.hessian import rks as rks_hessian
 from pyscf.dft import numint
+from pyscf.hessian import thermo
+import inspect
 
 
 BASE_PATH = Path(__file__)
@@ -94,6 +96,11 @@ class QuantumComplex(AbstractComplex):
         Returns:
             float: Thermal correction energy in Hartree.
         """
+        if isinstance(freq, (np.complex128, complex)):
+            if abs(freq.imag) < 1e-10:
+                freq = freq.real
+            else:
+                return 0.0
         if not (isinstance(freq, float) or isinstance(freq, int)):
             raise TypeError(f"Expected 'freq' to be a number, got {type(freq)}")
         if freq < 1e-12:
@@ -149,7 +156,7 @@ class QuantumComplex(AbstractComplex):
         mf.xc = "b3lyp"
         mf.verbose = 4
         mf_optimized = geometric_solver.optimize(mf)
-        mol_opt = mf_optimized.mol
+        mol_opt = mf_optimized
         if not isinstance(mol_opt, gto.Mole):
             raise TypeError(
                 f"Expected 'mol_opt' to be a pyscf.gto.Mole instance, got {type(mol_opt)}"
@@ -184,8 +191,19 @@ class QuantumComplex(AbstractComplex):
             )
         hessian_obj = rks_hessian.Hessian(mf_final)
         hess_mat = hessian_obj.kernel()
-        freq_analysis = hessian_obj.freq_analysis(hess_mat)
-        freqs_cm = freq_analysis[0]
+        mass = mf_final.mol.atom_mass_list()
+        print(
+            f"thermo harmonic analysis signature: {inspect.signature(thermo.harmonic_analysis)}"
+        )
+        freq_analysis = thermo.harmonic_analysis(
+            mol=mf_final.mol,
+            hess=hess_mat,
+            exclude_trans=True,
+            exclude_rot=True,
+            imaginary_freq=True,
+            mass=mass,
+        )
+        freqs_cm = freq_analysis["freq_wavenumber"]
         freqs_au = np.array(freqs_cm) * self.cm_to_au
         if not isinstance(freqs_cm, np.ndarray):
             freqs_cm = np.array(freqs_cm)
@@ -236,12 +254,9 @@ class QuantumComplex(AbstractComplex):
         dip_moment_components = mf_final.dip_moment()
         if not isinstance(dip_moment_components, np.ndarray):
             dip_moment_components = np.array(dip_moment_components)
-        if dip_moment_components.shape != (4,):
-            raise ValueError(
-                f"Expected 'dip_moment_components' to be of shape (4,), got {dip_moment_components.shape}"
-            )
+        print(f"dip moment com: {dip_moment_components}")
         dipole_vector = dip_moment_components[:3]
-        dipole_magnitude = dip_moment_components[3]
+        dipole_magnitude = dip_moment_components[2]
         dm = mf_final.make_rdm1()
         veff = mf_final.get_veff(mol_opt, dm)
         coords = refined_positions
@@ -280,6 +295,7 @@ class QuantumComplex(AbstractComplex):
         grid_spacing = spacing
         grid_volume = grid_spacing**3
         rho_k = fftn(electron_density_map)
+        rho_k = rho_k.reshape(grid_shape)
         kx = fftfreq(grid_shape[0], d=grid_spacing) * 2 * np.pi
         ky = fftfreq(grid_shape[1], d=grid_spacing) * 2 * np.pi
         kz = fftfreq(grid_shape[2], d=grid_spacing) * 2 * np.pi
@@ -288,6 +304,7 @@ class QuantumComplex(AbstractComplex):
         K_sq[0, 0, 0] = 1.0
         v_coul_k = 4 * np.pi * rho_k / K_sq
         v_coul = np.real(ifftn(v_coul_k)) * grid_volume
+        v_nuc = v_nuc.reshape(grid_shape)
         v_total = v_nuc + v_coul
         assert isinstance(v_total, np.ndarray)
         v_total = v_total.reshape(grid_shape)
