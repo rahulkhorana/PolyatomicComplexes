@@ -20,20 +20,8 @@
 
 </div>
 
----
 
 ## 📖 **[Documentation](https://rahulkhorana.github.io/PolyatomicComplexes/)**
-
----
-
-## 🚀 Installation  
-
-### **Using `pip`**
-1. Ensure you have **Python 3.11.11** and set up a virtual environment:
-   ```sh
-   pip install virtualenv
-   virtualenv .env --python=python3.11.11
-   source .env/bin/activate
 
 
 
