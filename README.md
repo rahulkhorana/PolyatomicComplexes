@@ -16,7 +16,7 @@
 </h4>
 
 
-## [Documentation](https://github.com/rahulkhorana/PolyatomicComplexes)
+## [Documentation](https://rahulkhorana.github.io/PolyatomicComplexes/)
 
 ## Installation (pip)
 
