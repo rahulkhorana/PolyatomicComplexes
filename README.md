@@ -1,25 +1,45 @@
 # PolyatomicComplexes
 
-<h4 align="center">
-  
+<div align="center">
+
+### Build & CI Status  
 ![workflow](https://github.com/rahulkhorana/PolyatomicComplexes/actions/workflows/build.yml/badge.svg)
-![workflow](https://github.com/rahulkhorana/PolyatomicComplexes/actions/workflows/ci.yml/badge.svg)
-[![Github License](https://img.shields.io/badge/License-MIT%202.0-blue.svg)](https://opensource.org/licenses/MIT)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-![PyPI - Version](https://img.shields.io/pypi/v/polyatomic-complexes?style=plastic&logo=%233775A9&logoSize=auto&labelColor=%233775A9&color=%23e1ad01&link=https%3A%2F%2Fpypi.org%2Fproject%2Fpolyatomic-complexes%2F0.0.8%2F)
-![PyPI - Format](https://img.shields.io/pypi/format/polyatomic-complexes)
-![PyPI - Downloads](https://img.shields.io/pypi/dm/polyatomic-complexes)
-![Pepy Total Downloads](https://img.shields.io/pepy/dt/polyatomic-complexes)
-[![Socket Badge](https://socket.dev/api/badge/pypi/package/polyatomic-complexes/0.0.8?artifact_id=tar-gz)](https://socket.dev/pypi/package/polyatomic-complexes/overview/0.0.8/tar-gz)
+![workflow](https://github.com/rahulkhorana/PolyatomicComplexes/actions/workflows/ci.yml/badge.svg)  
 [![CodeFactor](https://www.codefactor.io/repository/github/rahulkhorana/polyatomiccomplexes/badge/master)](https://www.codefactor.io/repository/github/rahulkhorana/polyatomiccomplexes/overview/master)
 
-</h4>
+### Licensing & Code Style  
+[![Github License](https://img.shields.io/badge/License-MIT%202.0-blue.svg)](https://opensource.org/licenses/MIT)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
+### PyPI Information  
+![PyPI - Version](https://img.shields.io/pypi/v/polyatomic-complexes?style=plastic&logo=%233775A9&logoSize=auto&labelColor=%233775A9&color=%23e1ad01&link=https%3A%2F%2Fpypi.org%2Fproject%2Fpolyatomic-complexes%2F0.0.8%2F)  
+![PyPI - Format](https://img.shields.io/pypi/format/polyatomic-complexes)
+![PyPI - Downloads](https://img.shields.io/pypi/dm/polyatomic-complexes)
+![Pepy Total Downloads](https://img.shields.io/pepy/dt/polyatomic-complexes)  
+[![Socket Badge](https://socket.dev/api/badge/pypi/package/polyatomic-complexes/0.0.8?artifact_id=tar-gz)](https://socket.dev/pypi/package/polyatomic-complexes/overview/0.0.8/tar-gz)
+
+</div>
+
+---
+
+## 📖 **[Documentation](https://rahulkhorana.github.io/PolyatomicComplexes/)**
+
+---
+
+## 🚀 Installation  
+
+### **Using `pip`**
+1. Ensure you have **Python 3.11.11** and set up a virtual environment:
+   ```sh
+   pip install virtualenv
+   virtualenv .env --python=python3.11.11
+   source .env/bin/activate
 
 
-## [Documentation](https://rahulkhorana.github.io/PolyatomicComplexes/)
 
-## Installation (pip)
+## 🚀 Installation  
 
+### **Using `pip`**
 1. Ensure you have python == 3.11.11 and set up a virtual environment.
 ```sh
 pip install virtualenv
@@ -36,7 +56,7 @@ Note: If you are having trouble with the environment setup please see the follow
 
 
 
-## Installation (Repo)
+### **Using the `repo`**
 
 1. Clone the repo.
 
@@ -72,12 +92,12 @@ git lfs pull
 ```
 
 
-## License
+## 📜 License
+**This project is licensed under the [MIT License](https://github.com/rahulkhorana/PolyatomicComplexes/blob/master/LICENSE).**
 
-[MIT License](https://github.com/rahulkhorana/PolyatomicComplexes/blob/master/LICENSE).
+---
 
-## Reference
-
+## 🔬 Reference
 ```
 @misc{khorana2024polyatomiccomplexestopologicallyinformedlearning,
       title={Polyatomic Complexes: A topologically-informed learning representation for atomistic systems}, 
