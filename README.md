@@ -15,6 +15,9 @@
 
 </h4>
 
+
+## [Documentation](https://github.com/rahulkhorana/PolyatomicComplexes)
+
 ## Installation (pip)
 
 1. Ensure you have python == 3.11.11 and set up a virtual environment.
