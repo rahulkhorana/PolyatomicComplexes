@@ -1,24 +1,26 @@
 # PolyatomicComplexes
 
-<div align="center">
+<p align="center">
+  <img src="https://github.com/rahulkhorana/PolyatomicComplexes/actions/workflows/build.yml/badge.svg" alt="Build Status">
+  <img src="https://github.com/rahulkhorana/PolyatomicComplexes/actions/workflows/ci.yml/badge.svg" alt="CI Status">
+  <a href="https://opensource.org/licenses/MIT">
+    <img src="https://img.shields.io/badge/License-MIT%202.0-blue.svg" alt="MIT License">
+  </a>
+  <a href="https://github.com/psf/black">
+    <img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="Code Style: Black">
+  </a>
+  <img src="https://img.shields.io/pypi/v/polyatomic-complexes?style=plastic&logo=%233775A9&logoSize=auto&labelColor=%233775A9&color=%23e1ad01&link=https%3A%2F%2Fpypi.org%2Fproject%2Fpolyatomic-complexes%2F0.0.8%2F" alt="PyPI Version">
+  <img src="https://img.shields.io/pypi/format/polyatomic-complexes" alt="PyPI Format">
+  <img src="https://img.shields.io/pypi/dm/polyatomic-complexes" alt="PyPI Downloads">
+  <img src="https://img.shields.io/pepy/dt/polyatomic-complexes" alt="Total Downloads">
+  <a href="https://socket.dev/pypi/package/polyatomic-complexes/overview/0.0.8/tar-gz">
+    <img src="https://socket.dev/api/badge/pypi/package/polyatomic-complexes/0.0.8?artifact_id=tar-gz" alt="Socket Badge">
+  </a>
+  <a href="https://www.codefactor.io/repository/github/rahulkhorana/polyatomiccomplexes/overview/master">
+    <img src="https://www.codefactor.io/repository/github/rahulkhorana/polyatomiccomplexes/badge/master" alt="CodeFactor">
+  </a>
+</p>
 
-### Build & CI Status  
-![workflow](https://github.com/rahulkhorana/PolyatomicComplexes/actions/workflows/build.yml/badge.svg)
-![workflow](https://github.com/rahulkhorana/PolyatomicComplexes/actions/workflows/ci.yml/badge.svg)  
-[![CodeFactor](https://www.codefactor.io/repository/github/rahulkhorana/polyatomiccomplexes/badge/master)](https://www.codefactor.io/repository/github/rahulkhorana/polyatomiccomplexes/overview/master)
-
-### Licensing & Code Style  
-[![Github License](https://img.shields.io/badge/License-MIT%202.0-blue.svg)](https://opensource.org/licenses/MIT)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-
-### PyPI Information  
-![PyPI - Version](https://img.shields.io/pypi/v/polyatomic-complexes?style=plastic&logo=%233775A9&logoSize=auto&labelColor=%233775A9&color=%23e1ad01&link=https%3A%2F%2Fpypi.org%2Fproject%2Fpolyatomic-complexes%2F0.0.8%2F)  
-![PyPI - Format](https://img.shields.io/pypi/format/polyatomic-complexes)
-![PyPI - Downloads](https://img.shields.io/pypi/dm/polyatomic-complexes)
-![Pepy Total Downloads](https://img.shields.io/pepy/dt/polyatomic-complexes)  
-[![Socket Badge](https://socket.dev/api/badge/pypi/package/polyatomic-complexes/0.0.8?artifact_id=tar-gz)](https://socket.dev/pypi/package/polyatomic-complexes/overview/0.0.8/tar-gz)
-
-</div>
 
 
 ## 📖 **[Documentation](https://rahulkhorana.github.io/PolyatomicComplexes/)**
