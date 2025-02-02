@@ -11,6 +11,7 @@
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/polyatomic-complexes)
 ![Pepy Total Downloads](https://img.shields.io/pepy/dt/polyatomic-complexes)
 [![Socket Badge](https://socket.dev/api/badge/pypi/package/polyatomic-complexes/0.0.8?artifact_id=tar-gz)](https://socket.dev/pypi/package/polyatomic-complexes/overview/0.0.8/tar-gz)
+[![CodeFactor](https://www.codefactor.io/repository/github/rahulkhorana/polyatomiccomplexes/badge/master)](https://www.codefactor.io/repository/github/rahulkhorana/polyatomiccomplexes/overview/master)
 
 </h4>
 
