@@ -42,8 +42,6 @@ Note: If you are having trouble with the environment setup please see the follow
 [![Environment Setup](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/19uyB67lXdk937AI5y48PYzIjXypR86Sr?usp=sharing)
 
 
-
-
 ### **Using the `repo`**
 
 1. Clone the repo.
@@ -83,7 +81,6 @@ git lfs pull
 ## 📜 License
 **This project is licensed under the [MIT License](https://github.com/rahulkhorana/PolyatomicComplexes/blob/master/LICENSE).**
 
----
 
 ## 🔬 Reference
 ```
