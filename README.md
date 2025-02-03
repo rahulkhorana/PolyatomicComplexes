@@ -14,7 +14,7 @@
   <img src="https://img.shields.io/pypi/dm/polyatomic-complexes" alt="PyPI Downloads">
   <img src="https://img.shields.io/pepy/dt/polyatomic-complexes" alt="Total Downloads">
   <a href="https://socket.dev/pypi/package/polyatomic-complexes/overview/1.0.7/tar-gz">
-    <img src="https://socket.dev/api/badge/pypi/package/polyatomic-complexes/1.0.7" alt="Socket Badge">
+    <img src="https://socket.dev/api/badge/pypi/package/polyatomic-complexes/1.0.7"alt="Socket Badge">
   </a>
   <a href="https://www.codefactor.io/repository/github/rahulkhorana/polyatomiccomplexes/overview/master">
     <img src="https://www.codefactor.io/repository/github/rahulkhorana/polyatomiccomplexes/badge/master" alt="CodeFactor">
