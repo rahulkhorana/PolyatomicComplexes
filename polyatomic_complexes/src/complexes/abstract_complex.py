@@ -24,7 +24,15 @@ from polyatomic_complexes.src.complexes.space_utils import (
     geometricPolyatomicComplex,
 )
 
+# topological features
+import gudhi as gd
+import numpy as np
+import pandas as pd
+import scipy.sparse as sp
 from scipy.sparse import coo_matrix
+from scipy.sparse.linalg import eigsh
+from toponetx import CombinatorialComplex
+from sklearn.preprocessing import StandardScaler
 
 
 class AbstractComplex(PolyatomicComplex):
@@ -340,6 +348,154 @@ class AbstractComplex(PolyatomicComplex):
                 nf = nf.toarray()
         out_features[f"molecule_{column_name}"].append(nf)
         return out_features
+
+    def get_spectral_k_chains(self) -> dict:
+        all_chains = {}
+        cc = self.get_complex("rank_order")["molecule"][0]
+        df_k_chains = self.__parse_k_chains_from_complex(cc)
+        for i in range(1, 5):
+            try:
+                chain_i = self.__compute_combined_k_chain_features_fixed(
+                    cc, df_k_chains, i
+                )
+                all_chains[f"chain_{i}"] = chain_i
+            except:
+                all_chains[f"chain_{i}"] = np.zeros(20)
+        return all_chains
+
+    def get_raw_k_chains(self) -> dict:
+        all_chains = {}
+        cc = self.get_complex("rank_order")["molecule"][0]
+        df_k_chains = self.__parse_k_chains_from_complex(cc)
+        for i in range(0, 5):
+            raw_i_chain, _ = self.__compute_optimized_k_chain(cc, df_k_chains, i)
+            all_chains[f"chain_{i}"] = raw_i_chain
+        return all_chains
+
+    def k_chains_formal_sum(self) -> dict:
+        k_chain_symb = {}
+        cc = self.get_complex("rank_order")["molecule"][0]
+        for i in range(0, 5):
+            str_repn_chain_i = self.__get_k_chain_formal_sum_clean(cc, i)
+            k_chain_symb[f"symbolic_chain_{i}"] = str_repn_chain_i
+        return k_chain_symb
+
+    def get_df_k_chains(self) -> pd.DataFrame:
+        cc = self.get_complex("rank_order")["molecule"][0]
+        df_k_chains = self.__parse_k_chains_from_complex(cc)
+        return df_k_chains
+
+    def __compute_persistent_homology_safe(self, cc, k, max_dim=2, max_filtration=10):
+        assert isinstance(cc, CombinatorialComplex)
+        assert isinstance(k, int)
+        st = gd.SimplexTree()
+        for simplex in cc.skeleton(k):
+            simplex_set = frozenset([s[0] for s in simplex])
+            st.insert(simplex_set, filtration=1.0)
+        st.expansion(max_dim)
+        st.prune_above_filtration(max_filtration)
+        persistence = st.persistence()
+        lifetimes = []
+        for interval in persistence:
+            birth, death = interval[1]
+            if death != float("inf"):
+                lifetimes.append(death - birth)
+        persistence_vector = np.zeros(5)
+        lifetimes = sorted(lifetimes, reverse=True)[:5]
+        for i, value in enumerate(lifetimes):
+            persistence_vector[i] = value
+        return persistence_vector
+
+    def __parse_k_chains_from_complex(
+        self, complex: CombinatorialComplex
+    ) -> pd.DataFrame:
+        assert isinstance(complex, CombinatorialComplex)
+        structured_data = []
+        for chain_idx, chain in enumerate(complex):
+            for element in chain:
+                if isinstance(element, tuple) and len(element) == 2:
+                    identifier, data_tuple = element
+                    if isinstance(data_tuple, tuple) and len(data_tuple) == 2:
+                        particle_type, binary_data = data_tuple
+                        to_array = np.frombuffer(binary_data, dtype=np.uint8)
+                        structured_data.append(
+                            {
+                                "Chain Index": chain_idx,
+                                "Identifier": identifier,
+                                "Particle Type": particle_type,
+                                "array": to_array,
+                            }
+                        )
+        return pd.DataFrame(structured_data)
+
+    def __compute_optimized_k_chain(
+        self, cc: CombinatorialComplex, df_k_chains: pd.DataFrame, k: int
+    ):
+        assert isinstance(cc, CombinatorialComplex)
+        assert isinstance(df_k_chains, pd.DataFrame)
+        assert isinstance(k, int)
+        k_cells = list(cc.skeleton(k))
+        if not k_cells:
+            return np.array([]), {}
+        basis_mapping = {frozenset(k_cell): idx for idx, k_cell in enumerate(k_cells)}
+        k_chain_vector = np.zeros(len(k_cells))
+        for _, row in df_k_chains.iterrows():
+            identifier = row["Identifier"]
+            array_data = row["array"]
+            sum_val = np.sum(array_data)
+            mean_val = np.mean(array_data)
+            std_val = np.std(array_data)
+            std_val = std_val if std_val > 1e-6 else 1e-6
+            coefficient = np.log1p(sum_val) * ((sum_val - mean_val) / std_val)
+            for k_cell in k_cells:
+                if identifier in [item[0] for item in k_cell]:
+                    index = basis_mapping[frozenset(k_cell)]
+                    k_chain_vector[index] += coefficient
+        scaler = StandardScaler()
+        k_chain_vector = scaler.fit_transform(k_chain_vector.reshape(-1, 1)).flatten()
+        return [k_chain_vector, basis_mapping]
+
+    def __get_k_chain_formal_sum_clean(self, cc, k, coefficient=1) -> str:
+        assert isinstance(cc, CombinatorialComplex) and isinstance(k, int)
+        k_cells = list(cc.skeleton(k))
+        if not k_cells:
+            return "0"
+        formal_sum_terms = []
+        for k_cell in k_cells:
+            cell_identifiers = sorted([item[0] for item in k_cell])
+            term = f"{coefficient} * {{{', '.join(cell_identifiers)}}}"
+            formal_sum_terms.append(term)
+        return " + ".join(formal_sum_terms)
+
+    def __compute_combined_k_chain_features_fixed(
+        self, cc: CombinatorialComplex, df_k_chains: pd.DataFrame, k: int
+    ) -> np.ndarray:
+        assert isinstance(cc, CombinatorialComplex)
+        assert isinstance(df_k_chains, pd.DataFrame)
+        k_chain_vector, _ = self.__compute_optimized_k_chain(cc, df_k_chains, k)
+        laplacian_matrix = cc.laplacian_matrix(k)
+        if sp.issparse(laplacian_matrix):
+            laplacian_matrix = laplacian_matrix
+        else:
+            laplacian_matrix = sp.csr_matrix(laplacian_matrix)
+        try:
+            num_eigenvalues = min(5, laplacian_matrix.shape[0] - 1)
+            eigenvalues = eigsh(
+                laplacian_matrix, k=num_eigenvalues, return_eigenvectors=False
+            )
+        except:
+            eigenvalues = np.zeros(5)
+        eigenvalues = (
+            StandardScaler().fit_transform(eigenvalues.reshape(-1, 1)).flatten()
+        )
+        try:
+            persistence_intervals = self.__compute_persistent_homology_safe(cc, k)[0]
+        except:
+            persistence_intervals = np.zeros(5)
+        combined_feature_vector = np.concatenate(
+            [k_chain_vector, eigenvalues, persistence_intervals]
+        )
+        return combined_feature_vector
 
     def polyatomcomplex(self):
         return self.get_complex("abstract_complex")
