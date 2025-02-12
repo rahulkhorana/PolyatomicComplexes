@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 if __name__ == "__main__":
     setup(
         name="polyatomic_complexes",
-        version="1.0.5",
+        version="1.0.8",
         packages=find_packages(),
         include_package_data=True,
         package_data={

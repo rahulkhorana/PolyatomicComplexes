@@ -11,6 +11,9 @@
 - **`get_incidence()`** → Returns incidence matrices.
 - **`get_skeleta()`** → Returns skeletal molecular structure.
 - **`get_adjacencies()`** → Returns adjacency matrices for molecular structures.
+- **`get_spectral_k_chains()`** → Returns k-chains of complex with additional spectral features.
+- **`get_raw_k_chains()`** → Returns k-chains of complex.
+- **`abstract_mol.k_chains_formal_sum()`** → Represents k-chains symbolically (as a formal sum).
 
 
 ## Usage Example
@@ -26,6 +29,7 @@ structure = abstract_mol.get_atomic_structure()
 incidence = abstract_mol.get_incidence()
 skeleta = abstract_mol.get_skeleta()
 adjacencies = abstract_mol.get_adjacencies()
+spec_chains = abstract_mol.get_spectral_k_chains()
 ```
 
 ## Methods Explained
@@ -65,3 +69,16 @@ adjacencies = abstract_mol.get_adjacencies()
 
 !!! note "get_adjacencies()"
     This method will return the adjacency matricies for the entire molecule. An adjacency matrix in this context can be thought of as equivalent to the usual definition for graphs.
+
+
+
+!!! note "get_spectral_k_chains()"
+    This method will return all $k$-chains for the complex with additional spectral features computed aka scaling, persistence. Note that we don't provide a $0$-chain due to reliance on higher $k$ to compute the additional features. To use $k=0$ rely on `get_raw_k_chains()`.
+
+
+!!! note "get_raw_k_chains()"
+    This method will return all $k$-chains for the complex. Note that we provide the $0$ chains explicitly.
+
+
+!!! note "abstract_mol.k_chains_formal_sum()"
+    This method will return the symbolic computation for `get_raw_k_chains()` aka represent the computation of all $k$ chains as a formal sum.
