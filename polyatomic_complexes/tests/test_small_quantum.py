@@ -30,7 +30,7 @@ smiles = [
 ]
 
 
-# @pytest.mark.parametrize("smile", smiles)
+@pytest.mark.parametrize("smile", smiles)
 def test_small_test_polyatomic_geometry(smile):
     pg = PolyatomicGeometrySMILE(smile, mode="quantum")
     quantum_mol = pg.smiles_to_geom_complex()
@@ -38,7 +38,7 @@ def test_small_test_polyatomic_geometry(smile):
     quantum_mol.E0_elec_plus_zpe()
 
 
-# @pytest.mark.parametrize("smile", smiles)
+@pytest.mark.parametrize("smile", smiles)
 def test_small_test_polyatomic_geometry(smile):
     pg = PolyatomicGeometrySMILE(smile, mode="quantum-waves")
     quantum_mol = pg.smiles_to_geom_complex()
