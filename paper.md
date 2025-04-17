@@ -50,7 +50,7 @@ Recent advancements in topological deep learning and equivariant models have emp
 
 Polyatomic Complexes address this gap by introducing a general-purpose, extensible, and topologically rigorous representation that integrates smoothly with modern ML pipelines. This fills a critical unmet need in the intersection of chemistry, materials science, and machine learning.
 
-Moreover with the advent of topologial deep learning and geometric deep learning such representations will become increasingly applicable [@zia2024topological]. A classic example of this is Cellular Neural Networks [@khorana2024cwcnncwan] or Cellular Gaussian Processes [@alain2024gaussian] which are compatible with Polyatomic Complexes [@khorana2024polyatomiccomplexestopologicallyinformedlearning].
+Moreover with the advent of topological deep learning and geometric deep learning such representations will become increasingly applicable [@zia2024topological]. A classic example of this is Cellular Neural Networks [@khorana2024cwcnncwan] or Cellular Gaussian Processes [@alain2024gaussian] which are compatible with Polyatomic Complexes [@khorana2024polyatomiccomplexestopologicallyinformedlearning].
 
 # Code Contributions and Workflow
 
@@ -83,6 +83,19 @@ Our API is structured as follows:
 These can be leveraged for a wide variety of molecular machine-learning experiments. The current API can be applied to small-molecule drug discovery, prediction of biochemical properties, molecular characterization, similarity-searching, and structure-activity modeling.
 
 The software is modular, extensible, and written in Python. It supports input from standard molecular formats and returns representations and features suitable for use with ML libraries.
+
+# Repository and Installation
+
+The source code for Polyatomic Complexes is hosted on GitHub:
+https://github.com/rahulkhorana/PolyatomicComplexes
+
+The software is open source under the MIT license and tested via continuous integration using GitHub Actions. Installation instructions, API documentation, and tutorials are available at:
+https://rahulkhorana.github.io/PolyatomicComplexes/
+
+# Benchmarks
+
+Benchmark experiments and performance evaluations comparing Polyatomic Complexes to existing molecular representations (e.g., SMILES, SELFIES, ECFP) are provided in [@khorana2024polyatomiccomplexestopologicallyinformedlearning]. These results include standard datasets in molecular property prediction and are fully reproducible via scripts and notebooks in the repository.
+
 
 # Acknowledgements
 
