@@ -76,35 +76,6 @@ These can be leveraged for a wide variety of molecular machine-learning experime
 
 The software is modular, extensible, and written in Python. It supports input from standard molecular formats and returns representations and features suitable for use with ML libraries.
 
-# Installation
-
-## Using pip
-Ensure you have Python `== 3.11.11` and set up a virtual environment:
-
-```bash
-pip install virtualenv
-virtualenv .env --python=python3.11.11
-source .env/bin/activate
-pip install -U polyatomic-complexes==1.0.8
-```
-
-# Example Usage
-
-```python
-from polyatomic_complexes.src.complexes import PolyatomicGeometrySMILE
-from polyatomic_complexes.src.complexes.abstract_complex import AbstractComplex
-
-pg = PolyatomicGeometrySMILE(smile="CC(=O)OC", mode="abstract")
-abstract_mol = pg.smiles_to_geom_complex()
-
-bonds = abstract_mol.get_bonds()
-structure = abstract_mol.get_atomic_structure()
-incidence = abstract_mol.get_incidence()
-skeleta = abstract_mol.get_skeleta()
-adjacencies = abstract_mol.get_adjacencies()
-spec_chains = abstract_mol.get_spectral_k_chains()
-```
-
 # Acknowledgements
 
 This work builds on foundational insights in topological data analysis, computational chemistry, and equivariant machine learning. We would like to acknowledge Dr. Jin Qian, Dr. Marcus Noack, and others in the Chemical Sciences division at Lawrence Berkeley National Laboratory for their support, suggestions, and mentorship during the genesis of this project.
