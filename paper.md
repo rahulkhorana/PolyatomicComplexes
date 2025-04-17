@@ -8,7 +8,7 @@ tags:
   - representation learning
 authors:
   - name: Rahul Khorana
-    affiliation: 1
+    affiliation: "1"
     orcid: 0000-0001-8795-1623
 affiliations:
   - name: Imperial College London
@@ -24,23 +24,57 @@ At a high level, the representation is formed by systematically representing ele
 
 # Statement of Need
 
-Current molecular representations, such as SMILES, SELFIES, or graph-based fingerprints, are limited in their ability to accurately reflect electronic structure and higher-order topological features. Additionally, existing representations in computational chemistry fail to satisfy some non-empty subset of accuracy, generalizability, and efficiency constraints [@khorana2024polyatomiccomplexestopologicallyinformedlearning].
-Polyatomic Complexes fill this gap by providing a physics-informed and topologically accurate representation that is general across chemical domains, modular, and compatible with standard ML workflows. The software is helpful to researchers in cheminformatics, quantum chemistry, and materials science seeking a theoretically grounded approach to feature generation.
+Current molecular representations, such as SMILES, SELFIES, or graph-based fingerprints, are limited in their ability to accurately reflect electronic structure and higher-order topological features. Additionally, existing representations in computational chemistry fail to satisfy some non-empty subset of accuracy, generalizability, and efficiency constraints [@khorana2024polyatomiccomplexestopologicallyinformedlearning]. Polyatomic Complexes fill this gap by providing a physics-informed and topologically accurate representation that is general across chemical domains, modular, and compatible with standard ML workflows.
+
+Fundamentally, chemical representations should satisfy the following criteria [@langer2022representations].
+
+1. Invariances: Representations should be invariant under changes in atom indexing and those fundamental to physics. These invariances are rotation, reflection, and translations [@langer2022representations].
+2. Uniqueness: Essentially, two systems differing in properties should be mapped to different representations. Systems with equal representations that differ in property induce errors. Uniqueness is necessary and sufficient for reconstruction, up to invariant transformations, of an atomistic system from its representation [@langer2022representations].
+3. Continuity and Differentiability: Representations of atomistic systems should be continuous
+and differentiable with respect to atomic coordinates [@langer2022representations]. Moreover, discontinuities work against regularity assumptions of many machine learning models
+4. Generality: We say a representation of atomistic systems or molecules satisfies generality only if it can encode any atomistic system [@langer2022representations].
+5. Efficiency: Essentially, representing atomistic systems should be computationally efficient. Ideally, representations are linear in the number of elements in a molecule, `O(S)`, as is the case with molecular graphs [@KrennGuzikOriginal2020Selfies].
+6. Topological Accuracy: Representations are topologically accurate if they can correctly represent the geometry of any molecule or atomistic system. Correctness requires representing the shape, bond-angles, dihedrals/torsion, and electronic structure aspects accurately [@khorana2024polyatomiccomplexestopologicallyinformedlearning].
+6. Long-range interactions: The term long-range interactions refers to electrostatic potential energies
+between atoms and molecules, with mutual distances ranging from a few tens to a few hundreds Bohr
+radii [@LongRangeInteractions]. Representations should be able to account for long-range interactions.
+7. Chemical and Physical Informedness: A representation is well-informed by chemistry or physics if it contains information about the chemical properties of each individual atom.
+
+Polyatomic Complexes satisfy all these criteria [@khorana2024polyatomiccomplexestopologicallyinformedlearning].
+
+The software is helpful to researchers in cheminformatics, quantum chemistry, and materials science seeking a theoretically grounded approach to feature generation. Essentially Polyatomic Complexes are an alternative to the other representations common in cheminformatics which do not provide the same theoretical guarantees. Moreover with the advent of topologial deep learning and geometric deep learning such representations will become increasingly applicable [@zia2024topological]. A classic example of this is Cellular Neural Networks or Cellular Gaussian Processes which are compatible with Polyatomic Complexes[@khorana2024polyatomiccomplexestopologicallyinformedlearning] [@khorana2024cwcnncwan].
+
+# Code Contributions and Workflow
+
+The provided code enables researchers to develop effective models for a variety of tasks in cheminformatics and materials science. The code/repository contributions can be summarized as follows:
+
+1. An implementation of the core Polyatomic Complexes representation
+2. An easy to use, well documented API for experiments see the [official documentation](https://rahulkhorana.github.io/PolyatomicComplexes/).
+3. Easy integration with existing quantum chemistry libraries such as pyscf [@sun2020recent], and pymatgen [@ong2013python].
+4. Nicely packaged example datasets for baseline performance and benchmarking.
+
+Moreover the Polyatomic Complexes are stratified into different categories depending on usage and experimental need. This is touched upon in the Software Description.
+
+A standard workflow for molecular machine learning using Polyatomic Complexes would look as follows.
+
+![In this figure we see a standard molecular ML pipeline including Polyatomic Complexes.](figures/figure.png)
+
+The figure above shows the standard pipeline for many molecular machine-learning tasks. Initially, one receives a dataset consisting of both input and output columns. The input is usually a SMILES string [@weininger1988smiles] or material [@jain2020materials]. However, a wide variety of inputs are possible, such as molecular graphs, SEFLIES, and ECFP fingerprints [@manolopoulos1992molecular] [@rogers2010extended] [@krenn2022selfies]. In the second stage, these input columns containing the molecule are transformed into Polyatomic Complexes. This enables one to compute numerous features ranging from purely topological or geometric features such as the Hodge Laplacians or spectral k-chains to force matrices and dipole moments. A small subset of possible features are depicted in the figure. The third stage involves choosing a machine learning model and deciding which inputs to provide to it. One can develop a multimodal model that receives any number of features. To illustrate, a model can receive the topological structure encapsulated by the Hodge laplacians as input and the forces, electrostatics, and eigenvalues of the Kohn-Sham matrix. Upon deciding on an architecture and features that suit the particular task, one trains their model and evaluates it.
 
 # Software Description
 
-Polyatomic Complexes construct atom-level representations using CW-complexes to model electrons, protons, and neutrons. 
-These are then assembled into higher-dimensional molecular complexes using gluing maps. 
-The result is a representation satisfying the following properties:
+Our API is structured as follows:
 
-- Invariance under changes in atom indexing, and those fundamental to physics (rotation, reflection, translations)
-- Continuity and Differentiability with respect to atomic positions
-- Topological accuracy up to electronic structure
-- Generalizability/Generality, in essence, the representation can encode any atomistic system
-- Well informed by physics and chemistry, in essence, they describe the geometry of individual atoms, encode radial functions efficiently, and can consider long-range interactions
+1. PolyatomicGeometrySMILE: an interface for converting SMILES to polytomic complexes.
+2. AbstractComplex: The base class and general purpose option.
+3. ForceComplex: inherits from AbstractComplex and leverages methods from chemistry to provide detailed intermolecular force information.
+4. QuantumComplex: inherits from AbstractComplex and leverages the B3LYP functional and DFT to provide highly accurate chemical information.
+5. QuantumWavesComplex: inherits from QuantumComplex and provides long-range interactions and information about quantum wavefunctions.
+6. Datasets: The general datasets API currently supports the ESOL, photoswitches, FreeSolv, and Lipophilicity datasets.
 
-The software is modular, extensible, and written in Python. 
-It supports input from standard molecular formats and returns representations and features suitable for use with ML libraries.
+These can be leveraged for a wide variety of molecular machine-learning experiments. The current API can be applied to small-molecule drug discovery, prediction of biochemical properties, molecular characterization, similarity-searching, and structure-activity modeling.
+
+The software is modular, extensible, and written in Python. It supports input from standard molecular formats and returns representations and features suitable for use with ML libraries.
 
 # Installation
 
@@ -73,7 +107,6 @@ spec_chains = abstract_mol.get_spectral_k_chains()
 
 # Acknowledgements
 
-This work builds on foundational insights in topological data analysis, computational chemistry, and equivariant machine learning.
-We would like to acknowledge Dr. Jin Qian and Dr. Marcus Noack for their support and mentorship during the genesis of this project.
+This work builds on foundational insights in topological data analysis, computational chemistry, and equivariant machine learning. We would like to acknowledge Dr. Jin Qian, Dr. Marcus Noack, and others in the Chemical Sciences division at Lawrence Berkeley National Laboratory for their support, suggestions, and mentorship during the genesis of this project.
 
 # References
