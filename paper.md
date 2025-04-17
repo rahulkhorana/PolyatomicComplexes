@@ -35,10 +35,10 @@ and differentiable with respect to atomic coordinates [@langer2022representation
 4. Generality: We say a representation of atomistic systems or molecules satisfies generality only if it can encode any atomistic system [@langer2022representations].
 5. Efficiency: Essentially, representing atomistic systems should be computationally efficient. Ideally, representations are linear in the number of elements in a molecule, `O(S)`, as is the case with molecular graphs [@KrennGuzikOriginal2020Selfies].
 6. Topological Accuracy: Representations are topologically accurate if they can correctly represent the geometry of any molecule or atomistic system. Correctness requires representing the shape, bond-angles, dihedrals/torsion, and electronic structure aspects accurately [@khorana2024polyatomiccomplexestopologicallyinformedlearning].
-6. Long-range interactions: The term long-range interactions refers to electrostatic potential energies
+7. Long-range interactions: The term long-range interactions refers to electrostatic potential energies
 between atoms and molecules, with mutual distances ranging from a few tens to a few hundreds Bohr
 radii [@LongRangeInteractions]. Representations should be able to account for long-range interactions.
-7. Chemical and Physical Informedness: A representation is well-informed by chemistry or physics if it contains information about the chemical properties of each individual atom.
+8. Chemical and Physical Informedness: A representation is well-informed by chemistry or physics if it contains information about the chemical properties of each individual atom.
 
 Polyatomic Complexes satisfy all these criteria [@khorana2024polyatomiccomplexestopologicallyinformedlearning].
 
@@ -57,7 +57,7 @@ Moreover with the advent of topological deep learning and geometric deep learnin
 The provided code enables researchers to develop effective models for a variety of tasks in cheminformatics and materials science. The code/repository contributions can be summarized as follows:
 
 1. An implementation of the core Polyatomic Complexes representation
-2. An easy to use, well documented API for experiments see the [official documentation](https://rahulkhorana.github.io/PolyatomicComplexes/).
+2. An easy to use, well documented API for experiments, see the [official documentation](https://rahulkhorana.github.io/PolyatomicComplexes/).
 3. Easy integration with existing quantum chemistry libraries such as pyscf [@sun2020recent], and pymatgen [@ong2013python].
 4. Nicely packaged example datasets for baseline performance and benchmarking.
 
