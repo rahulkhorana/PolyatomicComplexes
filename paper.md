@@ -42,7 +42,15 @@ radii [@LongRangeInteractions]. Representations should be able to account for lo
 
 Polyatomic Complexes satisfy all these criteria [@khorana2024polyatomiccomplexestopologicallyinformedlearning].
 
-The software is helpful to researchers in cheminformatics, quantum chemistry, and materials science seeking a theoretically grounded approach to feature generation. Essentially Polyatomic Complexes are an alternative to the other representations common in cheminformatics which do not provide the same theoretical guarantees. Moreover with the advent of topologial deep learning and geometric deep learning such representations will become increasingly applicable [@zia2024topological]. A classic example of this is Cellular Neural Networks or Cellular Gaussian Processes which are compatible with Polyatomic Complexes[@khorana2024polyatomiccomplexestopologicallyinformedlearning] [@khorana2024cwcnncwan].
+The software is helpful to researchers in cheminformatics, quantum chemistry, and materials science seeking a theoretically grounded approach to feature generation. Essentially Polyatomic Complexes are an alternative to the other representations common in cheminformatics which do not provide the same theoretical guarantees. 
+
+While widely used, current molecular representations—such as SMILES, SELFIES, molecular graphs, and ECFP fingerprints—often fail to incorporate physically meaningful topological and electronic structure information [@khorana2024polyatomiccomplexestopologicallyinformedlearning]. These representations, although computationally efficient, are not designed to satisfy key scientific constraints such as topological accuracy, long-range interactions, and differentiability with respect to atomic coordinates [@langer2022representations].
+
+Recent advancements in topological deep learning and equivariant models have emphasized the need for representations that are both mathematically grounded and physically informed. However, no existing framework provides a unified, modular system that can seamlessly encode atomic, geometric, and quantum information for use in machine learning tasks.
+
+Polyatomic Complexes address this gap by introducing a general-purpose, extensible, and topologically rigorous representation that integrates smoothly with modern ML pipelines. This fills a critical unmet need in the intersection of chemistry, materials science, and machine learning.
+
+Moreover with the advent of topologial deep learning and geometric deep learning such representations will become increasingly applicable [@zia2024topological]. A classic example of this is Cellular Neural Networks [@khorana2024cwcnncwan] or Cellular Gaussian Processes [@alain2024gaussian] which are compatible with Polyatomic Complexes[@khorana2024polyatomiccomplexestopologicallyinformedlearning].
 
 # Code Contributions and Workflow
 
