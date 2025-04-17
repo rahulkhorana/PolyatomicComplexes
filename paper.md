@@ -50,7 +50,7 @@ Recent advancements in topological deep learning and equivariant models have emp
 
 Polyatomic Complexes address this gap by introducing a general-purpose, extensible, and topologically rigorous representation that integrates smoothly with modern ML pipelines. This fills a critical unmet need in the intersection of chemistry, materials science, and machine learning.
 
-Moreover with the advent of topologial deep learning and geometric deep learning such representations will become increasingly applicable [@zia2024topological]. A classic example of this is Cellular Neural Networks [@khorana2024cwcnncwan] or Cellular Gaussian Processes [@alain2024gaussian] which are compatible with Polyatomic Complexes[@khorana2024polyatomiccomplexestopologicallyinformedlearning].
+Moreover with the advent of topologial deep learning and geometric deep learning such representations will become increasingly applicable [@zia2024topological]. A classic example of this is Cellular Neural Networks [@khorana2024cwcnncwan] or Cellular Gaussian Processes [@alain2024gaussian] which are compatible with Polyatomic Complexes [@khorana2024polyatomiccomplexestopologicallyinformedlearning].
 
 # Code Contributions and Workflow
 
