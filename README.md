@@ -83,6 +83,16 @@ git lfs pull
 ## 📜 License
 **This project is licensed under the [MIT License](https://github.com/rahulkhorana/PolyatomicComplexes/blob/master/LICENSE).**
 
+## Community
+
+We use [GitHub Discussions](https://github.com/rahulkhorana/PolyatomicComplexes/discussions) for:
+
+- 💬 Asking questions or requesting help
+- 🐞 Reporting bugs or issues
+- 💡 Suggesting new features or improvements
+
+Please feel free to start a discussion if you're interested in contributing!
+
 
 ## 🔬 Reference
 ```
