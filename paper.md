@@ -20,7 +20,6 @@ bibliography: paper.bib
 # Summary
 
 Developing robust representations of chemical structures that enable models to learn topological inductive biases is challenging. Polyatomic complexes are a novel learning representation for atomistic systems that addresses this challenge. The representation satisfies numerous structural, geometric, efficiency, and generalizability constraints.
-At a high level, the representation is formed by systematically representing electrons, protons, and neutrons as an interconnected topological structure, namely an atomic complex. The atomic complexes are then composed to form molecular-level representations termed Polyatomic Complexes. The representation is suitable for property prediction and similarity-based screening tasks.
 
 # Statement of Need
 
@@ -45,8 +44,6 @@ Polyatomic Complexes satisfy all these criteria [@khorana2024polyatomiccomplexes
 The software is helpful to researchers in cheminformatics, quantum chemistry, and materials science seeking a theoretically grounded approach to feature generation. Essentially Polyatomic Complexes are an alternative to the other representations common in cheminformatics which do not provide the same theoretical guarantees. 
 
 While widely used, current molecular representations—such as SMILES, SELFIES, molecular graphs, and ECFP fingerprints—often fail to incorporate physically meaningful topological and electronic structure information [@khorana2024polyatomiccomplexestopologicallyinformedlearning] [@manolopoulos1992molecular] [@rogers2010extended] [@krenn2022selfies]. These representations, although computationally efficient, are not designed to satisfy key scientific constraints such as topological accuracy, long-range interactions, and differentiability with respect to atomic coordinates [@langer2022representations] [@BhadwalGenSMILES2023] [@le2020neuraldecipher].
-
-Recent advancements in topological deep learning and equivariant models have emphasized the need for representations that are both mathematically grounded and physically informed. However, no existing framework provides a unified, modular system that can seamlessly encode atomic, geometric, and quantum information for use in machine learning tasks.
 
 Polyatomic Complexes address this gap by introducing a general-purpose, extensible, and topologically rigorous representation that integrates smoothly with modern ML pipelines. This fills a critical unmet need in the intersection of chemistry, materials science, and machine learning.
 
