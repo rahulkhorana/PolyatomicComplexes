@@ -45,9 +45,9 @@ The software is helpful to researchers in cheminformatics, quantum chemistry, an
 
 While widely used, current molecular representations—such as SMILES, SELFIES, molecular graphs, and ECFP fingerprints—often fail to incorporate physically meaningful topological and electronic structure information [@khorana2024polyatomiccomplexestopologicallyinformedlearning] [@manolopoulos1992molecular] [@rogers2010extended] [@krenn2022selfies]. These representations, although computationally efficient, are not designed to satisfy key scientific constraints such as topological accuracy, long-range interactions, and differentiability with respect to atomic coordinates [@langer2022representations] [@BhadwalGenSMILES2023] [@le2020neuraldecipher].
 
-Polyatomic Complexes address this gap by introducing a general-purpose, extensible, and topologically rigorous representation that integrates smoothly with modern ML pipelines. This fills a critical unmet need in the intersection of chemistry, materials science, and machine learning.
+Polyatomic Complexes address this gap by introducing a general-purpose, and topologically informed representation that integrates smoothly with modern ML pipelines. This fills a critical unmet need in the intersection of chemistry, materials science, and machine learning.
 
-Moreover with the advent of topological deep learning and geometric deep learning such representations will become increasingly applicable [@zia2024topological]. A classic example of this is Cellular Neural Networks [@khorana2024cwcnncwan] or Cellular Gaussian Processes [@alain2024gaussian] which are compatible with Polyatomic Complexes [@khorana2024polyatomiccomplexestopologicallyinformedlearning].
+Moreover with the advent of topological deep learning such representations will become increasingly applicable [@zia2024topological]. A classic example of this is Cellular Neural Networks [@khorana2024cwcnncwan] or Cellular Gaussian Processes [@alain2024gaussian] which are compatible with Polyatomic Complexes [@khorana2024polyatomiccomplexestopologicallyinformedlearning].
 
 # Code Contributions and Workflow
 
@@ -56,7 +56,7 @@ The provided code enables researchers to develop effective models for a variety 
 1. An implementation of the core Polyatomic Complexes representation
 2. An easy to use, well documented API for experiments, see the [official documentation](https://rahulkhorana.github.io/PolyatomicComplexes/).
 3. Easy integration with existing quantum chemistry libraries such as pyscf [@sun2020recent], and pymatgen [@ong2013python].
-4. Nicely packaged example datasets for baseline performance and benchmarking.
+4. Well packaged example datasets for baseline performance and benchmarking.
 
 Moreover the Polyatomic Complexes are stratified into different categories depending on usage and experimental need. This is touched upon in the Software Description.
 
@@ -64,7 +64,7 @@ A standard workflow for molecular machine learning using Polyatomic Complexes wo
 
 ![In this figure we see a standard molecular ML pipeline including Polyatomic Complexes.](figures/figure.png)
 
-The figure above shows the standard pipeline for many molecular machine-learning tasks. Initially, one receives a dataset consisting of both input and output columns. The input is usually a SMILES string [@weininger1988smiles] or material [@jain2020materials]. However, a wide variety of inputs are possible, such as molecular graphs, SEFLIES, and ECFP fingerprints [@manolopoulos1992molecular] [@rogers2010extended] [@krenn2022selfies]. In the second stage, these input columns containing the molecule are transformed into Polyatomic Complexes. This enables one to compute numerous features ranging from purely topological or geometric features such as the Hodge Laplacians or spectral k-chains to force matrices and dipole moments. A small subset of possible features are depicted in the figure. The third stage involves choosing a machine learning model and deciding which inputs to provide to it. One can develop a multimodal model that receives any number of features. To illustrate, a model can receive the topological structure encapsulated by the Hodge laplacians as input and the forces, electrostatics, and eigenvalues of the Kohn-Sham matrix. Upon deciding on an architecture and features that suit the particular task, one trains their model and evaluates it.
+The figure above shows the standard pipeline for many molecular machine-learning tasks. Initially, one receives a dataset consisting of both input and output columns. The input is usually a SMILES string [@weininger1988smiles] or material [@jain2020materials]. However, a wide variety of inputs are possible, such as molecular graphs, SEFLIES, and ECFP fingerprints [@manolopoulos1992molecular] [@rogers2010extended] [@krenn2022selfies]. In the second stage, these input columns containing the molecule are transformed into Polyatomic Complexes. This enables one to compute numerous features ranging from purely topological or geometric features such as the Hodge Laplacians or spectral k-chains to force matrices and dipole moments. The third stage involves choosing a machine learning model and deciding which inputs to provide to it. Upon deciding on an architecture and features that suit the particular task, one trains their model and evaluates it.
 
 # Software Description
 
@@ -76,8 +76,6 @@ Our API is structured as follows:
 4. QuantumComplex: inherits from AbstractComplex and leverages the B3LYP functional and DFT to provide highly accurate chemical information.
 5. QuantumWavesComplex: inherits from QuantumComplex and provides long-range interactions and information about quantum wavefunctions.
 6. Datasets: The general datasets API currently supports the ESOL, photoswitches, FreeSolv, and Lipophilicity datasets.
-
-These can be leveraged for a wide variety of molecular machine-learning experiments. The current API can be applied to small-molecule drug discovery, prediction of biochemical properties, molecular characterization, similarity-searching, and structure-activity modeling.
 
 The software is modular, extensible, and written in Python. It supports input from standard molecular formats and returns representations and features suitable for use with ML libraries.
 
@@ -96,6 +94,6 @@ Benchmark experiments and performance evaluations comparing Polyatomic Complexes
 
 # Acknowledgements
 
-This work builds on foundational insights in topological data analysis, computational chemistry, and equivariant machine learning. We would like to acknowledge Dr. Jin Qian, Dr. Marcus Noack, and others in the Chemical Sciences division at Lawrence Berkeley National Laboratory for their support, suggestions, and mentorship during the genesis of this project.
+We would like to acknowledge Dr. Jin Qian, Dr. Marcus Noack, and others in the Chemical Sciences division at Lawrence Berkeley National Laboratory for their support, suggestions, and mentorship during the genesis of this project.
 
 # References
