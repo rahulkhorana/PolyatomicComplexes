@@ -9,7 +9,13 @@ key = jax.random.PRNGKey(seed)
 
 
 class Particle:
-    def __init__(self, dim: int, num_pts: int = 1, cutoff_multiplier: float = 1.0, label: str = "particle"):
+    def __init__(
+        self,
+        dim: int,
+        num_pts: int = 1,
+        cutoff_multiplier: float = 1.0,
+        label: str = "particle",
+    ):
         self.dim = dim
         assert self.dim > 0
         self.num_pts = num_pts
@@ -37,7 +43,7 @@ class Particle:
 class Proton(Particle):
     def __init__(self, dim: int, num_pts: int = 1):
         super().__init__(dim, num_pts, cutoff_multiplier=1.0, label="proton")
-    
+
     def build_proton(self) -> Tuple[np.ndarray]:
         self.pd = self.build()
         return self.pd
@@ -46,7 +52,7 @@ class Proton(Particle):
 class Neutron(Particle):
     def __init__(self, dim: int, num_pts: int = 1):
         super().__init__(dim, num_pts, cutoff_multiplier=0.8, label="neutron")
-    
+
     def build_neutron(self) -> Tuple[np.ndarray]:
         self.nd = self.build()
         return self.nd
