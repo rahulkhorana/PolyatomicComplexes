@@ -8,6 +8,50 @@ fm = np.float64(1e-15)
 key = jax.random.PRNGKey(seed)
 
 
+class Particle:
+    def __init__(self, dim: int, num_pts: int = 1, cutoff_multiplier: float = 1.0, label: str = "particle"):
+        self.dim = dim
+        assert self.dim > 0
+        self.num_pts = num_pts
+        self.r = np.random.randint(0, 100)
+        self.points = jax.random.normal(key * self.r, shape=(dim, num_pts))
+        self.d = 1 / dim
+        self.cutoff = cutoff_multiplier * fm
+        self._label = label
+        self.data = []
+
+    def build(self) -> Tuple[np.ndarray]:
+        for i in range(self.num_pts):
+            v = self.points[:, i]
+            length = jnp.linalg.norm(v)
+            if length >= self.cutoff:
+                r = np.random.rand() ** self.d
+                v = jnp.multiply(v, r * self.cutoff)
+            self.data.append(v)
+
+        self.data = np.unique(self.data, axis=0)
+        assert len(self.data) == self.num_pts
+        return tuple([self.data])
+
+
+class Proton(Particle):
+    def __init__(self, dim: int, num_pts: int = 1):
+        super().__init__(dim, num_pts, cutoff_multiplier=1.0, label="proton")
+    
+    def build_proton(self) -> Tuple[np.ndarray]:
+        self.pd = self.build()
+        return self.pd
+
+
+class Neutron(Particle):
+    def __init__(self, dim: int, num_pts: int = 1):
+        super().__init__(dim, num_pts, cutoff_multiplier=0.8, label="neutron")
+    
+    def build_neutron(self) -> Tuple[np.ndarray]:
+        self.nd = self.build()
+        return self.nd
+
+
 class Electron:
     def __init__(self, dim, num_pts=1):
         self.num_pts = num_pts
@@ -43,56 +87,6 @@ class Electron:
             )
             + randc
         )
-
-
-class Proton:
-    def __init__(self, dim, num_pts=1):
-        self.dim = dim
-        assert self.dim > 0
-        self.num_pts = num_pts
-        self.r = np.random.randint(0, 100)
-        self.points = jax.random.normal(
-            key * self.r, shape=(dim, num_pts)
-        )  # output shape determined by shape param ; key param is random seed state
-        self.d = 1 / (dim)
-        self.cutoff = 1 * fm  # hardcode cutoff
-        self.pd = []
-
-    def build_proton(self) -> Tuple[np.array]:
-        for i in range(self.num_pts):
-            v = self.points[:, i]
-            length = jnp.linalg.norm(v)
-            if length >= self.cutoff:
-                r = np.random.rand() ** self.d
-                v = jnp.multiply(v, r * self.cutoff)
-            self.pd.append(v)
-        self.pd = np.unique(self.pd, axis=0)
-        assert len(self.pd) == self.num_pts
-        return tuple([self.pd])
-
-
-class Neutron:
-    def __init__(self, dim, num_pts=1):
-        self.dim = dim
-        assert self.dim > 0
-        self.num_pts = num_pts
-        self.r = np.random.randint(0, 100)
-        self.points = jax.random.normal(key * self.r, shape=(dim, num_pts))
-        self.d = 1 / (dim)
-        self.cutoff = 0.8 * fm
-        self.nd = []
-
-    def build_neutron(self) -> Tuple[np.array]:
-        for i in range(self.num_pts):
-            v = self.points[:, i]
-            length = jnp.linalg.norm(v)
-            if length >= self.cutoff:
-                r = np.random.rand() ** self.d
-                v = jnp.multiply(v, r * self.cutoff)
-            self.nd.append(v)
-        self.nd = np.unique(self.nd, axis=0)
-        assert len(self.nd) == self.num_pts
-        return tuple([self.nd])
 
 
 if __name__ == "__main__":
