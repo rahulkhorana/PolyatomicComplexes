@@ -11,7 +11,6 @@
   </a>
   <img src="https://img.shields.io/pypi/v/polyatomic-complexes?style=plastic&logo=%233775A9&logoSize=auto&labelColor=%233775A9&color=%23e1ad01&link=https%3A%2F%2Fpypi.org%2Fproject%2Fpolyatomic-complexes%2F0.0.8%2F" alt="PyPI Version">
   <img src="https://img.shields.io/pypi/format/polyatomic-complexes" alt="PyPI Format">
-  <img src="https://img.shields.io/pypi/dm/polyatomic-complexes" alt="PyPI Downloads">
   <img src="https://img.shields.io/pepy/dt/polyatomic-complexes" alt="Total Downloads">
   <a href="https://socket.dev/pypi/package/polyatomic-complexes/overview/1.0.7/tar-gz">
     <img src="https://socket.dev/api/badge/pypi/package/polyatomic-complexes/1.0.7?artifact_id=tar-gz" alt="Socket Badge">
