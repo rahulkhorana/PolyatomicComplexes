@@ -8,7 +8,7 @@ All credits go to the original authors. We cite them in our manuscript.
 
 import time
 import torch
-from typing import Tuple
+from typing import Tuple, List, Any, Callable
 
 # data specific
 import numpy as np
@@ -22,10 +22,9 @@ import warnings
 # sklearn specific
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
-from .metrics import CRPS
+from metrics import CRPS
 
 # gp specific
-
 from gpytorch.likelihoods import GaussianLikelihood
 from gpytorch.mlls import ExactMarginalLogLikelihood
 
@@ -57,10 +56,10 @@ def optimize_acqf_and_get_observation(acq_func, heldout_inputs, heldout_outputs)
 
     # Delete the selected input and value from the heldout set.
     heldout_inputs = torch.cat(
-        (heldout_inputs[:best_idx], heldout_inputs[best_idx + 1 :]), axis=0
+        (heldout_inputs[:best_idx], heldout_inputs[best_idx + 1 :]), axis=0  # type: ignore
     )
     heldout_outputs = torch.cat(
-        (heldout_outputs[:best_idx], heldout_outputs[best_idx + 1 :]), axis=0
+        (heldout_outputs[:best_idx], heldout_outputs[best_idx + 1 :]), axis=0  # type: ignore
     )
 
     return new_x, new_obj, heldout_inputs, heldout_outputs
@@ -74,10 +73,10 @@ def update_random_observations(best_random, heldout_inputs, heldout_outputs):
 
     # Delete the selected input and value from the heldout set.
     heldout_inputs = torch.cat(
-        (heldout_inputs[:index], heldout_inputs[index + 1 :]), axis=0
+        (heldout_inputs[:index], heldout_inputs[index + 1 :]), axis=0  # type: ignore
     )
     heldout_outputs = torch.cat(
-        (heldout_outputs[:index], heldout_outputs[index + 1 :]), axis=0
+        (heldout_outputs[:index], heldout_outputs[index + 1 :]), axis=0  # type: ignore
     )
 
     return best_random, heldout_inputs, heldout_outputs
@@ -192,17 +191,24 @@ def run_training_loop(
             else:
                 print(".", end="")
 
-    best_observed_all_ei.append(torch.hstack(best_observed_ei))
-    best_random_all.append(torch.hstack(best_random))
+    best_observed_all_ei.append(torch.hstack(best_observed_ei))  # type: ignore
+    best_random_all.append(torch.hstack(best_random))  # type: ignore
 
-    best_observed_all_ei.append(best_observed_ei)
-    best_random_all.append(best_random)
+    best_observed_all_ei.append(best_observed_ei)  # type: ignore
+    best_random_all.append(best_random)  # type: ignore
     return best_observed_all_ei, best_random_all
 
 
 def evaluate_model(
-    initialize_model, n_trials, n_iters, test_set_size, X, y, figure_path
-):
+    initialize_model: Callable,
+    n_trials: int,
+    n_iters: int,
+    test_set_size: float,
+    X: torch.Tensor,
+    y: torch.Tensor,
+    figure_path: str,
+    **kwargs,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, Any, Any, Any]:
     # initialise performance metric lists
     r2_list = []
     rmse_list = []
@@ -213,7 +219,6 @@ def evaluate_model(
     warnings.filterwarnings("ignore", category=RuntimeWarning)
 
     # We pre-allocate array for plotting confidence-error curves
-
     _, _, _, y_test = train_test_split(
         X, y, test_size=test_set_size
     )  # To get test set size
@@ -224,9 +229,7 @@ def evaluate_model(
     print("\nBeginning training loop...")
 
     for i in range(0, n_trials):
-
-        print(f"Starting trial {i}")
-
+        print(f"Starting trial {i+1}")
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=test_set_size, random_state=i
         )
@@ -237,7 +240,6 @@ def evaluate_model(
         assert isinstance(X_train, torch.Tensor) and isinstance(X_test, torch.Tensor)
         X_train, X_test = X_train.float(), X_test.float()
         # Convert numpy arrays to PyTorch tensors and flatten the label vectors
-        # print(f'types {type(X_train)}')
         y_train = torch.tensor(y_train.astype(np.float64)).flatten().float()
         y_test = torch.tensor(y_test.astype(np.float64)).flatten().float()
         assert (
@@ -249,24 +251,20 @@ def evaluate_model(
 
         likelihood = GaussianLikelihood()
         # initialise GP likelihood and model
-        model = initialize_model(X_train, y_train, likelihood)
+        model = initialize_model(X_train, y_train, likelihood, **kwargs)
 
         # Find optimal model hyperparameters
         # "Loss" for GPs - the marginal log likelihood
         likelihood = GaussianLikelihood()
         mll = ExactMarginalLogLikelihood(likelihood, model)
 
-        print("init done")
         # Use the BoTorch utility for fitting GPs in order to use the LBFGS-B optimiser (recommended)
         fit_gpytorch_mll(mll)
-
-        print("fitting done")
 
         # Get into evaluation (predictive posterior) mode
         model.eval()
         likelihood.eval()
 
-        print("eval:")
         # mean and variance GP prediction
         f_pred = model(X_test)
 
@@ -279,13 +277,10 @@ def evaluate_model(
         y_test = y_scaler.inverse_transform(y_test.detach().unsqueeze(dim=1))
 
         # Compute scores for confidence curve plotting.
-
         ranked_confidence_list = np.argsort(y_var.detach(), axis=0).flatten()
 
         for k in range(len(y_test)):
-
             # Construct the MAE error for each level of confidence
-
             conf = ranked_confidence_list[0 : k + 1]
             mae = mean_absolute_error(y_test[conf], y_pred[conf])
             mae_confidence_list[i, k] = mae
@@ -317,20 +312,14 @@ def evaluate_model(
     mae_list = np.array(mae_list)
     crps_list = np.array(crps_list)
     # Plot confidence-error curves
-
     # 1e-14 instead of 0 to for numerical reasons!
     confidence_percentiles = np.arange(1e-14, 100, 100 / len(y_test))
 
     # We plot the Mean-absolute error confidence-error curves
-
     mae_mean = np.mean(mae_confidence_list, axis=0)
-    mae_std = np.std(mae_confidence_list, axis=0)
-
     mae_mean = np.flip(mae_mean)
+    mae_std = np.std(mae_confidence_list, axis=0)
     mae_std = np.flip(mae_std)
-
-    # 1 sigma errorbars
-
     lower = mae_mean - mae_std
     upper = mae_mean + mae_std
 
@@ -339,7 +328,7 @@ def evaluate_model(
     plt.xlabel("Confidence Percentile")
     plt.ylabel("MAE (nm)")
     plt.ylim([0, np.max(upper) + 1])
-    plt.xlim([0, 100 * ((len(y_test) - 1) / len(y_test))])
+    plt.xlim([0, 100 * ((len(y_test) - 1) / len(y_test))])  # type: ignore
     plt.yticks(np.arange(0, np.max(upper) + 1, 5.0))
     plt.savefig(figure_path)
 
@@ -355,16 +344,15 @@ def evaluate_model(
 
 
 def evaluate_graph_model(
-    initialize_model,
-    X,
-    y,
-    test_set_size,
-    n_trials,
-    n_iters,
-    figure_path="",
-    kernel=WeisfeilerLehmanKernel,
-    **kernel_kwargs,
-) -> Tuple[np.ndarray, np.ndarray]:
+    initialize_model: Callable,
+    n_trials: int,
+    n_iters: int,
+    test_set_size: float,
+    X: List[Any],
+    y: torch.Tensor,
+    figure_path: str,
+    **kwargs,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, Any, Any, Any]:
     # Initialise performance metric lists
     r2_list = []
     rmse_list = []
@@ -379,7 +367,7 @@ def evaluate_graph_model(
     mae_confidence_list = np.zeros((n_trials, n_test))
 
     for i in range(n_trials):
-        print(f"Starting trial {i}")
+        print(f"Starting trial {i+1}")
         # Carry out the random split with the current random seed
         # and standardise the outputs
         X_train, X_test, y_train, y_test = train_test_split(
@@ -391,15 +379,16 @@ def evaluate_graph_model(
 
         # Convert graph-structured inputs to custom data class for
         # non-tensorial inputs and convert labels to PyTorch tensors
-        X_train = NonTensorialInputs(X_train)
-        X_test = NonTensorialInputs(X_test)
+        X_train_gauche = NonTensorialInputs(X_train)
+        X_test_gauche = NonTensorialInputs(X_test)
         y_train = torch.tensor(y_train).flatten().float()
         y_test = torch.tensor(y_test).flatten().float()
 
         # Initialise GP likelihood and model
         likelihood = GaussianLikelihood()
+        # The key fix is here: pass the dtype to initialize_model
         model = initialize_model(
-            X_train, y_train, likelihood, kernel, node_label="element"
+            X_train_gauche, y_train, likelihood, **kwargs, dtype=y_train.dtype
         )
         print("model initialization done")
         # Define the marginal log likelihood used to optimise the model hyperparameters
@@ -412,7 +401,7 @@ def evaluate_graph_model(
         # Get into evaluation (predictive posterior) mode and compute predictions
         model.eval()
         likelihood.eval()
-        f_pred = model(X_test)
+        f_pred = model(X_test_gauche)
         y_pred = f_pred.mean
         y_var = f_pred.variance
         print("eval done")
@@ -469,7 +458,7 @@ def evaluate_graph_model(
     # Plot the mean-absolute error/confidence-error curves
     # with 1 sigma errorbars
 
-    confidence_percentiles = np.arange(1e-14, 100, 100 / len(y_test))
+    confidence_percentiles = np.arange(1e-14, 100, 100 / len(y_test))  # type: ignore
 
     mae_mean = np.mean(mae_confidence_list, axis=0)
     mae_mean = np.flip(mae_mean)
@@ -483,9 +472,9 @@ def evaluate_graph_model(
     plt.xlabel("Confidence Percentile")
     plt.ylabel("MAE (nm)")
     plt.ylim([0, np.max(upper) + 1])
-    plt.xlim([0, 100 * ((len(y_test) - 1) / len(y_test))])
+    plt.xlim([0, 100 * ((len(y_test) - 1) / len(y_test))])  # type: ignore
     plt.yticks(np.arange(0, np.max(upper) + 1, 5.0))
-    plt.show()
+    plt.savefig(figure_path)
 
     return (
         r2_list,
@@ -495,4 +484,4 @@ def evaluate_graph_model(
         confidence_percentiles,
         mae_mean,
         mae_std,
-    )
+    )  # type: ignore

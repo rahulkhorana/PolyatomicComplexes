@@ -11,7 +11,7 @@ import torch
 
 
 class TanimotoKernel(Kernel):
-    is_stationary = False
+    is_stationary = False  # type: ignore
     has_lengthscale = False
 
     def __init__(self, **kwargs):
@@ -23,8 +23,8 @@ class TanimotoKernel(Kernel):
         if x1.ndim < 2 or x2.ndim < 2:
             raise ValueError("Tensors must have a batch dimension")
         dot_prod = torch.matmul(x1, torch.transpose(x2, -1, -2))
-        x1_norm = torch.sum(x1**2, dim=-1, keepdims=True)
-        x2_norm = torch.sum(x2**2, dim=-1, keepdims=True)
+        x1_norm = torch.sum(x1**2, dim=-1, keepdim=True)
+        x2_norm = torch.sum(x2**2, dim=-1, keepdim=True)
         tan_similarity = (dot_prod + eps) / (
             eps + x1_norm + torch.transpose(x2_norm, -1, -2) - dot_prod
         )
@@ -32,7 +32,7 @@ class TanimotoKernel(Kernel):
             0
         )  # zero out negative values for numerical stability
 
-    def forward(self, x1, x2, diag=False, **params):
+    def forward(self, x1, x2, diag=False, **params):  # type: ignore
         if diag:
             assert x1.size() == x2.size() and torch.equal(x1, x2)
             return torch.ones(
@@ -41,30 +41,8 @@ class TanimotoKernel(Kernel):
         else:
             return self.covar_dist(x1, x2, **params)
 
-    def covar_dist(self, x1, x2, last_dim_is_batch=False, **params):
+    def covar_dist(self, x1, x2, last_dim_is_batch=False, **params):  # type: ignore
         if last_dim_is_batch:
             x1 = x1.transpose(-1, -2).unsqueeze(-1)
             x2 = x2.transpose(-1, -2).unsqueeze(-1)
         return self.batch_tanimoto_sim(x1, x2)
-
-
-class WalkKernel(Kernel):
-    def __init__(self, **kwargs):
-        super(WalkKernel, self).__init__(**kwargs)
-
-    def batch_walk_sim(
-        self, x1: torch.Tensor, x2: torch.Tensor, eps: float = 1e-6
-    ) -> torch.Tensor:
-
-        return
-
-
-class GraphKernel(Kernel):
-    def __init__(self, **kwargs):
-        super(GraphKernel, self).__init__(**kwargs)
-
-    def batch_graph_sim(
-        self, x1: torch.Tensor, x2: torch.Tensor, eps: float = 1e-6
-    ) -> torch.Tensor:
-
-        return
