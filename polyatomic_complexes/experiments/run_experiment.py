@@ -10,7 +10,7 @@ EXPERIMENT_CONFIGS = {
         "experiment_type": "ESOL",
         "encoding": "stacked_complexes",
         "n_trials": 20,
-        "n_iters": 5,
+        "n_iters": 10,
         "holdout_set_size": 0.33,
         "target_cols": [
             "ESOL predicted log solubility in mols per litre",
