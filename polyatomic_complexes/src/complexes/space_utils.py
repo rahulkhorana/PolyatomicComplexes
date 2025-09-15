@@ -148,7 +148,8 @@ class geometricPolyatomicComplex:
             filtrations=filtrations,
         )
         with ProcessPoolExecutor(max_workers=num_workers) as executor:
-            trees = list(executor.map(process_partial, range(num_chunks - 1)))
+            bound = max(1, num_chunks)  # alt. num_chunks - 1
+            trees = list(executor.map(process_partial, range(bound)))
         simplex_tree = gd.SimplexTree()
         for tree in trees:
             for simplex, filtration in tree.get_simplices():
@@ -397,7 +398,8 @@ class geometricAtomicComplex:
             filtrations=filtrations,
         )
         with ThreadPoolExecutor(max_workers=num_workers) as executor:
-            trees = list(executor.map(process_partial, range(num_chunks - 1)))
+            bound = max(1, num_chunks)  # alt. num_chunks - 1
+            trees = list(executor.map(process_partial, range(bound)))
         simplex_tree = gd.SimplexTree()
         for tree in trees:
             for simplex, filtration in tree.get_simplices():

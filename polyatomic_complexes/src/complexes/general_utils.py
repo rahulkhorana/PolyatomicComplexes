@@ -47,7 +47,7 @@ class GeneralComplexUtils:
 
     def get_nsphere_and_limits(
         self, radius: np.float32, center: np.ndarray
-    ) -> Tuple[list, list]:
+    ) -> [list, list]:
         representation = NSphere(r=radius, center=center)
         nsphere = representation.approximate()
         boundary = representation.limits

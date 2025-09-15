@@ -109,6 +109,8 @@ class PolyAtomComplex:
             return None
 
         def dir_sum(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+            if len(a.shape) == 1 and len(b.shape) == 1:
+                return np.add(a, b)
             dsum = np.zeros(np.add(a.shape, b.shape))
             dsum[: a.shape[0], : a.shape[1]] = a
             dsum[a.shape[0] :, a.shape[1] :] = b
