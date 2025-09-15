@@ -34,6 +34,8 @@ src_dir = project_root
 if str(src_dir) not in sys.path:
     sys.path.insert(0, str(src_dir))
 
+print("Loading [polyatomic-complexes]")
+
 from toponetx import CombinatorialComplex
 from polyatomic_complexes.src.complexes.quantum_complex import QuantumComplex
 

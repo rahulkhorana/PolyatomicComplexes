@@ -13,6 +13,8 @@ src_dir = project_root
 if str(src_dir) not in sys.path:
     sys.path.insert(0, str(src_dir))
 
+print("Loading [polyatomic-complexes]")
+
 # src
 from polyatomic_complexes.src.complexes.abstract_complex import AbstractComplex
 

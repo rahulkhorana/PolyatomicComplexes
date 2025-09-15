@@ -15,6 +15,8 @@ src_dir = project_root
 if str(src_dir) not in sys.path:
     sys.path.insert(0, str(src_dir))
 
+print("Loading [polyatomic-complexes]")
+
 # pc utils
 from polyatomic_complexes.src.complexes.atomic_complex import AtomComplex
 from polyatomic_complexes.src.complexes.polyatomic_complex_cls import PolyatomicComplex
