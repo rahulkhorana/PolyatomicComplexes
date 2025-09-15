@@ -5,10 +5,9 @@
 The following functions can be used to load in the `ESOL`, `photoswitches`, `FreeSolv` and `Lipophilicity` datasets. 
 
 
-```py title="Datasets" linenums="1"
+```python title="Datasets" linenums="1"
 import pandas as pd
 import importlib.resources as pkg_resources
-from polyatomic_complexes.src.complexes import *
 
 def load_esol_data():
     data_path = pkg_resources.files('polyatomic_complexes.dataset.esol') / 'ESOL.csv'

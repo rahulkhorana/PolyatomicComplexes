@@ -31,7 +31,7 @@
 ## 🚀 Installation  
 
 ### **Using `pip`**
-1. Ensure you have python == 3.11.11 and set up a virtual environment.
+1. Ensure you have python >= 3.11.11 and set up a virtual environment.
 ```sh
 pip install virtualenv
 virtualenv .env --python=python3.11.11

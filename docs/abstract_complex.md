@@ -16,7 +16,38 @@
 - **`abstract_mol.k_chains_formal_sum()`** → Represents k-chains symbolically (as a formal sum).
 
 
-## Usage Example
+## Inheritance Example
+```python title="Inheritance" linenums="1"
+from polyatomic_complexes.src.complexes import PolyatomicGeometrySMILE
+from polyatomic_complexes.src.complexes.abstract_complex import AbstractComplex
+
+class YourComplex(AbstractComplex):
+    def __init__(self, smile, target_dimension, atoms, bonds):
+        super().__init__(smile, target_dimension, atoms, bonds)
+        self.smile = smile
+        self.dim = target_dimension
+        self.atoms = atoms
+        self.bnds = bonds
+        self.roc = self.rank_order_complex()
+        ... # add anything you like here
+    
+    def unpack_roc(self):
+        self._molecule, self._molecule_feat = self.roc["molecule"]
+        self._nucleus, self._nucleus_feat = self.roc["nuclear_structure"]
+        self._electrons, self._electron_feat = self.roc["electronic_structure"]
+        return
+
+    def electrostatics(self) -> np.ndarray:
+        # override/add at your will
+    
+    def compute_dispersion_energy(self) -> Optional[List]:
+        # override/add at your will
+    
+    def your_function_here(self) -> Any:
+        # add at your will
+```
+
+## Applied Example
 
 ```python title="Abstract Complex" linenums="1"
 from polyatomic_complexes.src.complexes import PolyatomicGeometrySMILE
