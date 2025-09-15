@@ -124,7 +124,7 @@ packaging==24.2
 palettable==3.3.3
 pandas==2.2.3
 pandocfilters==1.5.1
-parso==0.8.4
+parso==0.8.5
 periodictable==2.0.2
 pexpect==4.9.0
 pillow==11.1.0
