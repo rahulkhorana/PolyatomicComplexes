@@ -141,7 +141,7 @@ pybtex==0.24.0
 pycodestyle==2.12.1
 pycparser==2.22
 pydantic==2.10.6
-pydantic_core==2.27.2
+pydantic_core==2.39.0
 pyfiglet==1.0.2
 pyflakes==3.2.0
 Pygments==2.19.1
