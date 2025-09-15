@@ -24,7 +24,7 @@
 
 
 
-## 📖 **[Documentation](https://rahulkhorana.github.io/PolyatomicComplexes/)**
+##  **[Documentation](https://rahulkhorana.github.io/PolyatomicComplexes/)**
 
 
 
@@ -79,6 +79,22 @@ pip install -Ur requirements/requirements_mat.txt
 git lfs fetch --all
 git lfs pull
 ```
+
+## 🚀 Datasets
+All dataset csv's come from the original manuscripts as cited in the paper namely:
+1. ESOL:  DELANEY, J. S. Esol: Estimating aqueous solubility directly from molecular structure. Journal
+of Chemical Information and Computer Sciences 44, 3 (2004), 1000–1005. PMID: 15154768.
+2. FreeSolv: MOBLEY, D. L., AND GUTHRIE, J. P. Freesolv: a database of experimental and calculated
+hydration free energies, with input files. Journal of computer-aided molecular design 28 (2014),
+711–720.
+3. Lipophilicity:  GAULTON, A., BELLIS, L. J., BENTO, A. P., CHAMBERS, J., DAVIES, M., HERSEY, A.,
+LIGHT, Y., MCGLINCHEY, S., MICHALOVICH, D., AL-LAZIKANI, B., AND OVERINGTON,
+J. P. ChEMBL: a large-scale bioactivity database for drug discovery. Nucleic Acids Research
+40, D1 (09 2011), D1100–D1107.
+4. Photoswtiches: GRIFFITHS, R.-R., GREENFIELD, J. L., THAWANI, A. R., JAMASB, A. R., MOSS, H. B.,
+BOURACHED, A., JONES, P., MCCORKINDALE, W., ALDRICK, A. A., FUCHTER, M. J.,
+AND LEE, A. A. Data-driven discovery of molecular photoswitches with multioutput gaussian
+processes. Chem. Sci. 13 (2022), 13541–13551.
 
 
 ## 📜 License

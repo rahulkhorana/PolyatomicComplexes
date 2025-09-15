@@ -56,7 +56,7 @@ ALL_SMILES = smiles_esol + smiles_freesolv + smiles_lipo + smiles_photo
 ALL_SMILES = np.random.choice(a=ALL_SMILES, size=5, replace=False).tolist()
 
 large_cases = []
-for smile in ALL_SMILES:
+for smile in ALL_SMILES[:100]:
     for mode in modes:
         large_cases.append((smile, mode))
 

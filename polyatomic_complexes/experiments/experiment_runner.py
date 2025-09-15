@@ -19,15 +19,13 @@ from botorch.fit import fit_gpytorch_mll
 
 # gauche imports
 from gauche import SIGP, NonTensorialInputs
-from gauche.kernels.graph_kernels import (
-    GraphletSamplingKernel,
-)
+
+# deprecated: from gauche.kernels.graph_kernels import GraphletSamplingKernel
 
 # Imports from other files in the same directory (non-relative)
-from load_process_data import LoadDatasetForTask
-from gaussian_process import evaluate_model, evaluate_graph_model
-from kernels import TanimotoKernel
-from metrics import CRPS
+from .load_process_data import LoadDatasetForTask
+from .gaussian_process import evaluate_model, evaluate_graph_model
+from .kernels import TanimotoKernel
 
 
 # --- Reusable GP Model Definitions (Consolidated) ---
@@ -172,7 +170,7 @@ def run_experiment(
                 if encoding == "stacked_complexes"
                 else initialize_graph_gp
             )
-            eval_kwargs = {"kernel": GraphletSamplingKernel}
+            # deprecated: eval_kwargs = {"kernel": GraphletSamplingKernel}
         else:
             evaluate_func = evaluate_model
             initialize_func = initialize_model

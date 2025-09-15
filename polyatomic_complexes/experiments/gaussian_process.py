@@ -22,7 +22,7 @@ import warnings
 # sklearn specific
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
-from metrics import CRPS
+from .metrics import CRPS
 
 # gp specific
 from gpytorch.likelihoods import GaussianLikelihood
@@ -30,7 +30,8 @@ from gpytorch.mlls import ExactMarginalLogLikelihood
 
 from gauche.dataloader.data_utils import transform_data
 from gauche import NonTensorialInputs
-from gauche.kernels.graph_kernels import WeisfeilerLehmanKernel
+
+# deprecated: from gauche.kernels.graph_kernels import WeisfeilerLehmanKernel
 
 plt.switch_backend("Agg")
 

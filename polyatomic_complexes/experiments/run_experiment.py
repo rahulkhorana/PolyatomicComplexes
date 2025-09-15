@@ -3,7 +3,7 @@ import argparse
 import time
 from typing import Dict, List, Any
 from multiprocessing import Pool
-from experiment_runner import run_experiment
+from .experiment_runner import run_experiment
 
 EXPERIMENT_CONFIGS = {
     "esol": {
