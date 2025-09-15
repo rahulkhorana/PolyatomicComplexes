@@ -139,7 +139,7 @@ pymatgen==2025.1.9
 pyparsing==3.2.1
 pyro-api==0.1.2
 pyro-ppl==1.9.1
-pyscf==2.8.0
+pyscf==2.10.0
 pytest==8.3.4
 pytest-cov==6.0.0
 python-dateutil==2.9.0.post0
