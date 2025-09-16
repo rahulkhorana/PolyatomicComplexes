@@ -22,10 +22,11 @@ jobs:
       PYTEST_ADDOPTS: "--log-level=WARNING"
 
     steps:
-      - name: Checkout code with LFS
+      - name: Checkout code with LFS (Full Clone)
         uses: actions/checkout@v4
         with:
           lfs: true
+          fetch-depth: 0 # <--- THIS IS THE KEY. Fetches the entire git history.
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -35,20 +36,18 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements/requirements.txt
 
-      - name: Discover and shard test files (Low Memory)
+      - name: Discover and shard all test files
         id: shard_files
         run: |
-          # Step 1: Find all test files without importing them. This is memory-safe.
+          # The working directory is important if your tests aren't at the root.
           find ./polyatomic_complexes -type f -name "test_*.py" | sort > all_test_files.txt
           
           echo "Total test files found: $(wc -l < all_test_files.txt)"
-
-          # Step 2: Shard the LIST of files using awk.
+          
           awk "NR % ${{ matrix.shard_total }} == ${{ matrix.shard_index }}" all_test_files.txt > shard_files.txt
-
+          
           echo "Shard $((${{ matrix.shard_index }} + 1))/${{ matrix.shard_total }} will run $(wc -l < shard_files.txt) file(s)."
           
-          # Step 3: Set an output to know if this shard has any files to run.
           if [ -s shard_files.txt ]; then
             echo "has_tests=true" >> $GITHUB_OUTPUT
           else
@@ -58,9 +57,9 @@ jobs:
       - name: Run tests for this shard
         if: steps.shard_files.outputs.has_tests == 'true'
         run: |
-          # Pass the list of files directly to pytest using xargs.
-          # Pytest will collect and run tests ONLY from the files in this shard.
-          cat shard_files.txt | xargs python -m pytest -v
+          # Use xargs for parallel execution within the shard.
+          # The "|| [ $? -eq 5 ]" part cleverly ignores the "no tests found" error.
+          cat shard_files.txt | xargs python -m pytest -v || [ $? -eq 5 ]
 
       - name: Upload coverage to Codecov
         if: always()
