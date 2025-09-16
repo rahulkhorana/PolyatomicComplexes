@@ -26,7 +26,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           lfs: true
-          fetch-depth: 0 # This is correct and necessary.
+          fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -47,43 +47,30 @@ jobs:
             echo "has_tests=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: Run tests for this shard (one file at a time)
+      - name: Run tests with diagnostics
         if: steps.shard_files.outputs.has_tests == 'true'
         run: |
-          # This robust loop runs pytest on each file individually.
-          # It keeps memory usage low and handles files with no tests.
           while read -r test_file; do
-            echo -e "\n--- Running: $test_file ---\n"
-            pytest -v "$test_file"
+            echo "---"
+            echo "--- Running: $test_file (with a 30-minute timeout) ---"
+            echo "---"
+            
+            # This is the key: run pytest inside the 'timeout' command.
+            # -vv: extra verbose output.
+            # --durations=20: shows the 20 slowest tests if the run completes.
+            timeout 30m pytest -vv --durations=20 "$test_file"
             exit_code=$?
 
-            if [ $exit_code -eq 5 ]; then
-              # Exit code 5 means "no tests collected". This is not a failure.
+            if [ $exit_code -eq 124 ]; then
+              # Exit code 124 is from the 'timeout' command itself.
+              echo "!!! TIMEOUT: $test_file took longer than 30 minutes and was killed. !!!"
+              exit 124
+            elif [ $exit_code -eq 5 ]; then
+              # Exit code 5 is from pytest meaning "no tests collected".
               echo "--- No tests found in $test_file, continuing. ---"
             elif [ $exit_code -ne 0 ]; then
-              # Any other non-zero exit code is a real failure.
-              echo "!!! Failure in $test_file with exit code $exit_code !!!"
+              # Any other non-zero exit code is a real test failure.
+              echo "!!! FAILURE: Tests in $test_file failed with exit code $exit_code. !!!"
               exit $exit_code
             fi
           done < shard_files.txt
-
-      - name: Upload coverage to Codecov
-        if: always()
-        uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          flags: shard-${{ matrix.shard_index }}
-          fail_ci_if_error: false
-          verbose: true
-
-  codecov-finalize:
-    name: codecov finalize
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Finalize Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: false
-          verbose: true
