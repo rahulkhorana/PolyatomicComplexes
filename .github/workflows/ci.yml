@@ -2,76 +2,28 @@ name: ci
 
 on:
   push:
-    branches:
-      - main
-      - productionizing
+    branches: [main, productionizing]
   workflow_dispatch:
 
 jobs:
-  collect-nodeids:
-    name: Collect test nodeids
-    runs-on: ubuntu-latest
-    outputs:
-      total_tests: ${{ steps.count.outputs.total }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11.11'
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements/requirements.txt
-
-      - name: Collect test nodeids
-        run: |
-          touch all_nodeids.txt
-          find . -type f -name "test_*.py" | while read file; do
-            echo "Collecting from $file"
-            python -m pytest --collect-only -q "$file" | grep "::" >> all_nodeids.txt || true
-          done
-
-      - name: Count test cases
-        id: count
-        working-directory: ./polyatomic_complexes
-        run: |
-          TOTAL=$(wc -l < all_nodeids.txt)
-          echo "Total tests: $TOTAL"
-          echo "total=$TOTAL" >> "$GITHUB_OUTPUT"
-
-      - name: Upload nodeid list
-        uses: actions/upload-artifact@v4
-        with:
-          name: all-nodeids
-          path: polyatomic_complexes/all_nodeids.txt
-
   test:
     name: test (shard ${{ matrix.shard_index }}/${{ matrix.shard_total }})
-    needs: collect-nodeids
     runs-on: ubuntu-latest
+    timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
+        python-version: ['3.11.11']
         shard_total: [8]
         shard_index: [0,1,2,3,4,5,6,7]
 
     env:
       PYTHONOPTIMIZE: "0"
-      XLA_PYTHON_CLIENT_PREALLOCATE: "false"
       PYTEST_ADDOPTS: "--log-level=WARNING"
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11.11'
 
       - name: Install Git LFS
         run: |
@@ -79,7 +31,15 @@ jobs:
           sudo apt-get install -y git-lfs
           git lfs install
 
-      - name: Pull LFS files
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Verify Python version
+        run: python --version
+
+      - name: Pull LFS dataset
         run: |
           git lfs pull --include=polyatomic_complexes/dataset/**/*.csv
           git lfs pull --include=polyatomic_complexes/dataset/**/*.json
@@ -89,33 +49,44 @@ jobs:
         run: |
           pip install -r requirements/requirements.txt
 
-      - name: Download test nodeids
-        uses: actions/download-artifact@v4
-        with:
-          name: all-nodeids
-          path: ./polyatomic_complexes
+      - name: Collect static test nodeids (no imports, no OOM)
+        working-directory: ./polyatomic_complexes
+        run: |
+          echo "Generating static test list..."
+          find . -type f -name "test_*.py" | sort > all_test_files.txt
+
+          > all_nodeids.txt
+          while read file; do
+            while read -r line; do
+              if [[ $line =~ ^def\ (test_[a-zA-Z0-9_]+) ]]; then
+                test_name="${BASH_REMATCH[1]}"
+                echo "${file#./}::${test_name}" >> all_nodeids.txt
+              fi
+            done < "$file"
+          done < all_test_files.txt
+
+          echo "Total tests found:"
+          wc -l all_nodeids.txt
 
       - name: Shard test nodeids
         working-directory: ./polyatomic_complexes
         run: |
           TOTAL=${{ matrix.shard_total }}
           INDEX=${{ matrix.shard_index }}
-          echo "Total shards: $TOTAL, This shard: $INDEX"
 
-          mkdir -p shards
-          awk "NR % $TOTAL == $INDEX" all_nodeids.txt > shards/this_shard.txt
+          awk "NR % $TOTAL == $INDEX" all_nodeids.txt > shard.txt
 
-          echo "Test cases in this shard:"
-          cat shards/this_shard.txt || echo "(none)"
+          echo "Shard $INDEX/$TOTAL will run $(wc -l < shard.txt) test(s)."
+          cat shard.txt || echo "No tests assigned."
 
-      - name: Run tests
+      - name: Run this shard
         working-directory: ./polyatomic_complexes
         run: |
-          if [ -s shards/this_shard.txt ]; then
-            split -l 100 shards/this_shard.txt split_
-            for file in split_*; do
-              echo "== Running batch: $file =="
-              python -B -m pytest -v --maxfail=1 $(cat "$file") || exit 1
+          if [ -s shard.txt ]; then
+            split -l 100 shard.txt batch_
+            for f in batch_*; do
+              echo "Running batch $f:"
+              python -B -m pytest -v --maxfail=1 $(cat "$f") || exit 1
             done
           else
             echo "No tests to run in this shard."
