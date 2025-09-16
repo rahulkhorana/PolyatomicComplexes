@@ -7,7 +7,7 @@ on:
 
 jobs:
   test:
-    name: test (shard ${{ matrix.shard_index + 1 }}/${{ matrix.shard_total }})
+    name: test (shard ${{ matrix.shard_index }}/${{ matrix.shard_total }})
     runs-on: ubuntu-latest
     timeout-minutes: 90
     strategy:
