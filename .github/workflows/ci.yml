@@ -7,7 +7,7 @@ on:
 
 jobs:
   test:
-    name: test (shard ${{ matrix.shard_index }}/${{ matrix.shard_total }})
+    name: test (shard ${{ strategy.matrix.shard }}/${{ strategy.matrix.shard_total }})
     runs-on: ubuntu-latest
     timeout-minutes: 90
     strategy:
@@ -15,18 +15,16 @@ jobs:
       matrix:
         python-version: ['3.11']
         shard_total: [8]
-        shard_index: [0, 1, 2, 3, 4, 5, 6, 7]
-
-    env:
-      PYTHONOPTIMIZE: "0"
-      PYTEST_ADDOPTS: "--log-level=WARNING"
+        # Create a sequence from 1 to 8 for the shard index
+        shard: [1, 2, 3, 4, 5, 6, 7, 8]
 
     steps:
-      - name: Checkout code with LFS (Full Clone)
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
-          lfs: true
+          # A full clone is often required for accurate test discovery
           fetch-depth: 0
+          lfs: true
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -34,53 +32,26 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
-        run: pip install -r requirements/requirements.txt
-
-      - name: Discover and shard test files
-        id: shard_files
         run: |
-          find ./polyatomic_complexes -type f -name "test_*.py" | sort > all_test_files.txt
-          echo "Total test files found: $(wc -l < all_test_files.txt)"
-          awk "NR % ${{ matrix.shard_total }} == ${{ matrix.shard_index }}" all_test_files.txt > shard_files.txt
-          echo "Shard $((${{ matrix.shard_index }} + 1))/${{ matrix.shard_total }} will run $(wc -l < shard_files.txt) file(s)."
-          if [ -s shard_files.txt ]; then
-            echo "has_tests=true" >> $GITHUB_OUTPUT
-          fi
+          pip install -r requirements/requirements.txt
+          # Install the plugin that handles test splitting
+          pip install pytest-split
 
-      - name: Run tests with diagnostics
-        if: steps.shard_files.outputs.has_tests == 'true'
+      - name: Run test shard
         run: |
-          while read -r test_file; do
-            echo "---"
-            echo "--- Running: $test_file (with a 30-minute timeout) ---"
-            echo "---"
-            
-            # This is the key: run pytest inside the 'timeout' command.
-            # -vv: extra verbose output.
-            # --durations=20: shows the 20 slowest tests if the run completes.
-            timeout 30m pytest -vv --durations=20 "$test_file"
-            exit_code=$?
-
-            if [ $exit_code -eq 124 ]; then
-              # Exit code 124 is from the 'timeout' command itself.
-              echo "!!! TIMEOUT: $test_file took longer than 30 minutes and was killed. !!!"
-              exit 124
-            elif [ $exit_code -eq 5 ]; then
-              # Exit code 5 is from pytest meaning "no tests collected".
-              echo "--- No tests found in $test_file, continuing. ---"
-            elif [ $exit_code -ne 0 ]; then
-              # Any other non-zero exit code is a real test failure.
-              echo "!!! FAILURE: Tests in $test_file failed with exit code $exit_code. !!!"
-              exit $exit_code
-            fi
-          done < shard_files.txt
+          # pytest-split handles the collection and splitting automatically.
+          # Each shard runs its dedicated fraction of the tests.
+          # Add --cov flags if you are measuring coverage.
+          pytest \
+            --num-groups ${{ matrix.shard_total }} \
+            --group ${{ matrix.shard }}
 
       - name: Upload coverage to Codecov
         if: always()
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          flags: shard-${{ matrix.shard_index }}
+          flags: shard-${{ matrix.shard }}
           fail_ci_if_error: false
           verbose: true
 
