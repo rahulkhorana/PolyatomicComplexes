@@ -8,50 +8,21 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
-    name: test (shard ${{ matrix.shard_index }}/${{ matrix.shard_total }})
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 720
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest]
-        python-version: ['3.11.11']
-        shard_total: [8]
-        shard_index: [0,1,2,3,4,5,6,7]
-
-    env:
-      # DO NOT disable asserts!
-      PYTHONOPTIMIZE: "0"
-      XLA_PYTHON_CLIENT_PREALLOCATE: "false"
-      PYTEST_ADDOPTS: "--log-level=WARNING"
-
+  collect-nodeids:
+    name: Collect test nodeids
+    runs-on: ubuntu-latest
+    outputs:
+      total_tests: ${{ steps.count.outputs.total }}
     steps:
-      - name: Checkout repository content
+      - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Install Git LFS
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y git-lfs
-          git lfs install
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
-          cache: 'pip'
+          python-version: '3.11.11'
 
-      - name: Verify Python version
-        run: python --version
-
-      - name: Checkout LFS artifacts
-        run: |
-          git lfs pull --include=polyatomic_complexes/dataset/**/*.csv
-          git lfs pull --include=polyatomic_complexes/dataset/**/*.json
-          git lfs pull --include=polyatomic_complexes/dataset/**/atom_lookup.pkl
-
-      - name: Install Python packages
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements/requirements.txt
@@ -60,25 +31,94 @@ jobs:
         working-directory: ./polyatomic_complexes
         run: |
           python -m pytest --collect-only -q | grep "::" > all_nodeids.txt
-          TOTAL=${{ matrix.shard_total }}
-          INDEX=${{ matrix.shard_index }}
-          awk "NR % $TOTAL == $INDEX" all_nodeids.txt > this_shard.txt
-          echo "Shard $INDEX/$TOTAL will run $(wc -l < this_shard.txt) test cases"
 
-      - name: Run tests in shard
+      - name: Count test cases
+        id: count
         working-directory: ./polyatomic_complexes
         run: |
-          if [ -s this_shard.txt ]; then
-            split -l 100 this_shard.txt shard_
-            for f in shard_*; do
-              echo "=== Running batch $f ==="
-              python -B -m pytest -v --maxfail=1 $(cat "$f") || exit 1
+          TOTAL=$(wc -l < all_nodeids.txt)
+          echo "Total tests: $TOTAL"
+          echo "total=$TOTAL" >> "$GITHUB_OUTPUT"
+
+      - name: Upload nodeid list
+        uses: actions/upload-artifact@v4
+        with:
+          name: all-nodeids
+          path: polyatomic_complexes/all_nodeids.txt
+
+  test:
+    name: test (shard ${{ matrix.shard_index }}/${{ matrix.shard_total }})
+    needs: collect-nodeids
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard_total: [8]
+        shard_index: [0,1,2,3,4,5,6,7]
+
+    env:
+      PYTHONOPTIMIZE: "0"
+      XLA_PYTHON_CLIENT_PREALLOCATE: "false"
+      PYTEST_ADDOPTS: "--log-level=WARNING"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.11'
+
+      - name: Install Git LFS
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git-lfs
+          git lfs install
+
+      - name: Pull LFS files
+        run: |
+          git lfs pull --include=polyatomic_complexes/dataset/**/*.csv
+          git lfs pull --include=polyatomic_complexes/dataset/**/*.json
+          git lfs pull --include=polyatomic_complexes/dataset/**/atom_lookup.pkl
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements/requirements.txt
+
+      - name: Download test nodeids
+        uses: actions/download-artifact@v4
+        with:
+          name: all-nodeids
+          path: ./polyatomic_complexes
+
+      - name: Shard test nodeids
+        working-directory: ./polyatomic_complexes
+        run: |
+          TOTAL=${{ matrix.shard_total }}
+          INDEX=${{ matrix.shard_index }}
+          echo "Total shards: $TOTAL, This shard: $INDEX"
+
+          mkdir -p shards
+          awk "NR % $TOTAL == $INDEX" all_nodeids.txt > shards/this_shard.txt
+
+          echo "Test cases in this shard:"
+          cat shards/this_shard.txt || echo "(none)"
+
+      - name: Run tests
+        working-directory: ./polyatomic_complexes
+        run: |
+          if [ -s shards/this_shard.txt ]; then
+            split -l 100 shards/this_shard.txt split_
+            for file in split_*; do
+              echo "== Running batch: $file =="
+              python -B -m pytest -v --maxfail=1 $(cat "$file") || exit 1
             done
           else
-            echo "No tests in this shard."
+            echo "No tests to run in this shard."
           fi
 
-      - name: Upload coverage reports to Codecov
+      - name: Upload coverage to Codecov
         if: always()
         uses: codecov/codecov-action@v5
         with:
