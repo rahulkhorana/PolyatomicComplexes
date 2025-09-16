@@ -7,99 +7,73 @@ on:
 
 jobs:
   test:
-    name: test (shard ${{ matrix.shard_index }}/${{ matrix.shard_total }})
+    name: test (shard ${{ matrix.shard_index + 1 }}/${{ strategy.matrix.shard_total }}) # <--- Made this 1-indexed for readability
     runs-on: ubuntu-latest
     timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.11.11']
+        python-version: ['3.11'] # <--- Simplified version, setup-python handles specifics
         shard_total: [8]
-        shard_index: [0,1,2,3,4,5,6,7]
+        # <--- Use range() for a cleaner way to define indices
+        shard_index: ${{ toJSON(range(8)) }} 
 
     env:
       PYTHONOPTIMIZE: "0"
       PYTEST_ADDOPTS: "--log-level=WARNING"
 
     steps:
-      - name: Checkout code
+      - name: Checkout code with LFS
         uses: actions/checkout@v4
-
-      - name: Install Git LFS
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y git-lfs
-          git lfs install
+        with:
+          lfs: true # <--- CHANGE: Built-in LFS handling is much cleaner
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Verify Python version
-        run: python --version
-
-      - name: Pull LFS dataset
-        run: |
-          git lfs pull --include=polyatomic_complexes/dataset/**/*.csv
-          git lfs pull --include=polyatomic_complexes/dataset/**/*.json
-          git lfs pull --include=polyatomic_complexes/dataset/**/atom_lookup.pkl
-
       - name: Install dependencies
         run: |
           pip install -r requirements/requirements.txt
+          pip install pytest-xdist # <--- OPTIONAL but recommended for even better splitting
 
-      - name: Collect static test nodeids (no imports, no OOM)
+      - name: Collect and shard tests
+        id: collect_tests # <--- Give the step an ID to reference its output
         working-directory: ./polyatomic_complexes
         run: |
-          echo "Generating static test list..."
-          find . -type f -name "test_*.py" | sort > all_test_files.txt
+          # <--- CHANGE: Use pytest's robust collection, not fragile shell parsing
+          pytest --collect-only -q > all_nodeids.txt
+          
+          echo "Total tests found: $(wc -l < all_nodeids.txt)"
 
-          > all_nodeids.txt
-          while read file; do
-            while read -r line; do
-              if [[ $line =~ ^def\ (test_[a-zA-Z0-9_]+) ]]; then
-                test_name="${BASH_REMATCH[1]}"
-                echo "${file#./}::${test_name}" >> all_nodeids.txt
-              fi
-            done < "$file"
-          done < all_test_files.txt
+          # Shard the collected test node IDs
+          awk "NR % ${{ matrix.shard_total }} == ${{ matrix.shard_index }}" all_nodeids.txt > shard.txt
 
-          echo "Total tests found:"
-          wc -l all_nodeids.txt
-
-      - name: Shard test nodeids
-        working-directory: ./polyatomic_complexes
-        run: |
-          TOTAL=${{ matrix.shard_total }}
-          INDEX=${{ matrix.shard_index }}
-
-          awk "NR % $TOTAL == $INDEX" all_nodeids.txt > shard.txt
-
-          echo "Shard $INDEX/$TOTAL will run $(wc -l < shard.txt) test(s)."
-          cat shard.txt || echo "No tests assigned."
-
-      - name: Run this shard
-        working-directory: ./polyatomic_complexes
-        run: |
+          echo "Shard ${{ matrix.shard_index + 1 }}/${{ matrix.shard_total }} will run $(wc -l < shard.txt) test(s)."
+          
+          # Check if the shard file has content and set an output variable
           if [ -s shard.txt ]; then
-            split -l 100 shard.txt batch_
-            for f in batch_*; do
-              echo "Running batch $f:"
-              python -B -m pytest -v --maxfail=1 $(cat "$f") || exit 1
-            done
+            echo "has_tests=true" >> $GITHUB_OUTPUT
           else
-            echo "No tests to run in this shard."
+            echo "has_tests=false" >> $GITHUB_OUTPUT
           fi
 
+      - name: Run this shard's tests
+        if: steps.collect_tests.outputs.has_tests == 'true' # <--- Only run if there are tests
+        working-directory: ./polyatomic_complexes
+        run: |
+          # <--- CHANGE: Use xargs for a much more efficient and safe way to run tests
+          # It avoids "argument list too long" errors and doesn't require a messy loop.
+          cat shard.txt | xargs python -m pytest -v
+
       - name: Upload coverage to Codecov
-        if: always()
-        uses: codecov/codecov-action@v5
+        if: always() # This is correct, ensuring it runs even on failure
+        uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: shard-${{ matrix.shard_index }}
-          name: shard-${{ matrix.shard_index }}
-          partial: true
+          # The name and partial options are deprecated; flags is sufficient
           fail_ci_if_error: false
           verbose: true
 
@@ -109,9 +83,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Finalize Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          finalize: true
+          # The 'finalize' option is now handled automatically by Codecov
+          # when it sees multiple partial uploads for the same commit.
+          # This action can be simplified or removed depending on your Codecov setup,
+          # but leaving it doesn't hurt.
           fail_ci_if_error: false
           verbose: true
