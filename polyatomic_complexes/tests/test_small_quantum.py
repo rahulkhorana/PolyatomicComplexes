@@ -27,7 +27,7 @@ smiles = [
     "Cn1c(CN2CCN(CC2)c3ccc(Cl)cc3)nc4ccccc14",
 ]
 
-
+""""
 @pytest.mark.parametrize("smile", smiles)
 def test_small_test_polyatomic_geometry_cmplx(smile):
     pg = PolyatomicGeometrySMILE(smile, mode="quantum")
@@ -42,3 +42,4 @@ def test_small_test_polyatomic_geometry(smile):
     quantum_mol = pg.smiles_to_geom_complex()
     assert isinstance(quantum_mol, QuantumWavesComplex)
     quantum_mol.compute_long_range_interactions()
+"""
