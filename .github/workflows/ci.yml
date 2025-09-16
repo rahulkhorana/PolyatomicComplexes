@@ -7,8 +7,6 @@ on:
 
 jobs:
   test:
-    # <--- FIXED: Removed the '+ 1' which is invalid syntax in the name expression.
-    # The UI will show shards starting from 0 (e.g., shard 0/8).
     name: test (shard ${{ matrix.shard_index }}/${{ matrix.shard_total }})
     runs-on: ubuntu-latest
     timeout-minutes: 90
@@ -17,7 +15,6 @@ jobs:
       matrix:
         python-version: ['3.11']
         shard_total: [8]
-        # <--- FIXED: Reverted to the explicit list. The range() function does not exist.
         shard_index: [0, 1, 2, 3, 4, 5, 6, 7]
 
     env:
@@ -38,29 +35,32 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements/requirements.txt
 
-      - name: Collect and shard tests
-        id: collect_tests
-        working-directory: ./polyatomic_complexes
+      - name: Discover and shard test files (Low Memory)
+        id: shard_files
         run: |
-          pytest --collect-only -q > all_nodeids.txt
+          # Step 1: Find all test files without importing them. This is memory-safe.
+          find ./polyatomic_complexes -type f -name "test_*.py" | sort > all_test_files.txt
           
-          echo "Total tests found: $(wc -l < all_nodeids.txt)"
+          echo "Total test files found: $(wc -l < all_test_files.txt)"
 
-          awk "NR % ${{ matrix.shard_total }} == ${{ matrix.shard_index }}" all_nodeids.txt > shard.txt
+          # Step 2: Shard the LIST of files using awk.
+          awk "NR % ${{ matrix.shard_total }} == ${{ matrix.shard_index }}" all_test_files.txt > shard_files.txt
 
-          # <--- FIXED: Use shell arithmetic for logging the 1-based index.
-          echo "Shard $((${{ matrix.shard_index }} + 1))/${{ matrix.shard_total }} will run $(wc -l < shard.txt) test(s)."
+          echo "Shard $((${{ matrix.shard_index }} + 1))/${{ matrix.shard_total }} will run $(wc -l < shard_files.txt) file(s)."
           
-          if [ -s shard.txt ]; then
+          # Step 3: Set an output to know if this shard has any files to run.
+          if [ -s shard_files.txt ]; then
             echo "has_tests=true" >> $GITHUB_OUTPUT
           else
             echo "has_tests=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Run this shard's tests
-        if: steps.collect_tests.outputs.has_tests == 'true'
-        working-directory: ./polyatomic_complexes
-        run: cat shard.txt | xargs python -m pytest -v
+      - name: Run tests for this shard
+        if: steps.shard_files.outputs.has_tests == 'true'
+        run: |
+          # Pass the list of files directly to pytest using xargs.
+          # Pytest will collect and run tests ONLY from the files in this shard.
+          cat shard_files.txt | xargs python -m pytest -v
 
       - name: Upload coverage to Codecov
         if: always()
