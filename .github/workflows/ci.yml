@@ -18,7 +18,7 @@ jobs:
         os: [ubuntu-latest]
         python-version: ['3.11.11']
         shard_total: [8]
-        shard_index: [0,1,2,3,4,5,6,7]
+        shard_index: [1,2,3,4,5,6,7,8]
 
     env:
       PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
