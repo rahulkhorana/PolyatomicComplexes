@@ -74,3 +74,24 @@ jobs:
               exit $exit_code
             fi
           done < shard_files.txt
+
+      - name: Upload coverage to Codecov
+        if: always()
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: shard-${{ matrix.shard_index }}
+          fail_ci_if_error: false
+          verbose: true
+
+  codecov-finalize:
+    name: codecov finalize
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Finalize Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+          verbose: true
