@@ -17,15 +17,14 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         python-version: ['3.11.11']
-        shard_total: [8]                  # adjust to increase/decrease shards
+        shard_total: [8]
         shard_index: [0,1,2,3,4,5,6,7]
 
+    # Job-level env (keep autoload off to cut memory, but we’ll explicitly enable pytest-split)
     env:
-      # reduce memory/log noise during collection
       PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
       PYTHONOPTIMIZE: "1"
       XLA_PYTHON_CLIENT_PREALLOCATE: "false"
-      # quieter logs in CI
       PYTEST_ADDOPTS: "--log-level=WARNING"
 
     steps:
@@ -59,10 +58,11 @@ jobs:
           pip install -r requirements/requirements.txt
           pip install pytest-split
 
+      # IMPORTANT: cache the durations file where pytest will write it (the subdir)
       - name: Restore pytest-split durations cache
         uses: actions/cache@v4
         with:
-          path: .pytest-split-durations
+          path: polyatomic_complexes/.pytest-split-durations
           key: durations-${{ github.ref_name }}
           restore-keys: |
             durations-
@@ -70,7 +70,8 @@ jobs:
       - name: Run tests (timed shard)
         working-directory: ./polyatomic_complexes
         run: |
-          python -B -m pytest \
+          # explicitly load the plugin since autoload is disabled
+          python -B -m pytest -p pytest_split \
             --splits ${{ matrix.shard_total }} \
             --group  ${{ matrix.shard_index }} \
             --store-durations \
@@ -80,7 +81,7 @@ jobs:
         if: always()
         uses: actions/cache@v4
         with:
-          path: .pytest-split-durations
+          path: polyatomic_complexes/.pytest-split-durations
           key: durations-${{ github.run_id }}
 
       - name: Upload coverage reports to Codecov
