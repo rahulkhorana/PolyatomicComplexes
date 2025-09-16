@@ -18,10 +18,11 @@ jobs:
         os: [ubuntu-latest]
         python-version: ['3.11.11']
         shard_total: [8]
-        shard_index: [1,2,3,4,5,6,7,8]
+        shard_index: [0,1,2,3,4,5,6,7]
 
     env:
-      PYTHONOPTIMIZE: "1"
+      # DO NOT disable asserts!
+      PYTHONOPTIMIZE: "0"
       XLA_PYTHON_CLIENT_PREALLOCATE: "false"
       PYTEST_ADDOPTS: "--log-level=WARNING"
 
@@ -55,23 +56,27 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements/requirements.txt
 
-      - name: Find and shard test files
+      - name: Collect test nodeids
         working-directory: ./polyatomic_complexes
         run: |
-          find . -type f -name "test_*.py" | sort > all_tests.txt
+          python -m pytest --collect-only -q | grep "::" > all_nodeids.txt
           TOTAL=${{ matrix.shard_total }}
           INDEX=${{ matrix.shard_index }}
-          awk "NR % $TOTAL == $INDEX" all_tests.txt > this_shard.txt
-          echo "Shard $INDEX/$TOTAL will run $(wc -l < this_shard.txt) files"
+          awk "NR % $TOTAL == $INDEX" all_nodeids.txt > this_shard.txt
+          echo "Shard $INDEX/$TOTAL will run $(wc -l < this_shard.txt) test cases"
 
-      - name: Run shard
+      - name: Run tests in shard
         working-directory: ./polyatomic_complexes
         run: |
-          split -l 20 this_shard.txt shard_
-          for f in shard_*; do
-            echo "=== Running batch $f ==="
-            python -B -m pytest -v --maxfail=1 $(cat "$f") || exit 1
-          done
+          if [ -s this_shard.txt ]; then
+            split -l 100 this_shard.txt shard_
+            for f in shard_*; do
+              echo "=== Running batch $f ==="
+              python -B -m pytest -v --maxfail=1 $(cat "$f") || exit 1
+            done
+          else
+            echo "No tests in this shard."
+          fi
 
       - name: Upload coverage reports to Codecov
         if: always()
