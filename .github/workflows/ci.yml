@@ -20,7 +20,6 @@ jobs:
         shard_total: [8]
         shard_index: [0,1,2,3,4,5,6,7]
 
-    # Job-level env (keep autoload off to cut memory, but we’ll explicitly enable pytest-split)
     env:
       PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
       PYTHONOPTIMIZE: "1"
@@ -58,7 +57,6 @@ jobs:
           pip install -r requirements/requirements.txt
           pip install pytest-split
 
-      # IMPORTANT: cache the durations file where pytest will write it (the subdir)
       - name: Restore pytest-split durations cache
         uses: actions/cache@v4
         with:
@@ -70,8 +68,7 @@ jobs:
       - name: Run tests (timed shard)
         working-directory: ./polyatomic_complexes
         run: |
-          # explicitly load the plugin since autoload is disabled
-          python -B -m pytest -p pytest_split \
+          python -B -m pytest -p pytest_split.plugin \
             --splits ${{ matrix.shard_total }} \
             --group  ${{ matrix.shard_index }} \
             --store-durations \
