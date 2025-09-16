@@ -7,16 +7,18 @@ on:
 
 jobs:
   test:
-    name: test (shard ${{ matrix.shard_index + 1 }}/${{ strategy.matrix.shard_total }}) # <--- Made this 1-indexed for readability
+    # <--- FIXED: Removed the '+ 1' which is invalid syntax in the name expression.
+    # The UI will show shards starting from 0 (e.g., shard 0/8).
+    name: test (shard ${{ matrix.shard_index }}/${{ matrix.shard_total }})
     runs-on: ubuntu-latest
     timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.11'] # <--- Simplified version, setup-python handles specifics
+        python-version: ['3.11']
         shard_total: [8]
-        # <--- Use range() for a cleaner way to define indices
-        shard_index: ${{ toJSON(range(8)) }} 
+        # <--- FIXED: Reverted to the explicit list. The range() function does not exist.
+        shard_index: [0, 1, 2, 3, 4, 5, 6, 7]
 
     env:
       PYTHONOPTIMIZE: "0"
@@ -26,7 +28,7 @@ jobs:
       - name: Checkout code with LFS
         uses: actions/checkout@v4
         with:
-          lfs: true # <--- CHANGE: Built-in LFS handling is much cleaner
+          lfs: true
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -34,25 +36,21 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
-        run: |
-          pip install -r requirements/requirements.txt
-          pip install pytest-xdist # <--- OPTIONAL but recommended for even better splitting
+        run: pip install -r requirements/requirements.txt
 
       - name: Collect and shard tests
-        id: collect_tests # <--- Give the step an ID to reference its output
+        id: collect_tests
         working-directory: ./polyatomic_complexes
         run: |
-          # <--- CHANGE: Use pytest's robust collection, not fragile shell parsing
           pytest --collect-only -q > all_nodeids.txt
           
           echo "Total tests found: $(wc -l < all_nodeids.txt)"
 
-          # Shard the collected test node IDs
           awk "NR % ${{ matrix.shard_total }} == ${{ matrix.shard_index }}" all_nodeids.txt > shard.txt
 
-          echo "Shard ${{ matrix.shard_index + 1 }}/${{ matrix.shard_total }} will run $(wc -l < shard.txt) test(s)."
+          # <--- FIXED: Use shell arithmetic for logging the 1-based index.
+          echo "Shard $((${{ matrix.shard_index }} + 1))/${{ matrix.shard_total }} will run $(wc -l < shard.txt) test(s)."
           
-          # Check if the shard file has content and set an output variable
           if [ -s shard.txt ]; then
             echo "has_tests=true" >> $GITHUB_OUTPUT
           else
@@ -60,20 +58,16 @@ jobs:
           fi
 
       - name: Run this shard's tests
-        if: steps.collect_tests.outputs.has_tests == 'true' # <--- Only run if there are tests
+        if: steps.collect_tests.outputs.has_tests == 'true'
         working-directory: ./polyatomic_complexes
-        run: |
-          # <--- CHANGE: Use xargs for a much more efficient and safe way to run tests
-          # It avoids "argument list too long" errors and doesn't require a messy loop.
-          cat shard.txt | xargs python -m pytest -v
+        run: cat shard.txt | xargs python -m pytest -v
 
       - name: Upload coverage to Codecov
-        if: always() # This is correct, ensuring it runs even on failure
+        if: always()
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: shard-${{ matrix.shard_index }}
-          # The name and partial options are deprecated; flags is sufficient
           fail_ci_if_error: false
           verbose: true
 
@@ -86,9 +80,5 @@ jobs:
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          # The 'finalize' option is now handled automatically by Codecov
-          # when it sees multiple partial uploads for the same commit.
-          # This action can be simplified or removed depending on your Codecov setup,
-          # but leaving it doesn't hurt.
           fail_ci_if_error: false
           verbose: true
