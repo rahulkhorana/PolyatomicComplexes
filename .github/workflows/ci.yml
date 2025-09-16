@@ -7,7 +7,7 @@ on:
 
 jobs:
   test:
-    name: test (shard ${{ matrix.shard_index }}/${{ matrix.shard_total }})
+    name: test (shard ${{ matrix.shard_index + 1 }}/${{ matrix.shard_total }})
     runs-on: ubuntu-latest
     timeout-minutes: 90
     strategy:
@@ -26,7 +26,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           lfs: true
-          fetch-depth: 0 # <--- THIS IS THE KEY. Fetches the entire git history.
+          fetch-depth: 0 # This is correct and necessary.
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -36,30 +36,36 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements/requirements.txt
 
-      - name: Discover and shard all test files
+      - name: Discover and shard test files
         id: shard_files
         run: |
-          # The working directory is important if your tests aren't at the root.
           find ./polyatomic_complexes -type f -name "test_*.py" | sort > all_test_files.txt
-          
           echo "Total test files found: $(wc -l < all_test_files.txt)"
-          
           awk "NR % ${{ matrix.shard_total }} == ${{ matrix.shard_index }}" all_test_files.txt > shard_files.txt
-          
           echo "Shard $((${{ matrix.shard_index }} + 1))/${{ matrix.shard_total }} will run $(wc -l < shard_files.txt) file(s)."
-          
           if [ -s shard_files.txt ]; then
             echo "has_tests=true" >> $GITHUB_OUTPUT
-          else
-            echo "has_tests=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Run tests for this shard
+      - name: Run tests for this shard (one file at a time)
         if: steps.shard_files.outputs.has_tests == 'true'
         run: |
-          # Use xargs for parallel execution within the shard.
-          # The "|| [ $? -eq 5 ]" part cleverly ignores the "no tests found" error.
-          cat shard_files.txt | xargs python -m pytest -v || [ $? -eq 5 ]
+          # This robust loop runs pytest on each file individually.
+          # It keeps memory usage low and handles files with no tests.
+          while read -r test_file; do
+            echo -e "\n--- Running: $test_file ---\n"
+            pytest -v "$test_file"
+            exit_code=$?
+
+            if [ $exit_code -eq 5 ]; then
+              # Exit code 5 means "no tests collected". This is not a failure.
+              echo "--- No tests found in $test_file, continuing. ---"
+            elif [ $exit_code -ne 0 ]; then
+              # Any other non-zero exit code is a real failure.
+              echo "!!! Failure in $test_file with exit code $exit_code !!!"
+              exit $exit_code
+            fi
+          done < shard_files.txt
 
       - name: Upload coverage to Codecov
         if: always()
