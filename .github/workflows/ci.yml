@@ -9,49 +9,106 @@ on:
 
 jobs:
   test:
+    name: test (shard ${{ matrix.shard_index + 1 }}/${{ matrix.shard_total }})
     runs-on: ${{ matrix.os }}
+    # keep as-is; you can lower once sharded if desired
     timeout-minutes: 720
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest]
         python-version: ['3.11.11']
-        
+        shard_total: [8]                  # ← tune shard count here
+        shard_index: [0,1,2,3,4,5,6,7]    # must match shard_total
+    env:
+      # reduce memory/log noise during collection
+      PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
+      PYTHONOPTIMIZE: "1"
+      # harmless if you don't use JAX; prevents big preallocs if you do
+      XLA_PYTHON_CLIENT_PREALLOCATE: "false"
+      # make logs reasonable for CI
+      PYTEST_ADDOPTS: "--log-level=WARNING"
     steps:
       - name: Checkout repository content
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Git LFS
         run: |
-          sudo apt-get install git-lfs
+          sudo apt-get update
+          sudo apt-get install -y git-lfs
           git lfs install
 
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
 
       - name: Verify Python version
         run: python --version
-      
-      - name: Checkout LFS
+
+      - name: Checkout LFS artifacts
         run: |
           git lfs pull --include=polyatomic_complexes/dataset/**/*.csv
           git lfs pull --include=polyatomic_complexes/dataset/**/*.json
           git lfs pull --include=polyatomic_complexes/dataset/**/atom_lookup.pkl
-      
+
       - name: Install Python packages
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements/requirements.txt
+          # install sharding helper
+          pip install pytest-split
 
-      - name: Run tests
+      # cache timings so shards stay balanced run-to-run
+      - name: Restore pytest-split durations cache
+        uses: actions/cache@v4
+        with:
+          path: .pytest-split-durations
+          key: durations-${{ github.ref_name }}
+          restore-keys: |
+            durations-
+
+      - name: Run tests (timed shard)
         working-directory: ./polyatomic_complexes
-        run: python -B -m pytest -v --log-level=DEBUG --maxfail=1
+        run: |
+          # if you want a little intra-shard parallelism later, add: -n 2 (pytest-xdist)
+          python -B -m pytest \
+            --splits ${{ matrix.shard_total }} \
+            --group  ${{ matrix.shard_index }} \
+            --store-durations \
+            -v --maxfail=1
 
+      - name: Save updated durations cache
+        if: always()
+        uses: actions/cache@v4
+        with:
+          path: .pytest-split-durations
+          key: durations-${{ github.run_id }}
+
+      # Optional: upload coverage from each shard (Codecov will merge)
       - name: Upload coverage reports to Codecov
+        if: always()
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          # if you generate a coverage.xml, point to it; otherwise Codecov will auto-detect
+          # files: ./polyatomic_complexes/coverage.xml
+          flags: shard-${{ matrix.shard_index }}
+          name: shard-${{ matrix.shard_index }}
+          partial: true
+          fail_ci_if_error: false
+          verbose: true
 
-      
+  codecov-finalize:
+    name: codecov finalize
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Finalize Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          finalize: true
+          fail_ci_if_error: false
+          verbose: true
