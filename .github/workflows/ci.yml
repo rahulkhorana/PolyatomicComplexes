@@ -28,9 +28,12 @@ jobs:
           pip install -r requirements/requirements.txt
 
       - name: Collect test nodeids
-        working-directory: ./polyatomic_complexes
         run: |
-          python -m pytest --collect-only -q | grep "::" > all_nodeids.txt
+          touch all_nodeids.txt
+          find . -type f -name "test_*.py" | while read file; do
+            echo "Collecting from $file"
+            python -m pytest --collect-only -q "$file" | grep "::" >> all_nodeids.txt || true
+          done
 
       - name: Count test cases
         id: count
