@@ -2,28 +2,23 @@ name: ci
 
 on:
   push:
-    branches:
-      - main
-      - productionizing
+    branches: [main, productionizing]
   workflow_dispatch:
 
 jobs:
-  test-shards:
+  test-shard:
+    name: Shard ${{ matrix.shard_index }}/${{ matrix.shard_total }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
+      fail-fast: false
       matrix:
         python-version: ['3.11.11']
         shard_total: [4]
         shard_index: [0,1,2,3]
 
-    env:
-      PYTHONOPTIMIZE: "0"
-      PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
-      PYTEST_ADDOPTS: "--log-level=WARNING"
-
     steps:
-      - name: Checkout code
+      - name: Checkout repo
         uses: actions/checkout@v4
 
       - name: Setup Python
@@ -33,41 +28,36 @@ jobs:
 
       - name: Install dependencies
         run: |
+          python -m pip install --upgrade pip
           pip install -r requirements/requirements.txt
 
-      - name: Static nodeid generation (no dataset loads)
+      - name: Collect test nodeids (static scan)
         working-directory: ./polyatomic_complexes
         run: |
-          find . -type f -name "test_*.py" | sort > all_test_files.txt
-
+          echo "Collecting test nodeids from source..."
           > all_nodeids.txt
-          while read file; do
-            # Only grep for definitions, not import & execute
-            grep -E '^def test_' "$file" | sed "s/^def //; s/(.*//" | while read testfn; do
-              echo "${file#./}::${testfn}" >> all_nodeids.txt
-            done
-          done < all_test_files.txt
+          for file in $(find . -type f -name "test_*.py" | sort); do
+            grep -E '^def test_' "$file" | sed -E "s/^def (test_[a-zA-Z0-9_]+).*/${file#./}::\1/" >> all_nodeids.txt
+          done
+          echo "Total tests found: $(wc -l < all_nodeids.txt)"
 
-          echo "Found $(wc -l < all_nodeids.txt) test functions"
-
-      - name: Pick shard
+      - name: Split test nodeids into shard
         working-directory: ./polyatomic_complexes
         run: |
           TOTAL=${{ matrix.shard_total }}
           INDEX=${{ matrix.shard_index }}
-          awk "NR % $TOTAL == $INDEX" all_nodeids.txt > shard.txt
-          echo "Shard $INDEX/$TOTAL → $(wc -l < shard.txt) tests"
-          cat shard.txt
+          awk "NR % $TOTAL == $INDEX" all_nodeids.txt > shard_nodeids.txt
+          echo "Shard $INDEX will run $(wc -l < shard_nodeids.txt) test(s)."
+          cat shard_nodeids.txt
 
-      - name: Run tests
+      - name: Run tests for shard
         working-directory: ./polyatomic_complexes
         run: |
-          if [ -s shard.txt ]; then
-            split -l 50 shard.txt batch_
+          if [ -s shard_nodeids.txt ]; then
+            split -l 50 shard_nodeids.txt batch_
             for f in batch_*; do
-              echo "Running batch $f"
-              python -B -m pytest -v --maxfail=1 $(cat "$f") || exit 1
+              echo "Running batch: $f"
+              python -B -m pytest -v --maxfail=1 $(cat $f) || exit 1
             done
           else
-            echo "No tests for this shard"
-          fi
+            echo "No tests to run in this shard."
