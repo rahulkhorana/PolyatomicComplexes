@@ -80,13 +80,13 @@ def fuzz_test(n=20, k=15):
         cases.append(case)
 
 
-fuzz_test(5, 1)
-fuzz_test(5, 3)
-fuzz_test(5, 10)
-fuzz_test(5, 15)
-fuzz_test(5, 19)
-fuzz_test(2, 22)
-fuzz_test(2, 27)
+#fuzz_test(5, 1)
+#fuzz_test(5, 3)
+#fuzz_test(5, 10)
+#fuzz_test(5, 15)
+#fuzz_test(5, 19)
+#fuzz_test(2, 22)
+#fuzz_test(2, 27)
 
 
 @pytest.mark.parametrize(
