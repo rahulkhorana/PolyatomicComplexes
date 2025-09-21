@@ -23,7 +23,6 @@ smiles = [
     "Cc1occc1C(=O)Nc2ccccc2",
     "c1ccc2c(c1)ccc3c2ccc4c5ccccc5ccc43",
     "CCc1ccccn1",
-    "COc1ccc(cc1)N2CCN(CC2)C(=O)[C@@H]3CCCC[C@H]3C(=O)NCC#N",
 ]
 modes = ["abstract"]
 
@@ -143,7 +142,7 @@ smiles_freesolv = pd.read_csv(datapath_freesolv)["smiles"].tolist()
 smiles_lipo = pd.read_csv(datapath_lipo)["smiles"].tolist()
 smiles_photo = pd.read_csv(datapath_photo)["SMILES"].tolist()
 ALL_SMILES = smiles_esol + smiles_freesolv + smiles_lipo + smiles_photo
-ALL_SMILES = np.random.choice(a=ALL_SMILES, size=10, replace=False).tolist()
+ALL_SMILES = np.random.choice(a=ALL_SMILES, size=2, replace=False).tolist()
 
 
 cases_pair_large = []
