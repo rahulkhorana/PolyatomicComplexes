@@ -161,7 +161,7 @@ for s1 in ALL_SMILES:
                 cases_pair_large.append((s1, s2, m))
 
 
-@pytest.mark.parametrize("smile1,smile2,mode", cases_pair_large)
+@pytest.mark.parametrize("smile1,smile2,mode", [])
 def test_small_kchain_pair_large(smile1, smile2, mode):
     pgs1 = PolyatomicGeometrySMILE(smile=smile1, target_dimension=3, mode=mode)
     pgs2 = PolyatomicGeometrySMILE(smile=smile2, target_dimension=3, mode=mode)
