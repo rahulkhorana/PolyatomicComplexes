@@ -39,9 +39,18 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: pip-${{ runner.os }}-${{ hashFiles('requirements/requirements.txt') }}
+          key: pip-${{ runner.os }}-py${{ matrix.python-version }}-${{ hashFiles('requirements/requirements.txt') }}
           restore-keys: |
+            pip-${{ runner.os }}-py${{ matrix.python-version }}-
             pip-${{ runner.os }}-
+      
+      - name: Cache installed packages
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.pythonLocation }}
+          key: python-env-${{ runner.os }}-py${{ matrix.python-version }}-${{ hashFiles('requirements/requirements.txt') }}
+          restore-keys: |
+            python-env-${{ runner.os }}-py${{ matrix.python-version }}-
       
       - name: Install dependencies
         run: |
@@ -63,16 +72,34 @@ jobs:
         run: |
           echo "Collecting test nodeids by scanning files..."
           
-          # Direct file scanning approach
-          > all_nodeids.txt
-          find . -name "test_*.py" -type f | sort | while read -r file; do
-            echo "Scanning $file..."
-            # Extract test function names and create nodeids
-            grep -E '^[[:space:]]*def test_[a-zA-Z0-9_]+' "$file" | \
-            sed -E 's/^[[:space:]]*def (test_[a-zA-Z0-9_]+).*/'"${file#./}"'::\1/' >> all_nodeids.txt
-          done
+          # Simple approach - use Python to generate nodeids
+          python3 << 'EOF'
+          import os
+          import re
           
-          echo "Total tests found: $(wc -l < all_nodeids.txt)"
+          nodeids = []
+          for root, dirs, files in os.walk('.'):
+              for file in files:
+                  if file.startswith('test_') and file.endswith('.py'):
+                      filepath = os.path.join(root, file)
+                      with open(filepath, 'r') as f:
+                          content = f.read()
+                          # Find test functions
+                          matches = re.findall(r'^\s*def (test_[a-zA-Z0-9_]+)', content, re.MULTILINE)
+                          for match in matches:
+                              # Convert to pytest nodeid format
+                              rel_path = filepath[2:] if filepath.startswith('./') else filepath
+                              nodeid = f"{rel_path}::{match}"
+                              nodeids.append(nodeid)
+          
+          # Write to file
+          with open('all_nodeids.txt', 'w') as f:
+              for nodeid in sorted(nodeids):
+                  f.write(nodeid + '\n')
+          
+          print(f"Total tests found: {len(nodeids)}")
+          EOF
+          
           if [ -s all_nodeids.txt ]; then
             echo "First few tests:"
             head -5 all_nodeids.txt
