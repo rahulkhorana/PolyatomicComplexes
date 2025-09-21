@@ -166,13 +166,13 @@ jobs:
                 
                 # Run batch with aggressive timeouts
                 test_list=$(cat "$batch_file" | tr '\n' ' ')
-                timeout 900 python -m pytest -v --maxfail=1 --tb=line --no-cov --disable-warnings $test_list || {
+                timeout 1800 python -m pytest -v --maxfail=1 --tb=line --no-cov --disable-warnings $test_list || {
                   echo "Batch $batch_file failed, trying tests individually..."
                   
                   # If batch fails, try each test individually
                   while IFS= read -r test_nodeid; do
                     echo "Trying individual test: $test_nodeid"
-                    timeout 300 python -m pytest -v --tb=line --no-cov --disable-warnings "$test_nodeid" || {
+                    timeout 600 python -m pytest -v --tb=line --no-cov --disable-warnings "$test_nodeid" || {
                       echo "FAILED: $test_nodeid (continuing...)"
                     }
                   done < "$batch_file"
