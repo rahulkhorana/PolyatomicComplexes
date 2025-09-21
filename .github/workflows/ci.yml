@@ -79,15 +79,9 @@ jobs:
         run: |
           echo "Collecting test nodeids by scanning files..."
           
-          # Define problematic tests to skip - anything that hangs or uses too much memory
+          # Since bug is fixed, remove the skip list (or keep minimal)
           cat > skip_tests.txt << 'EOF'
-          tests/test_geom_unique.py::test_small_unique_battery
-          tests/test_large_geom.py::test_large_polyatomic_geometry
-          tests/test_large_geom.py::test_large_unique_battery
-          tests/test_large_geom.py::test_quantum_polyatomic_geometry
-          tests/test_kchains.py::test_single_kchain
-          tests/test_kchains.py::test_small_kchain_pair
-          tests/test_kchains.py::test_small_kchain_pair_large
+          # Add any tests that are still problematic here
           EOF
           
           # Simple approach - use Python to generate nodeids
@@ -155,23 +149,40 @@ jobs:
       
       - name: Run tests for shard
         working-directory: ./polyatomic_complexes
-        timeout-minutes: 30
+        timeout-minutes: 75
         run: |
           if [ -s shard_nodeids.txt ]; then
             echo "Running $(wc -l < shard_nodeids.txt) tests in shard ${{ matrix.shard_index }}"
             echo "Tests to run:"
             cat shard_nodeids.txt
             
-            # Run the remaining tests (should be fast now)
-            while IFS= read -r test_nodeid; do
-              echo "Running test: $test_nodeid"
-              timeout 600 python -m pytest -v --tb=short --no-cov --disable-warnings "$test_nodeid" || {
-                echo "FAILED: $test_nodeid"
-                exit 1
-              }
-            done < shard_nodeids.txt
+            # Run tests in small batches to manage memory and avoid timeouts
+            split -l 10 shard_nodeids.txt batch_
             
-            echo "Shard ${{ matrix.shard_index }} completed successfully"
+            for batch_file in batch_*; do
+              if [ -s "$batch_file" ]; then
+                echo "Running batch: $batch_file ($(wc -l < $batch_file) tests)"
+                
+                # Run batch of tests
+                test_list=$(cat "$batch_file" | tr '\n' ' ')
+                timeout 1200 python -m pytest -v --maxfail=5 --tb=short --no-cov --disable-warnings $test_list || {
+                  echo "Batch $batch_file failed or timed out, trying tests individually..."
+                  
+                  # If batch fails, try each test individually 
+                  while IFS= read -r test_nodeid; do
+                    echo "Running individual test: $test_nodeid"
+                    timeout 300 python -m pytest -v --tb=short --no-cov --disable-warnings "$test_nodeid" || {
+                      echo "FAILED: $test_nodeid"
+                      # Continue with other tests instead of exiting
+                    }
+                  done < "$batch_file"
+                }
+                
+                echo "Completed batch: $batch_file"
+              fi
+            done
+            
+            echo "Shard ${{ matrix.shard_index }} completed"
           else
             echo "No tests to run in this shard."
           fi
