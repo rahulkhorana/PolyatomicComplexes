@@ -45,6 +45,7 @@ jobs:
             pip-${{ runner.os }}-
       
       - name: Cache installed packages
+        id: cache-packages
         uses: actions/cache@v4
         with:
           path: ${{ env.pythonLocation }}
@@ -53,9 +54,15 @@ jobs:
             python-env-${{ runner.os }}-py${{ matrix.python-version }}-
       
       - name: Install dependencies
+        if: steps.cache-packages.outputs.cache-hit != 'true'
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements/requirements.txt
+      
+      - name: Verify packages are installed
+        run: |
+          echo "Checking if packages are available..."
+          pip list | head -5
       
       - name: Verify environment
         working-directory: ./polyatomic_complexes
@@ -127,12 +134,13 @@ jobs:
       
       - name: Run tests for shard
         working-directory: ./polyatomic_complexes
+        timeout-minutes: 30
         run: |
           if [ -s shard_nodeids.txt ]; then
             echo "Running $(wc -l < shard_nodeids.txt) tests in shard ${{ matrix.shard_index }}"
             
             # Run tests in smaller batches to avoid command line length limits
-            split -l 10 shard_nodeids.txt batch_
+            split -l 5 shard_nodeids.txt batch_
             
             for batch_file in batch_*; do
               if [ -s "$batch_file" ]; then
@@ -140,14 +148,15 @@ jobs:
                 echo "Tests in this batch:"
                 cat "$batch_file"
                 
-                # Convert nodeids to space-separated list and run
-                test_list=$(cat "$batch_file" | tr '\n' ' ')
-                python -m pytest -v --maxfail=1 --tb=short $test_list
+                # Run each test individually to avoid hanging on collection
+                while IFS= read -r test_nodeid; do
+                  echo "Running individual test: $test_nodeid"
+                  timeout 300 python -m pytest -v --maxfail=1 --tb=short --no-cov "$test_nodeid" || {
+                    echo "Test $test_nodeid failed or timed out"
+                    exit 1
+                  }
+                done < "$batch_file"
                 
-                if [ $? -ne 0 ]; then
-                  echo "Batch $batch_file failed"
-                  exit 1
-                fi
                 echo "Batch $batch_file completed successfully"
               fi
             done
