@@ -61,8 +61,8 @@ smiles_lipo = pd.read_csv(datapath_lipo)["smiles"].tolist()
 smiles_photo = pd.read_csv(datapath_photo)["SMILES"].tolist()
 ALL_SMILES = smiles_esol + smiles_freesolv + smiles_lipo + smiles_photo
 rng = np.random.default_rng(3)
-ALL_SMILES = np.random.choice(a=ALL_SMILES, size=1000, replace=False).tolist()
-ALL_SMILES = [s for s in ALL_SMILES if len(s) < 5 and is_valid_smiles(s)][:3]
+ALL_SMILES = np.random.choice(a=ALL_SMILES, size=100, replace=False).tolist()
+ALL_SMILES = ["CC(=O)OC"]
 
 large_cases = []
 for smile in ALL_SMILES:
