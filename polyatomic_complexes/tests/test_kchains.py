@@ -16,6 +16,7 @@ from polyatomic_complexes.src.complexes.abstract_complex import AbstractComplex
 import pytest
 import pandas as pd
 import numpy as np
+from rdkit import Chem
 
 
 smiles = [
@@ -131,6 +132,11 @@ def check_pair_kchains(complex1, complex2):
     return True
 
 
+def is_valid_smiles(s):
+    mol = Chem.MolFromSmiles(s)
+    return mol is not None
+
+
 #### LARGE SANITY ####
 parent_path = BASE_PATH.parent.parent.__str__()
 datapath_esol = parent_path + "/dataset/esol/ESOL.csv"
@@ -143,7 +149,7 @@ smiles_lipo = pd.read_csv(datapath_lipo)["smiles"].tolist()
 smiles_photo = pd.read_csv(datapath_photo)["SMILES"].tolist()
 ALL_SMILES = smiles_esol + smiles_freesolv + smiles_lipo + smiles_photo
 ALL_SMILES = np.random.choice(a=ALL_SMILES, size=1000, replace=False).tolist()
-ALL_SMILES = [s for s in ALL_SMILES if len(s) < 10][:2]
+ALL_SMILES = [s for s in ALL_SMILES if len(s) < 10 and is_valid_smiles(s)][:2]
 
 
 cases_pair_large = []
