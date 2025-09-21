@@ -1,5 +1,4 @@
 name: ci
-
 on:
   push:
     branches: [main, productionizing]
@@ -15,57 +14,107 @@ jobs:
       matrix:
         python-version: ['3.11.11']
         shard_total: [4]
-        shard_index: [0,1,2,3]
-
+        shard_index: [0, 1, 2, 3]
+    
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-
+        with:
+          lfs: true  # Enable LFS checkout
+      
+      - name: Install Git LFS
+        run: |
+          git lfs install
+          git lfs pull --include="polyatomic_complexes/dataset/**/*.csv"
+          git lfs pull --include="polyatomic_complexes/dataset/**/*.json" 
+          git lfs pull --include="polyatomic_complexes/dataset/**/atom_lookup.pkl"
+      
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
-
+      
       - name: Cache pip dependencies
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: pip-${{ hashFiles('requirements/requirements.txt') }}
+          key: pip-${{ runner.os }}-${{ hashFiles('requirements/requirements.txt') }}
           restore-keys: |
-            pip-
-
+            pip-${{ runner.os }}-
+      
       - name: Install dependencies
         run: |
+          python -m pip install --upgrade pip
           pip install -r requirements/requirements.txt
-
-      - name: Collect test nodeids (static scan)
+      
+      - name: Collect test nodeids using pytest
         working-directory: ./polyatomic_complexes
         run: |
-          echo "Collecting test nodeids from source..."
-          > all_nodeids.txt
-          for file in $(find . -type f -name "test_*.py" | sort); do
-            grep -E '^def test_' "$file" | sed -E "s/^def (test_[a-zA-Z0-9_]+).*/${file#./}::\1/" >> all_nodeids.txt
-          done
+          echo "Collecting test nodeids using pytest..."
+          python -m pytest --collect-only -q --disable-warnings | grep -E '^test_.*\.py::test_' | sort > all_nodeids.txt
           echo "Total tests found: $(wc -l < all_nodeids.txt)"
-
+          head -5 all_nodeids.txt || echo "No tests found"
+      
       - name: Split test nodeids into shard
         working-directory: ./polyatomic_complexes
         run: |
           TOTAL=${{ matrix.shard_total }}
           INDEX=${{ matrix.shard_index }}
-          awk "NR % $TOTAL == $INDEX" all_nodeids.txt > shard_nodeids.txt
+          
+          # Create shard using modulo arithmetic (1-indexed for better distribution)
+          awk "NR % $TOTAL == ($INDEX + 1) % $TOTAL" all_nodeids.txt > shard_nodeids.txt
+          
           echo "Shard $INDEX will run $(wc -l < shard_nodeids.txt) test(s)."
-          cat shard_nodeids.txt
-
+          if [ -s shard_nodeids.txt ]; then
+            echo "First few tests in this shard:"
+            head -3 shard_nodeids.txt
+          fi
+      
       - name: Run tests for shard
         working-directory: ./polyatomic_complexes
         run: |
           if [ -s shard_nodeids.txt ]; then
-            split -l 50 shard_nodeids.txt batch_
-            for f in batch_*; do
-              echo "Running batch: $f"
-              python -B -m pytest -v --maxfail=1 $(cat $f) || exit 1
+            echo "Running $(wc -l < shard_nodeids.txt) tests in shard ${{ matrix.shard_index }}"
+            
+            # Run tests in smaller batches to avoid command line length limits
+            split -l 25 shard_nodeids.txt batch_
+            
+            for batch_file in batch_*; do
+              if [ -s "$batch_file" ]; then
+                echo "Running batch: $batch_file ($(wc -l < $batch_file) tests)"
+                
+                # Use xargs to handle the test list properly
+                cat "$batch_file" | xargs python -m pytest -v --maxfail=1 --tb=short
+                
+                if [ $? -ne 0 ]; then
+                  echo "Batch $batch_file failed"
+                  exit 1
+                fi
+              fi
             done
           else
             echo "No tests to run in this shard."
+          fi
+      
+      - name: Upload coverage reports to Codecov
+        if: success()
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: shard-${{ matrix.shard_index }}
+
+  # Combine results from all shards
+  test-results:
+    needs: test-shard
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Check test results
+        run: |
+          if [ "${{ needs.test-shard.result }}" = "success" ]; then
+            echo "All test shards passed!"
+          else
+            echo "Some test shards failed"
+            exit 1
+          fi
