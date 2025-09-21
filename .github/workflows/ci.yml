@@ -58,29 +58,26 @@ jobs:
           echo -e "\nTest files found:"
           find . -name "test_*.py" | wc -l
       
-      - name: Collect test nodeids using pytest
+      - name: Collect test nodeids using file scanning
         working-directory: ./polyatomic_complexes
         run: |
-          echo "Collecting test nodeids using pytest..."
+          echo "Collecting test nodeids by scanning files..."
           
-          # Set timeout and try pytest collection with minimal output
-          timeout 300 python -m pytest --collect-only -q --disable-warnings --tb=no 2>/dev/null | grep -E '::test_' | sort > all_nodeids.txt || {
-            echo "Pytest collection failed or timed out, falling back to file scanning..."
-            
-            # Fallback: scan files directly
-            > all_nodeids.txt
-            find . -name "test_*.py" -type f | while read -r file; do
-              # Extract test function names and create nodeids
-              grep -E '^[[:space:]]*def test_[a-zA-Z0-9_]+' "$file" | \
-              sed -E 's/^[[:space:]]*def (test_[a-zA-Z0-9_]+).*/'"${file#./}"'::\1/' >> all_nodeids.txt
-            done
-            sort all_nodeids.txt -o all_nodeids.txt
-          }
+          # Direct file scanning approach
+          > all_nodeids.txt
+          find . -name "test_*.py" -type f | sort | while read -r file; do
+            echo "Scanning $file..."
+            # Extract test function names and create nodeids
+            grep -E '^[[:space:]]*def test_[a-zA-Z0-9_]+' "$file" | \
+            sed -E 's/^[[:space:]]*def (test_[a-zA-Z0-9_]+).*/'"${file#./}"'::\1/' >> all_nodeids.txt
+          done
           
           echo "Total tests found: $(wc -l < all_nodeids.txt)"
           if [ -s all_nodeids.txt ]; then
             echo "First few tests:"
             head -5 all_nodeids.txt
+            echo "Last few tests:"
+            tail -5 all_nodeids.txt
           else
             echo "No tests found!"
             exit 1
@@ -108,19 +105,23 @@ jobs:
             echo "Running $(wc -l < shard_nodeids.txt) tests in shard ${{ matrix.shard_index }}"
             
             # Run tests in smaller batches to avoid command line length limits
-            split -l 25 shard_nodeids.txt batch_
+            split -l 10 shard_nodeids.txt batch_
             
             for batch_file in batch_*; do
               if [ -s "$batch_file" ]; then
                 echo "Running batch: $batch_file ($(wc -l < $batch_file) tests)"
+                echo "Tests in this batch:"
+                cat "$batch_file"
                 
-                # Use xargs to handle the test list properly
-                cat "$batch_file" | xargs python -m pytest -v --maxfail=1 --tb=short
+                # Convert nodeids to space-separated list and run
+                test_list=$(cat "$batch_file" | tr '\n' ' ')
+                python -m pytest -v --maxfail=1 --tb=short $test_list
                 
                 if [ $? -ne 0 ]; then
                   echo "Batch $batch_file failed"
                   exit 1
                 fi
+                echo "Batch $batch_file completed successfully"
               fi
             done
           else
