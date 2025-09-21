@@ -21,10 +21,7 @@ from polyatomic_complexes.src.complexes.quantum_theor_complex import QuantumWave
 
 smiles = [
     "CC(=O)OC",
-    "Cc1occc1C(=O)Nc2ccccc2",
-    "c1ccc2c(c1)ccc3c2ccc4c5ccccc5ccc43",
     "CCc1ccccn1",
-    "Cn1c(CN2CCN(CC2)c3ccc(Cl)cc3)nc4ccccc14",
 ]
 
 

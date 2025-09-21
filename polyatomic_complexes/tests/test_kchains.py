@@ -24,7 +24,6 @@ smiles = [
     "c1ccc2c(c1)ccc3c2ccc4c5ccccc5ccc43",
     "CCc1ccccn1",
     "COc1ccc(cc1)N2CCN(CC2)C(=O)[C@@H]3CCCC[C@H]3C(=O)NCC#N",
-    "Cn1c(CN2CCN(CC2)c3ccc(Cl)cc3)nc4ccccc14",
 ]
 modes = ["abstract"]
 

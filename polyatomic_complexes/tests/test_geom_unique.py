@@ -433,8 +433,3 @@ def test_small_unique_battery(smile1, smile2, mode):
     assert check_persistence_unique(complex1, complex2)
     assert check_skeleta_unique(complex1, complex2)
     assert check_coadjacency_unique(complex1, complex2)
-
-
-# sm1 = "CCOC(=O)c1ccccc1c2csc(NS(=O)(=O)c3ccc(Cl)cc3)n2"
-# sm2 = "C[C@H]1O[C@H]([C@H](O)[C@@H]1O)n2cnc3c(N)nc(OC4CC5CC5C4)nc23"
-# test_small_unique_battery(sm1, sm2, "abstract")
