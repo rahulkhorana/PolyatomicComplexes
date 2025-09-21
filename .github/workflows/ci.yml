@@ -48,13 +48,43 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements/requirements.txt
       
+      - name: Verify environment
+        working-directory: ./polyatomic_complexes
+        run: |
+          echo "Python path:"
+          python -c "import sys; print('\n'.join(sys.path))"
+          echo -e "\nPython packages:"
+          pip list | head -10
+          echo -e "\nTest files found:"
+          find . -name "test_*.py" | wc -l
+      
       - name: Collect test nodeids using pytest
         working-directory: ./polyatomic_complexes
         run: |
           echo "Collecting test nodeids using pytest..."
-          python -m pytest --collect-only -q --disable-warnings | grep -E '^test_.*\.py::test_' | sort > all_nodeids.txt
+          
+          # Set timeout and try pytest collection with minimal output
+          timeout 300 python -m pytest --collect-only -q --disable-warnings --tb=no 2>/dev/null | grep -E '::test_' | sort > all_nodeids.txt || {
+            echo "Pytest collection failed or timed out, falling back to file scanning..."
+            
+            # Fallback: scan files directly
+            > all_nodeids.txt
+            find . -name "test_*.py" -type f | while read -r file; do
+              # Extract test function names and create nodeids
+              grep -E '^[[:space:]]*def test_[a-zA-Z0-9_]+' "$file" | \
+              sed -E 's/^[[:space:]]*def (test_[a-zA-Z0-9_]+).*/'"${file#./}"'::\1/' >> all_nodeids.txt
+            done
+            sort all_nodeids.txt -o all_nodeids.txt
+          }
+          
           echo "Total tests found: $(wc -l < all_nodeids.txt)"
-          head -5 all_nodeids.txt || echo "No tests found"
+          if [ -s all_nodeids.txt ]; then
+            echo "First few tests:"
+            head -5 all_nodeids.txt
+          else
+            echo "No tests found!"
+            exit 1
+          fi
       
       - name: Split test nodeids into shard
         working-directory: ./polyatomic_complexes
