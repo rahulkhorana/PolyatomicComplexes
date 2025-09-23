@@ -12,7 +12,7 @@ attrs==24.3.0
 babel==2.16.0
 beautifulsoup4==4.12.3
 biopandas==0.5.1
-biopython==1.84
+biopython==1.85
 bioservices==1.11.2
 bleach==6.2.0
 botorch==0.12.0
