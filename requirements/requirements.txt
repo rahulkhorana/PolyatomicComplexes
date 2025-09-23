@@ -198,5 +198,5 @@ wget==3.2
 wrapt==1.17.0
 xarray==2025.1.1
 xmltodict==0.14.2
-zope.event==5.0
+zope.event==6.0
 zope.interface==7.2
