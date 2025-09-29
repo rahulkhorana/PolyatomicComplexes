@@ -11,6 +11,7 @@ if str(src_dir) not in sys.path:
     sys.path.insert(0, str(src_dir))
 
 print("Loading [polyatomic-complexes]")
+print(f"Prepended `{src_dir}` to PATH")
 
 from polyatomic_complexes.src.complexes.building_blocks import Electron, Proton, Neutron
 from polyatomic_complexes.src.complexes.general_utils import GeneralComplexUtils

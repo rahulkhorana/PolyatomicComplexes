@@ -14,6 +14,7 @@ if str(src_dir) not in sys.path:
     sys.path.insert(0, str(src_dir))
 
 print("Loading [polyatomic-complexes]")
+print(f"Prepended `{src_dir}` to PATH")
 
 from polyatomic_complexes.src.complexes.core_utils import GluingMap, NSphere
 
