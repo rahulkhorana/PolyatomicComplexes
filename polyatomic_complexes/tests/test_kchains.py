@@ -147,10 +147,11 @@ smiles_esol = pd.read_csv(datapath_esol)["smiles"].tolist()
 smiles_freesolv = pd.read_csv(datapath_freesolv)["smiles"].tolist()
 smiles_lipo = pd.read_csv(datapath_lipo)["smiles"].tolist()
 smiles_photo = pd.read_csv(datapath_photo)["SMILES"].tolist()
-ALL_SMILES = smiles_esol + smiles_freesolv + smiles_lipo + smiles_photo
-rng = np.random.default_rng(42)
-ALL_SMILES = np.random.choice(a=ALL_SMILES, size=5, replace=False).tolist()
-ALL_SMILES = [s for s in ALL_SMILES if is_valid_smiles(s)][:2]
+# ALL_SMILES = smiles_esol
+# rng = np.random.default_rng(42)
+# ALL_SMILES = np.random.choice(a=ALL_SMILES, size=5, replace=False).tolist()
+# ALL_SMILES = [s for s in ALL_SMILES if is_valid_smiles(s)][:2]
+ALL_SMILES = ["CC(=O)OC", "CCO"]
 
 cases_pair_large = []
 for s1 in ALL_SMILES:
