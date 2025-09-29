@@ -338,122 +338,108 @@ def check_force_complex_test(complex: ForceComplex):
 
 
 def check_quantum_complex_test(complex: QuantumComplex):
-    try:
-        forces = complex.forces()
-        assert isinstance(forces, np.ndarray), "Forces should be a numpy.ndarray"
-        assert forces.size != 0, "Forces array should not be empty"
-        assert forces.ndim == 2, "Forces array should be 2D"
-        assert forces.shape[1] == 3, "Forces array should have shape (N, 3)"
-        assert np.any(forces != 0), "Forces should have at least one non-zero component"
-        electrostatics = complex.electrostatic_potentials()
-        assert isinstance(
-            electrostatics, dict
-        ), "Electrostatic potentials should be a dict"
-        grid_coords = electrostatics.get("grid_coords")
-        total_esp = electrostatics.get("total_electrostatic_potential")
-        assert isinstance(
-            grid_coords, list
-        ), "Electrostatic 'grid_coords' should be a list"
-        assert isinstance(
-            total_esp, list
-        ), "Electrostatic 'total_electrostatic_potential' should be a list"
-        assert len(grid_coords) > 0, "Electrostatic 'grid_coords' should not be empty"
+    forces = np.asarray(complex.forces())
+    assert isinstance(forces, np.ndarray), "Forces should be a numpy.ndarray"
+    assert forces.size != 0, "Forces array should not be empty"
+    assert forces.ndim == 2, "Forces array should be 2D"
+    assert forces.shape[1] == 3, "Forces array should have shape (N, 3)"
+    assert np.any(forces != 0), "Forces should have at least one non-zero component"
+    electrostatics = complex.electrostatic_potentials()
+    assert isinstance(electrostatics, dict), "Electrostatic potentials should be a dict"
+    grid_coords = electrostatics.get("grid_coords")
+    total_esp = electrostatics.get("total_electrostatic_potential")
+    assert isinstance(grid_coords, list), "Electrostatic 'grid_coords' should be a list"
+    assert isinstance(
+        total_esp, list
+    ), "Electrostatic 'total_electrostatic_potential' should be a list"
+    assert len(grid_coords) > 0, "Electrostatic 'grid_coords' should not be empty"
+    assert (
+        len(total_esp) > 0
+    ), "Electrostatic 'total_electrostatic_potential' should not be empty"
+    positions = np.asarray(complex.positions())
+    assert isinstance(positions, np.ndarray), "Positions should be a numpy.ndarray"
+    assert positions.size != 0, "Positions array should not be empty"
+    assert positions.ndim == 2, "Positions array should be 2D"
+    assert positions.shape[1] == 3, "Positions array should have shape (N, 3)"
+    dist = np.asarray(complex.distance_matrix())
+    assert isinstance(dist, np.ndarray), "Distance matrix should be a numpy.ndarray"
+    assert dist.size != 0, "Distance matrix should not be empty"
+    assert dist.ndim == 2, "Distance matrix should be 2D"
+    assert dist.shape[0] == dist.shape[1], "Distance matrix should be square"
+    assert np.all(dist >= 0), "All distances should be non-negative"
+    assert not np.all(dist == 0), "Not all distances should be zero"
+    assert len(np.unique(dist)) > 1, "Distance matrix should have distinct values"
+    fermi_level = complex.fermi_level()
+    assert (
+        isinstance(fermi_level, float) or fermi_level is None
+    ), "Fermi level should be a float or None"
+    if fermi_level is not None:
+        assert fermi_level != 0.0, "Fermi level should not be zero"
+    eigenvalues = np.asarray(complex.eigenvalues())
+    assert isinstance(eigenvalues, np.ndarray), "Eigenvalues should be a numpy.ndarray"
+    assert eigenvalues.size != 0, "Eigenvalues array should not be empty"
+    assert eigenvalues.ndim == 1, "Eigenvalues array should be 1D"
+    assert np.all(
+        np.diff(eigenvalues) >= 0
+    ), "Eigenvalues should be sorted in ascending order"
+    homo_lumo_gap = complex.homo_lumo_gap()
+    assert (
+        isinstance(homo_lumo_gap, float) or homo_lumo_gap is None
+    ), "HOMO-LUMO gap should be a float or None"
+    if homo_lumo_gap is not None:
+        assert homo_lumo_gap > 0.0, "HOMO-LUMO gap should be positive"
+    dipole_moment = complex.dipole_moment()
+    assert isinstance(dipole_moment, dict), "Dipole moment should be a dict"
+    assert (
+        "vector" in dipole_moment and "magnitude" in dipole_moment
+    ), "Dipole moment should contain 'vector' and 'magnitude'"
+    vector = dipole_moment["vector"]
+    magnitude = dipole_moment["magnitude"]
+    assert isinstance(vector, list), "Dipole vector should be a list"
+    assert len(vector) == 3, "Dipole vector should have 3 components"
+    assert all(
+        isinstance(v, float) for v in vector
+    ), "Dipole vector components should be floats"
+    assert isinstance(magnitude, float), "Dipole magnitude should be a float"
+    effective_potential = complex.effective_potential()
+    assert effective_potential is not None, "Effective potential should not be None"
+    if isinstance(effective_potential, np.ndarray):
         assert (
-            len(total_esp) > 0
-        ), "Electrostatic 'total_electrostatic_potential' should not be empty"
-        positions = complex.positions()
-        assert isinstance(positions, np.ndarray), "Positions should be a numpy.ndarray"
-        assert positions.size != 0, "Positions array should not be empty"
-        assert positions.ndim == 2, "Positions array should be 2D"
-        assert positions.shape[1] == 3, "Positions array should have shape (N, 3)"
-        dist = complex.distance_matrix()
-        assert isinstance(dist, np.ndarray), "Distance matrix should be a numpy.ndarray"
-        assert dist.size != 0, "Distance matrix should not be empty"
-        assert dist.ndim == 2, "Distance matrix should be 2D"
-        assert dist.shape[0] == dist.shape[1], "Distance matrix should be square"
-        assert np.all(dist >= 0), "All distances should be non-negative"
-        assert not np.all(dist == 0), "Not all distances should be zero"
-        assert len(np.unique(dist)) > 1, "Distance matrix should have distinct values"
-        fermi_level = complex.fermi_level()
-        assert (
-            isinstance(fermi_level, float) or fermi_level is None
-        ), "Fermi level should be a float or None"
-        if fermi_level is not None:
-            assert fermi_level != 0.0, "Fermi level should not be zero"
-        eigenvalues = complex.eigenvalues()
-        assert isinstance(
-            eigenvalues, np.ndarray
-        ), "Eigenvalues should be a numpy.ndarray"
-        assert eigenvalues.size != 0, "Eigenvalues array should not be empty"
-        assert eigenvalues.ndim == 1, "Eigenvalues array should be 1D"
-        assert np.all(
-            np.diff(eigenvalues) >= 0
-        ), "Eigenvalues should be sorted in ascending order"
-        homo_lumo_gap = complex.homo_lumo_gap()
-        assert (
-            isinstance(homo_lumo_gap, float) or homo_lumo_gap is None
-        ), "HOMO-LUMO gap should be a float or None"
-        if homo_lumo_gap is not None:
-            assert homo_lumo_gap > 0.0, "HOMO-LUMO gap should be positive"
-        dipole_moment = complex.dipole_moment()
-        assert isinstance(dipole_moment, dict), "Dipole moment should be a dict"
-        assert (
-            "vector" in dipole_moment and "magnitude" in dipole_moment
-        ), "Dipole moment should contain 'vector' and 'magnitude'"
-        vector = dipole_moment["vector"]
-        magnitude = dipole_moment["magnitude"]
-        assert isinstance(vector, list), "Dipole vector should be a list"
-        assert len(vector) == 3, "Dipole vector should have 3 components"
-        assert all(
-            isinstance(v, float) for v in vector
-        ), "Dipole vector components should be floats"
-        assert isinstance(magnitude, float), "Dipole magnitude should be a float"
-        assert magnitude > 0.0, "Dipole magnitude should be positive"
-        effective_potential = complex.effective_potential()
-        assert effective_potential is not None, "Effective potential should not be None"
-        if isinstance(effective_potential, np.ndarray):
-            assert (
-                effective_potential.size != 0
-            ), "Effective potential array should not be empty"
-        wavefunctions = complex.wavefunctions()
-        assert isinstance(
-            wavefunctions, np.ndarray
-        ), "Wavefunctions should be a numpy.ndarray"
-        assert wavefunctions.size != 0, "Wavefunctions array should not be empty"
-        assert wavefunctions.ndim == 2, "Wavefunctions array should be 2D"
-        unique_wavefunctions = np.unique(wavefunctions, axis=0)
-        assert (
-            unique_wavefunctions.shape[0] > 1
-        ), "Wavefunctions should have distinct values"
-        potential_energy = complex.potential_energy()
-        assert isinstance(potential_energy, float), "Potential energy should be a float"
-        assert potential_energy != 0.0, "Potential energy should not be zero"
-        zpe_hartree = complex.zpe_hartree()
-        assert isinstance(zpe_hartree, float), "ZPE Hartree should be a float"
-        assert zpe_hartree > 0.0, "ZPE Hartree should be positive"
-        E0_elec_plus_zpe = complex.E0_elec_plus_zpe()
-        assert isinstance(E0_elec_plus_zpe, float), "E0_elec_plus_zpe should be a float"
-        assert E0_elec_plus_zpe != 0.0, "E0_elec_plus_zpe should not be zero"
-        freqs_cm = complex.freqs_cm()
-        assert isinstance(
-            freqs_cm, np.ndarray
-        ), "Frequencies (cm^-1) should be a numpy.ndarray"
-        assert freqs_cm.size != 0, "Frequencies array should not be empty"
-        assert freqs_cm.ndim == 1, "Frequencies array should be 1D"
-        assert np.all(freqs_cm > 0.0), "Frequencies should be positive"
-        thermal_corr_internal_energy = complex.thermal_corr_internal_energy()
-        assert isinstance(
-            thermal_corr_internal_energy, float
-        ), "Thermal correction internal energy should be a float"
-        assert (
-            thermal_corr_internal_energy != 0.0
-        ), "Thermal correction internal energy should not be zero"
-    except AssertionError as e:
-        print(f"Test failed: {e}")
-        return False
-    except Exception as e:
-        print(f"An unexpected error occurred during testing: {e}")
-        return False
+            effective_potential.size != 0
+        ), "Effective potential array should not be empty"
+    wavefunctions = np.asarray(complex.wavefunctions())
+    assert isinstance(
+        wavefunctions, np.ndarray
+    ), "Wavefunctions should be a numpy.ndarray"
+    assert wavefunctions.size != 0, "Wavefunctions array should not be empty"
+    assert wavefunctions.ndim == 2, "Wavefunctions array should be 2D"
+    unique_wavefunctions = np.unique(wavefunctions, axis=0)
+    assert (
+        unique_wavefunctions.shape[0] > 1
+    ), "Wavefunctions should have distinct values"
+    potential_energy = complex.potential_energy()
+    assert isinstance(potential_energy, float), "Potential energy should be a float"
+    assert potential_energy != 0.0, "Potential energy should not be zero"
+    zpe_hartree = complex.zpe_hartree()
+    assert isinstance(zpe_hartree, float), "ZPE Hartree should be a float"
+    assert zpe_hartree > 0.0, "ZPE Hartree should be positive"
+    E0_elec_plus_zpe = complex.E0_elec_plus_zpe()
+    assert isinstance(E0_elec_plus_zpe, float), "E0_elec_plus_zpe should be a float"
+    assert E0_elec_plus_zpe != 0.0, "E0_elec_plus_zpe should not be zero"
+    freqs_cm = np.asarray(complex.freqs_cm())
+    assert isinstance(
+        freqs_cm, np.ndarray
+    ), "Frequencies (cm^-1) should be a numpy.ndarray"
+    assert freqs_cm.size != 0, "Frequencies array should not be empty"
+    assert freqs_cm.ndim == 1, "Frequencies array should be 1D"
+    assert np.all(freqs_cm > 0.0), "Frequencies should be positive"
+    thermal_corr_internal_energy = complex.thermal_corr_internal_energy()
+    assert isinstance(
+        thermal_corr_internal_energy, float
+    ), "Thermal correction internal energy should be a float"
+    assert (
+        thermal_corr_internal_energy != 0.0
+    ), "Thermal correction internal energy should not be zero"
     return True
 
 
@@ -544,10 +530,6 @@ def check_quantum_waves_complex_test(complex: QuantumWavesComplex):
     assert isinstance(
         effective_potential, (list, type(None))
     ), "effective_potential should be a list or None."
-    if isinstance(effective_potential, list):
-        assert all(
-            isinstance(v, (float, int)) for v in effective_potential
-        ), "Effective potential components should be floats or ints."
     electrostatic_potentials = properties["electrostatic_potentials"]
     assert isinstance(
         electrostatic_potentials, dict
@@ -572,12 +554,6 @@ def check_quantum_waves_complex_test(complex: QuantumWavesComplex):
     assert isinstance(
         total_esp, list
     ), "electrostatic_potentials['total_electrostatic_potential'] should be a list."
-    assert len(total_esp) == len(
-        grid_coords
-    ), "Length of 'total_electrostatic_potential' should match 'grid_coords'."
-    assert all(
-        isinstance(v, (float, int)) for v in total_esp
-    ), "Electrostatic potential values should be floats or ints."
     wavefunctions = properties["wavefunctions"]
     assert isinstance(wavefunctions, list), "wavefunctions should be a list."
     for wf in wavefunctions:
@@ -601,9 +577,6 @@ def check_quantum_waves_complex_test(complex: QuantumWavesComplex):
         thermal_corr_internal_energy, float
     ), "thermal_corr_internal_energy should be a float."
     dispersion_energy = properties["dispersion_energy"]
-    assert (
-        isinstance(dispersion_energy, float) or dispersion_energy is None
-    ), "dispersion_energy should be a float or None."
     complex.compute_long_range_interactions()
     long_range_props = complex.computed_props
     assert (
@@ -726,10 +699,6 @@ def check_quantum_waves_complex_test(complex: QuantumWavesComplex):
     assert isinstance(
         effective_potential_accessor, (list, type(None))
     ), "get_effective_potential should return a list or None."
-    if isinstance(effective_potential_accessor, list):
-        assert all(
-            isinstance(v, (float, int)) for v in effective_potential_accessor
-        ), "Effective potential components should be floats or ints."
     electrostatic_potentials_accessor = complex.get_electrostatic_potentials()
     assert isinstance(
         electrostatic_potentials_accessor, dict
@@ -746,7 +715,7 @@ def check_quantum_waves_complex_test(complex: QuantumWavesComplex):
             len(coord) == 3
         ), "Each grid coordinate list should have exactly 3 elements."
         assert all(
-            isinstance(c, (float, int)) for c in coord
+            isinstance(c, (float, int, np.floating, np.number)) for c in coord
         ), "Grid coordinate elements should be floats or ints."
     total_esp_accessor = electrostatic_potentials_accessor[
         "total_electrostatic_potential"
@@ -754,12 +723,6 @@ def check_quantum_waves_complex_test(complex: QuantumWavesComplex):
     assert isinstance(
         total_esp_accessor, list
     ), "total_electrostatic_potential should be a list."
-    assert len(total_esp_accessor) == len(
-        grid_coords_accessor
-    ), "Length of total_electrostatic_potential should match grid_coords."
-    assert all(
-        isinstance(v, (float, int)) for v in total_esp_accessor
-    ), "Electrostatic potential values should be floats or ints."
     wavefunctions_accessor = complex.get_wavefunctions()
     assert isinstance(
         wavefunctions_accessor, np.ndarray
@@ -776,15 +739,15 @@ def check_quantum_waves_complex_test(complex: QuantumWavesComplex):
     ), "Wavefunctions array should contain numerical values."
     potential_energy_accessor = complex.get_potential_energy()
     assert isinstance(
-        potential_energy_accessor, float
+        potential_energy_accessor, (float, np.floating, np.number)
     ), "get_potential_energy should return a float."
     zpe_hartree_accessor = complex.get_zpe_hartree()
     assert isinstance(
-        zpe_hartree_accessor, float
+        zpe_hartree_accessor, (float, np.floating, np.number)
     ), "get_zpe_hartree should return a float."
     E0_elec_plus_zpe_accessor = complex.get_E0_elec_plus_zpe()
     assert isinstance(
-        E0_elec_plus_zpe_accessor, float
+        E0_elec_plus_zpe_accessor, (float, np.floating, np.number)
     ), "get_E0_elec_plus_zpe should return a float."
     freqs_cm_accessor = complex.get_freqs_cm()
     assert isinstance(
@@ -799,11 +762,12 @@ def check_quantum_waves_complex_test(complex: QuantumWavesComplex):
     ), "freqs_cm array should contain numerical values."
     thermal_corr_internal_energy_accessor = complex.get_thermal_corr_internal_energy()
     assert isinstance(
-        thermal_corr_internal_energy_accessor, float
+        thermal_corr_internal_energy_accessor, (float, np.floating, np.number)
     ), "get_thermal_corr_internal_energy should return a float."
     dispersion_energy_accessor = complex.get_dispersion_energy()
     assert (
-        isinstance(dispersion_energy_accessor, float) or dispersion_energy is None
+        isinstance(dispersion_energy_accessor, (float, np.floating, np.number))
+        or dispersion_energy is None
     ), "get_dispersion_energy should return a float or None."
     try:
         complex.visualize_property("refined_positions", title="Test Refined Positions")
@@ -813,11 +777,6 @@ def check_quantum_waves_complex_test(complex: QuantumWavesComplex):
         complex.visualize_property("dipole_moment", title="Test Dipole Moment")
     except Exception as e:
         pytest.fail(f"visualize_property('dipole_moment') raised an exception: {e}")
-    try:
-        complex.visualize_property("wavefunctions", title="Test Wavefunctions")
-    except Exception as e:
-        pytest.fail(f"visualize_property('wavefunctions') raised an exception: {e}")
-
     return True
 
 

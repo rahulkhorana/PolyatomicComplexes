@@ -61,8 +61,8 @@ smiles_lipo = pd.read_csv(datapath_lipo)["smiles"].tolist()
 smiles_photo = pd.read_csv(datapath_photo)["SMILES"].tolist()
 ALL_SMILES = smiles_esol + smiles_freesolv + smiles_lipo + smiles_photo
 rng = np.random.default_rng(3)
-ALL_SMILES = np.random.choice(a=ALL_SMILES, size=100, replace=False).tolist()
-ALL_SMILES = ["CC(=O)OC"]
+# ALL_SMILES = np.random.choice(a=ALL_SMILES, size=100, replace=False).tolist()
+ALL_SMILES = ["CC(=O)OC", "CCO"]
 
 large_cases = []
 for smile in ALL_SMILES:
@@ -85,9 +85,10 @@ def test_large_polyatomic_geometry(smile, mode):
 
 
 modes_quantum = ["quantum", "quantum-waves"]
+SMALL_TEST = [("COO", "quantum"), ("CCO", "quantum-waves")]
 
 
-@pytest.mark.parametrize("smile,mode", [])
+@pytest.mark.parametrize("smile,mode", SMALL_TEST)
 def test_quantum_polyatomic_geometry(smile, mode):
     pgs = PolyatomicGeometrySMILE(smile=smile, target_dimension=3, mode=mode)
     pgs = pgs.smiles_to_geom_complex()
