@@ -11,7 +11,7 @@ authors:
     affiliation: "1"
     orcid: 0000-0001-8795-1623
 affiliations:
-  - name: Imperial College London
+  - name: Department of Computing, Imperial College London, London, United Kingdom
     index: 1
 date: 17 April 2025
 bibliography: paper.bib
@@ -64,7 +64,7 @@ A standard workflow for molecular machine learning using Polyatomic Complexes wo
 
 ![In this figure we see a standard molecular ML pipeline including Polyatomic Complexes.](figures/figure.png)
 
-The figure above shows the standard pipeline for many molecular machine-learning tasks. Initially, one receives a dataset consisting of both input and output columns. The input is usually a SMILES string [@weininger1988smiles] or material [@jain2020materials]. However, a wide variety of inputs are possible, such as molecular graphs, SEFLIES, and ECFP fingerprints [@manolopoulos1992molecular; @rogers2010extended; @krenn2022selfies]. In the second stage, these input columns containing the molecule are transformed into Polyatomic Complexes. This enables one to compute numerous features ranging from purely topological or geometric features such as the Hodge Laplacians or spectral k-chains to force matrices and dipole moments. The third stage involves choosing a machine learning model and deciding which inputs to provide to it. Upon deciding on an architecture and features that suit the particular task, one trains their model and evaluates it.
+The figure above shows the standard pipeline for many molecular machine-learning tasks. Initially, one receives a dataset consisting of both input and output columns. The input is usually a SMILES string [@weininger1988smiles] or material, namely a PyMatgen `Structure` or `Molecule` [@jain2020materials]. However, a wide variety of inputs are possible, such as molecular graphs, SEFLIES, and ECFP fingerprints [@manolopoulos1992molecular; @rogers2010extended; @krenn2022selfies]. In the second stage, these input columns containing the molecule are transformed into Polyatomic Complexes. This enables one to compute numerous features ranging from purely topological or geometric features such as the Hodge Laplacians or spectral k-chains to force matrices and dipole moments. The third stage involves choosing a machine learning model and deciding which inputs to provide to it. Upon deciding on an architecture and features that suit the particular task, one trains their model and evaluates it.
 
 # Software Description
 
