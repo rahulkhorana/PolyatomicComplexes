@@ -11,7 +11,7 @@ authors:
     affiliation: "1"
     orcid: 0000-0001-8795-1623
 affiliations:
-  - name: Imperial College London
+  - name: Department of Computing, Imperial College London, London, United Kingdom
     index: 1
 date: 17 April 2025
 bibliography: paper.bib
@@ -27,10 +27,10 @@ Current molecular representations, such as SMILES, SELFIES, or graph-based finge
 
 Fundamentally, chemical representations should satisfy the following criteria [@langer2022representations].
 
-1. Invariances: Representations should be invariant under changes in atom indexing and molecular rotation, reflection, and translation [@langer2022representations].
-2. Uniqueness: Two systems differing in properties should be mapped to different representations. Systems with equal representations that differ in property induce errors. Uniqueness is necessary and sufficient for reconstruction, up to invariant transformations, of an atomistic system from its representation [@langer2022representations].
-3. Continuity and Differentiability: Representations of atomistic systems should be continuous.
-and differentiable with respect to atomic coordinates [@langer2022representations]. Moreover, discontinuities work against regularity assumptions of many machine learning models [@khorana2024polyatomiccomplexestopologicallyinformedlearning].
+1. Invariances: Representations should be invariant under changes in atom indexing and those fundamental to physics. These invariances are rotation, reflection, and translations [@langer2022representations].
+2. Uniqueness: Essentially, two systems differing in properties should be mapped to different representations. Systems with equal representations that differ in property induce errors. Uniqueness is necessary and sufficient for reconstruction, up to invariant transformations, of an atomistic system from its representation [@langer2022representations].
+3. Continuity and Differentiability: Representations of atomistic systems should be continuous
+and differentiable with respect to atomic coordinates [@langer2022representations]. Moreover, discontinuities work against regularity assumptions of many machine learning models
 4. Generality: We say a representation of atomistic systems or molecules satisfies generality only if it can encode any atomistic system [@langer2022representations].
 5. Efficiency: Essentially, representing atomistic systems should be computationally efficient. Ideally, representations are linear in the number of elements in a molecule, `O(S)`, as is the case with molecular graphs [@KrennGuzikOriginal2020Selfies].
 6. Topological Accuracy: Representations are topologically accurate if they can correctly represent the geometry of any molecule or atomistic system. Correctness requires representing the shape, bond-angles, dihedrals/torsion, and electronic structure aspects accurately [@khorana2024polyatomiccomplexestopologicallyinformedlearning].
@@ -64,18 +64,18 @@ A standard workflow for molecular machine learning using Polyatomic Complexes wo
 
 ![In this figure we see a standard molecular ML pipeline including Polyatomic Complexes.](figures/figure.png)
 
-The figure above shows the standard pipeline for many molecular machine-learning tasks. Initially, one receives a dataset consisting of both input and output columns. The input is usually a SMILES string [@weininger1988smiles] or material [@jain2020materials]. However, a wide variety of inputs are possible, such as molecular graphs, SEFLIES, and ECFP fingerprints [@manolopoulos1992molecular; @rogers2010extended; @krenn2022selfies]. In the second stage, these input columns containing the molecule are transformed into Polyatomic Complexes. This enables one to compute numerous features ranging from purely topological or geometric features such as the Hodge Laplacians or spectral k-chains to force matrices and dipole moments. The third stage involves choosing a machine learning model and deciding which inputs to provide to it. Upon deciding on an architecture and features that suit the particular task, one trains their model and evaluates it.
+The figure above shows the standard pipeline for many molecular machine-learning tasks. Initially, one receives a dataset consisting of both input and output columns. The input is usually a SMILES string [@weininger1988smiles] or material, namely a PyMatgen `Structure` or `Molecule` [@jain2020materials]. However, a wide variety of inputs are possible, such as molecular graphs, SEFLIES, and ECFP fingerprints [@manolopoulos1992molecular; @rogers2010extended; @krenn2022selfies]. In the second stage, these input columns containing the molecule are transformed into Polyatomic Complexes. This enables one to compute numerous features ranging from purely topological or geometric features such as the Hodge Laplacians or spectral k-chains to force matrices and dipole moments. The third stage involves choosing a machine learning model and deciding which inputs to provide to it. Upon deciding on an architecture and features that suit the particular task, one trains their model and evaluates it.
 
 # Software Description
 
 Our API is structured as follows:
 
-1. `PolyatomicGeometrySMILE`: an interface for converting SMILES to polytomic complexes.
-2. `AbstractComplex`: The base class and general purpose option.
-3. `ForceComplex`: inherits from AbstractComplex and leverages methods from chemistry to provide detailed intermolecular force information.
-4. `QuantumComplex`: inherits from AbstractComplex and leverages the B3LYP functional and DFT to provide highly accurate chemical information.
-5. `QuantumWavesComplex`: inherits from QuantumComplex and provides long-range interactions and information about quantum wavefunctions.
-6. `Datasets`: The general datasets API currently supports the ESOL, photoswitches, FreeSolv, and Lipophilicity datasets.
+1. PolyatomicGeometrySMILE: an interface for converting SMILES to polytomic complexes.
+2. AbstractComplex: The base class and general purpose option.
+3. ForceComplex: inherits from AbstractComplex and leverages methods from chemistry to provide detailed intermolecular force information.
+4. QuantumComplex: inherits from AbstractComplex and leverages the B3LYP functional and DFT to provide highly accurate chemical information.
+5. QuantumWavesComplex: inherits from QuantumComplex and provides long-range interactions and information about quantum wavefunctions.
+6. Datasets: The general datasets API currently supports the ESOL, photoswitches, FreeSolv, and Lipophilicity datasets.
 
 The software is modular, extensible, and written in Python. It supports input from standard molecular formats and returns representations and features suitable for use with ML libraries.
 
