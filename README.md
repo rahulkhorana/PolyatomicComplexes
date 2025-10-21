@@ -116,6 +116,22 @@ Please feel free to start a discussion if you're interested in contributing!
 
 ## 🔬 Reference
 ```
+@article{Khorana2025,
+    author = {Khorana, Rahul},
+    title = {Polyatomic Complexes: A Software Framework for Topologically Accurate Representations of Molecules},
+    doi = {10.21105/joss.08828},
+    url = {https://doi.org/10.21105/joss.08828},
+    year = {2025},
+    publisher = {The Open Journal},
+    volume = {10},
+    number = {114},
+    pages = {8828},
+    journal = {Journal of Open Source Software}
+}
+```
+
+
+```
 @misc{khorana2024polyatomiccomplexestopologicallyinformedlearning,
       title={Polyatomic Complexes: A topologically-informed learning representation for atomistic systems}, 
       author={Rahul Khorana and Marcus Noack and Jin Qian},
