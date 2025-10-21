@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+         <loc>https://sitename.example/</loc>
+         <lastmod>2025-10-21</lastmod>
+    </url>
+    <url>
+         <loc>https://sitename.example/abstract_complex/</loc>
+         <lastmod>2025-10-21</lastmod>
+    </url>
+    <url>
+         <loc>https://sitename.example/datasets/</loc>
+         <lastmod>2025-10-21</lastmod>
+    </url>
+    <url>
+         <loc>https://sitename.example/force_complex/</loc>
+         <lastmod>2025-10-21</lastmod>
+    </url>
+    <url>
+         <loc>https://sitename.example/polyatomic_geom_smile/</loc>
+         <lastmod>2025-10-21</lastmod>
+    </url>
+    <url>
+         <loc>https://sitename.example/quantum_complex/</loc>
+         <lastmod>2025-10-21</lastmod>
+    </url>
+    <url>
+         <loc>https://sitename.example/quantum_waves/</loc>
+         <lastmod>2025-10-21</lastmod>
+    </url>
+</urlset>
