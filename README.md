@@ -20,6 +20,9 @@
   <a href="https://www.codefactor.io/repository/github/rahulkhorana/polyatomiccomplexes/overview/master">
     <img src="https://www.codefactor.io/repository/github/rahulkhorana/polyatomiccomplexes/badge/master" alt="CodeFactor">
   </a>
+  <a style="border-width:0" href="https://doi.org/10.21105/joss.08828">
+  <img src="https://joss.theoj.org/papers/10.21105/joss.08828/status.svg" alt="DOI badge" >
+</a>
 </p>
 
 
